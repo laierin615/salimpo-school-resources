@@ -1,7 +1,7 @@
 (() => {
   const world=document.getElementById('village-world');
   const rows=[...document.querySelectorAll('[data-place]')];
-  const places=rows.map((row,index)=>({id:row.dataset.place,index,title:row.querySelector('[data-place-title]').textContent,description:row.querySelector('[data-place-description]').textContent,category:row.dataset.category,url:row.getAttribute('href'),external:row.dataset.external==='true'}));
+  const places=rows.map((row,index)=>({id:row.dataset.place,index,title:row.querySelector('[data-place-title]').textContent,description:row.querySelector('[data-place-description]').textContent,category:row.dataset.category,url:row.getAttribute('href'),external:row.dataset.external==='true',go:row.dataset.go,listen:row.dataset.listen}));
   const labelRoot=document.getElementById('village-labels');
   const picker=document.getElementById('place-picker');
   const dots=document.getElementById('place-dots');
@@ -22,7 +22,7 @@
   function select(index){
     selected=index;const place=places[index];
     welcome.hidden=!!place;card.hidden=!place;
-    if(place){document.getElementById('place-number').textContent=number(index);document.getElementById('place-category').textContent=place.category;document.getElementById('place-title').textContent=place.title;document.getElementById('place-description').textContent=place.description;const link=document.getElementById('place-link');link.href=place.url;link.textContent=place.external?'出發到族語挑戰島 ↗':'走進這一站 →';if(place.external){link.target='_blank';link.rel='noopener noreferrer';}else{link.removeAttribute('target');link.removeAttribute('rel');}document.getElementById('place-counter').textContent=number(index)+' / '+places.length;}
+    if(place){document.getElementById('place-number').textContent=number(index);document.getElementById('place-category').textContent=place.category;document.getElementById('place-title').textContent=place.title;document.getElementById('place-description').textContent=place.description;const link=document.getElementById('place-link');link.href=place.url;link.textContent=place.go||(place.external?'出發到族語挑戰島 ↗':'走進這一站 →');window.dispatchEvent(new CustomEvent('salimpo:listen',{detail:place.listen||''}));if(place.external){link.target='_blank';link.rel='noopener noreferrer';}else{link.removeAttribute('target');link.removeAttribute('rel');}document.getElementById('place-counter').textContent=number(index)+' / '+places.length;}
     else document.getElementById('place-counter').textContent='探索聚落';
     [labelRoot,picker,dots].forEach(container=>[...container.children].forEach((button,i)=>button.setAttribute('aria-pressed',String(i===selected))));
     window.dispatchEvent(new CustomEvent('salimpo:place',{detail:index}));

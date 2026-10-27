@@ -4,7 +4,7 @@
   const page = document.body.dataset.page;
   const calm = matchMedia('(prefers-reduced-motion:reduce)').matches;
   const icon = id => `<svg class="st-icon" aria-hidden="true"><use href="media/icons.svg#${id}"></use></svg>`;
-  const stationIcons = {school:'st-school',course:'st-course',lesson:'st-book',material:'st-material',farm:'st-farm',ocean:'st-ocean',stage:'st-stage',archive:'st-archive',search:'st-search',history:'st-history',visit:'st-visit','language-island':'st-island'};
+  const stationIcons = {school:'st-school',course:'st-course',lesson:'st-book',material:'st-material',farm:'st-farm',ocean:'st-ocean',stage:'st-stage',archive:'st-archive',search:'st-search',history:'st-history',visit:'st-visit','language-island':'st-island','song-island':'st-song'};
 
   // 圖片：載入前顯示光澤色塊，載入後淡入
   root.classList.add('fx');
@@ -81,6 +81,21 @@
       }), {threshold:.6});
       document.querySelectorAll('.fx-stats b[data-count]').forEach(b => counter.observe(b));
     }
+  }
+
+  // 女人島：地點卡上的「聽一小段」，只在按下時播放
+  const listen = document.getElementById('place-listen');
+  if (listen) {
+    let clip = null;
+    const stop = () => { clip?.pause(); listen.setAttribute('aria-pressed', 'false'); listen.textContent = '♪ 聽一小段'; };
+    addEventListener('salimpo:place', stop);
+    addEventListener('salimpo:listen', e => { stop(); if (clip && clip.dataset?.src !== e.detail) clip = null; listen.hidden = !e.detail; listen.dataset.src = e.detail; });
+    listen.addEventListener('click', () => {
+      if (clip && !clip.paused) { stop(); return; }
+      clip = clip || Object.assign(new Audio(listen.dataset.src), {onended: stop});
+      clip.currentTime = 0; clip.play().catch(stop);
+      listen.setAttribute('aria-pressed', 'true'); listen.textContent = '■ 停止';
+    });
   }
 
   // 活動與成果：年份時間軸（點一下就篩選）

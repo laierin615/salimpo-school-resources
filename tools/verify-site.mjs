@@ -37,7 +37,7 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
 }
 for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','museum.js','visits.js','enhance.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
-assert.equal([...home.matchAll(/data-place="/g)].length,12);
+assert.equal([...home.matchAll(/data-place="/g)].length,13);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
 for(const a of Object.values(data.assets)){assert.ok(fs.existsSync(path.join(dist,a.src)));assert.ok(fs.existsSync(path.join(dist,a.thumb)));}
 let pageImages=0;
@@ -101,4 +101,4 @@ for(const f of visit.forms){const book=JSON.parse(fs.readFileSync(path.join(dist
 for(const r of data.resources)assert.ok(Array.isArray(r.topics));
 console.log('Visit verified: 12 items, 3 forms, 8 training records, 29-file finance catalog; amounts reconcile.');
 
-assert.ok(home.includes('data-place="language-island"'));assert.ok(home.includes('https://laierin615.github.io/amis-language-competition/'));assert.ok(home.includes('salimpo-home-logo'));
+assert.ok(home.includes('data-place="language-island"'));assert.ok(home.includes('data-place="song-island"'));assert.ok(home.includes('https://laierin615.github.io/saopo-songs-review/'));assert.ok(fs.existsSync(path.join(dist,'media/audio/saopo-tasoki-12s.mp3')));assert.ok(home.includes('https://laierin615.github.io/amis-language-competition/'));assert.ok(home.includes('salimpo-home-logo'));

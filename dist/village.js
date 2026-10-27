@@ -3,7 +3,7 @@ import * as THREE from './vendor/three.module.js';
 const canvas=document.getElementById('village-canvas');
 const world=document.getElementById('village-world');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3]];
+const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3]];
 let renderer;
 try{
   renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
@@ -70,7 +70,7 @@ function buildVillage(){
   const paverGeometry=new THREE.CylinderGeometry(.135,.16,.055,6);
   const pavers=[];
   function path(a,b,count=14){for(let i=0;i<count;i++){const t=i/(count-1);pavers.push(new THREE.Vector3(a[0]*(1-t)+b[0]*t,.13,a[1]*(1-t)+b[1]*t));}}
-  for(let i=0;i<positions.length-1;i++)path(positions[i],[.4,1.5],15);
+  for(let i=0;i<positions.length-2;i++)path(positions[i],[.4,1.5],15);
   for(let i=0;i<65;i++){const a=i/65*Math.PI*2;pavers.push(new THREE.Vector3(Math.cos(a)*5.85,.13,Math.sin(a)*5.85));}
   const stone=new THREE.InstancedMesh(paverGeometry,material(0xe1dfc7),pavers.length);const transform=new THREE.Object3D();pavers.forEach((p,i)=>{transform.position.copy(p);transform.rotation.y=random()*Math.PI;transform.scale.set(1+random()*.2,1,1);transform.updateMatrix();stone.setMatrixAt(i,transform.matrix);});stone.receiveShadow=true;scene.add(stone);
 
@@ -113,6 +113,64 @@ function buildVillage(){
   const littleTree=tree(islandX-.7,islandZ-.4,.62,1);littleTree.userData.placeIndex=11;buildings.push(littleTree);
   for(let i=0;i<8;i++){const a=i/8*Math.PI*2;rock(.11,islandX+Math.cos(a)*1.39,-.17,islandZ+Math.sin(a)*1.39,0x9baca0);}
   const islandWake=mesh(new THREE.RingGeometry(1.6,1.64,48),new THREE.MeshBasicMaterial({color:0xe5fffb,transparent:true,opacity:.46,side:THREE.DoubleSide}));islandWake.rotation.x=-Math.PI/2;islandWake.position.set(islandX,-1.24,islandZ);islandWake.castShadow=false;
+
+  // 女人島：靈感來自阿美族女人島的口傳故事。女人們圍成一圈唱歌，鯨魚在外海來回游，連到 Sa'opo 歌謠採譜網站。
+  const [songX,songZ]=positions[12];
+  const songIsland=new THREE.Group();songIsland.position.set(songX,0,songZ);songIsland.userData.placeIndex=12;scene.add(songIsland);buildings.push(songIsland);
+  cylinder(1.36,1.08,0,-.69,0,0xa89a86,songIsland,14);
+  cylinder(1.52,.18,0,-.07,0,0xf1dec0,songIsland,14);
+  cylinder(1.2,.1,0,.06,0,0xa5c27c,songIsland,14);
+  cylinder(.64,.04,.12,.13,.1,0xe6d3a8,songIsland,18);
+  const fire=new THREE.Group();fire.position.set(.12,.15,.1);songIsland.add(fire);
+  for(let i=0;i<3;i++){const log=box(.3,.045,.045,0,.03,0,0x7a5638,fire);log.rotation.y=i*Math.PI/3;}
+  const flameMaterial=new THREE.MeshStandardMaterial({color:0xffa340,emissive:0xff6a1a,emissiveIntensity:.7,roughness:.6,flatShading:true});
+  const flame=mesh(geometry.cone,flameMaterial,fire);flame.scale.set(.085,.22,.085);flame.position.y=.15;flame.castShadow=false;
+  const fireLight=new THREE.PointLight(0xff9a4a,0,3.2);fireLight.position.set(0,.45,0);fire.add(fireLight);lights.push(fireLight);
+  const dance=new THREE.Group();dance.position.set(.12,.15,.1);songIsland.add(dance);const dancers=[];
+  for(let i=0;i<6;i++){const a=i/6*Math.PI*2;const woman=new THREE.Group();woman.position.set(Math.cos(a)*.46,0,Math.sin(a)*.46);woman.rotation.y=-a+Math.PI/2;dance.add(woman);
+    const skirt=mesh(geometry.cone,0x2f2d36,woman);skirt.scale.set(.075,.17,.075);skirt.position.y=.085;skirt.rotation.x=Math.PI;
+    cylinder(.077,.025,0,.045,0,0xd2453a,woman,7);
+    cylinder(.05,.12,0,.22,0,0xd2453a,woman,6);
+    const head=mesh(geometry.leaf,0xdcb391,woman);head.scale.set(.05,.058,.05);head.position.y=.33;
+    const hair=mesh(geometry.leaf,0x2b2422,woman);hair.scale.set(.052,.04,.052);hair.position.set(0,.36,-.008);
+    cylinder(.056,.018,0,.355,0,0xf3ead8,woman,8);
+    const pom=mesh(geometry.leaf,[0xffd166,0x7ad86f,0x5cc1d8][i%3],woman);pom.scale.setScalar(.022);pom.position.set(0,.375,.05);
+    dancers.push(woman);}
+  const hands=mesh(new THREE.TorusGeometry(.46,.011,5,36),0xf3ead8,dance);hands.rotation.x=Math.PI/2;hands.position.y=.24;
+  const palm=new THREE.Group();palm.position.set(-.82,.1,-.55);songIsland.add(palm);
+  beam(new THREE.Vector3(0,0,0),new THREE.Vector3(-.12,1.15,-.1),.04,0x8a6a48,palm);
+  for(let i=0;i<6;i++){const leaf=box(.5,.025,.11,0,0,0,i%2?0x5f9f55:0x76b862,palm);const a=i/6*Math.PI*2;leaf.position.set(-.12+Math.cos(a)*.22,1.13,-.1+Math.sin(a)*.22);leaf.rotation.set(0,-a,-.42);}
+  for(let i=0;i<2;i++){const coco=mesh(geometry.leaf,0x6b4e33,palm);coco.scale.setScalar(.05);coco.position.set(-.1+i*.07,1.06,-.06);}
+  const canoe=new THREE.Group();canoe.position.set(.95,.05,.82);canoe.rotation.y=.9;songIsland.add(canoe);
+  const canoeHull=mesh(new THREE.CylinderGeometry(.13,.07,.62,5),0xbf7850,canoe);canoeHull.rotation.z=Math.PI/2;box(.34,.03,.12,0,.05,0,0xd9ba85,canoe);
+  rock(.12,-.6,.12,.75,0xb1a98c,songIsland);rock(.09,.75,.1,-.62,0xe8dcc0,songIsland);
+  const notes=[];
+  for(let i=0;i<4;i++){const group=new THREE.Group();songIsland.add(group);const noteMaterial=new THREE.MeshStandardMaterial({color:[0xffd166,0xff9f68,0x7bcdd0,0xffd166][i],emissive:0x5a3a00,emissiveIntensity:.25,roughness:.7,flatShading:true,transparent:true});
+    const headNote=mesh(geometry.leaf,noteMaterial,group);headNote.scale.set(.085,.065,.07);headNote.rotation.z=.4;headNote.castShadow=false;
+    const stem=box(.018,.27,.018,.07,.14,0,noteMaterial,group);stem.castShadow=false;
+    if(i%2){const flag=box(.11,.03,.018,.12,.26,0,noteMaterial,group);flag.rotation.z=-.6;flag.castShadow=false;}
+    group.scale.setScalar(1.4);group.position.set(.12,1.1+i*.3,.1);notes.push({group,material:noteMaterial});}
+  // 鯨魚在島前方面向鏡頭的海面來回游，避開主島；頭朝 +z，好讓 lookAt 直接轉向前進方向。
+  const whale=new THREE.Group();scene.add(whale);whale.userData.placeIndex=12;buildings.push(whale);
+  const whaleBody=mesh(new THREE.SphereGeometry(1,12,8),0x4a6d85,whale);whaleBody.scale.set(.34,.26,.82);
+  const whaleBelly=mesh(new THREE.SphereGeometry(1,12,8),0xd9e6e6,whale);whaleBelly.scale.set(.27,.16,.66);whaleBelly.position.set(0,-.1,.08);
+  const tail=new THREE.Group();tail.position.set(0,.02,-.78);whale.add(tail);
+  const tailBase=mesh(geometry.cone,0x4a6d85,tail);tailBase.scale.set(.12,.34,.09);tailBase.rotation.x=-Math.PI/2;tailBase.position.z=-.06;
+  for(const s of [-1,1]){const fluke=box(.32,.03,.16,s*.17,0,-.22,0x4a6d85,tail);fluke.rotation.y=s*.42;}
+  for(const s of [-1,1]){const fin=box(.26,.025,.11,s*.32,-.1,.16,0x42627a,whale);fin.rotation.set(0,s*.5,s*-.35);}
+  for(const s of [-1,1]){const eye=mesh(geometry.leaf,0x1d2a33,whale);eye.scale.setScalar(.03);eye.position.set(s*.25,.03,.52);}
+  const spout=new THREE.Group();spout.position.set(0,.24,.35);whale.add(spout);const spoutMaterial=new THREE.MeshStandardMaterial({color:0xf2fbff,roughness:.4,transparent:true,opacity:.85});
+  for(const [x,y,z,s] of [[0,.08,0,.07],[-.06,.2,0,.06],[.06,.2,0,.06],[0,.3,0,.05]]){const drop=mesh(geometry.leaf,spoutMaterial,spout);drop.scale.setScalar(s);drop.position.set(x,y,z);drop.castShadow=false;}
+  const songOut=1.3,songWhale=new THREE.Vector3(),songAhead=new THREE.Vector3();
+  function whaleAt(a,target){return target.set(songX+Math.cos(a)*2.3,-1.27,songZ+Math.sin(a)*2.3);}
+  whale.position.copy(whaleAt(songOut,songWhale));whale.lookAt(whaleAt(songOut+.1,songAhead));spout.visible=false;
+  function animateSongIsland(elapsed){
+    dance.rotation.y=elapsed*.32;dancers.forEach((d,i)=>{d.position.y=Math.abs(Math.sin(elapsed*3.2+i*.9))*.035;});
+    flame.scale.set(.085+Math.sin(elapsed*7)*.01,.22+Math.sin(elapsed*9.3)*.045,.085);
+    notes.forEach((n,i)=>{const t=(elapsed*.16+i/notes.length)%1;n.group.position.set(.12+Math.sin(t*5+i*1.7)*.32,.75+t*1.6,.1+Math.cos(t*4+i)*.22);n.group.rotation.y=elapsed*.6+i;n.material.opacity=Math.sin(t*Math.PI);});
+    const a=songOut+Math.sin(elapsed*.12)*.85;whale.position.copy(whaleAt(a,songWhale));whale.position.y+=Math.sin(elapsed*1.3)*.04;
+    whale.lookAt(whaleAt(a+Math.cos(elapsed*.12)*.05,songAhead).setY(whale.position.y));tail.rotation.x=Math.sin(elapsed*2.2)*.22;
+    const puff=(elapsed*.2)%1;spout.visible=puff<.22;spout.scale.setScalar(.6+puff*3);}
   const selectionRing=mesh(new THREE.RingGeometry(1.05,1.17,40),new THREE.MeshBasicMaterial({color:0x1fd16c,transparent:true,opacity:.7,side:THREE.DoubleSide}));selectionRing.rotation.x=-Math.PI/2;selectionRing.position.y=.13;selectionRing.visible=false;selectionRing.castShadow=false;
 
   for(const [x,z] of [[-.2,2.1],[-3.1,2.9],[3.6,-.3],[.6,-1.7]]){cylinder(.055,.86,x,.49,z,0x786653);box(.2,.2,.2,x,1,z,0xe7d7ae);const lamp=new THREE.PointLight(0xffc36a,0,3);lamp.position.set(x,1.07,z);scene.add(lamp);lights.push(lamp);}
@@ -151,7 +209,7 @@ function buildVillage(){
   let start=performance.now(),last=0;
   function frame(now){requestAnimationFrame(frame);if(document.hidden||!visible||now-last<1000/30)return;last=now;const elapsed=(now-start)/1000;
     yaw=THREE.MathUtils.lerp(yaw,targetYaw,.12);focus.lerp(targetFocus,.12);camera.position.set(focus.x+Math.sin(yaw)*24,17,focus.z+Math.cos(yaw)*24);camera.lookAt(focus.x,.05,focus.z);
-    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});boat.position.y=-.95+Math.sin(elapsed*1.4)*.055;boat.rotation.z=Math.sin(elapsed*.9)*.035;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});}
+    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});boat.position.y=-.95+Math.sin(elapsed*1.4)*.055;boat.rotation.z=Math.sin(elapsed*.9)*.035;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);}
     labels();renderer.render(scene,camera);
   }
   frame(performance.now());requestAnimationFrame(()=>requestAnimationFrame(()=>{world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;}));
