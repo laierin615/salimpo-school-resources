@@ -20,7 +20,7 @@ for(const resource of data.resources){
   for(const id of resource.related)assert.ok(ids.has(id),'Unknown related resource '+id);
 }
 for(const indicator of data.indicators){for(const id of indicator.related)assert.ok(ids.has(id));}
-for(const name of ['index','about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','museum','visits']){
+for(const name of ['index','about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','journeys','museum','visits']){
   const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');
   assert.ok(html.includes('lang="zh-Hant"'));
   assert.ok(html.includes('rel="icon"'));
@@ -35,7 +35,7 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
   const content=fs.readFileSync(path.join(dist,filename),'utf8');
   for(const pattern of ['/Users/','source_repository_credential','relative_path','private_token'])assert.ok(!content.includes(pattern),'Private field in '+filename);
 }
-for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','museum.js','visits.js','enhance.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
+for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
 assert.equal([...home.matchAll(/data-place="/g)].length,13);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
@@ -46,7 +46,7 @@ assert.equal(pageImages,1194);
 assert.equal(data.lessons.length,31);
 assert.equal(new Set(data.lessons.map(l=>l.id)).size,31);
 for(const l of data.lessons){const b=JSON.parse(fs.readFileSync(path.join(dist,'books',l.book+'.json'),'utf8'));assert.ok(l.start>=1&&l.end<=b.count&&l.start<=l.end);assert.ok(l.band&&l.topic&&l.title);if(l.cover)assert.ok(data.assets[l.cover]);}
-console.log(JSON.stringify({pages:12,lesson_themes:data.lessons.length,photos:Object.keys(data.assets).length,reading_volumes:Object.keys(data.books).length,readable_pages:pageImages,resource_records:data.resources.length,event_results:data.eventIds.length,official_indicators:24,local_links:'valid',internal_paths_in_deployment:false,script_syntax:'valid'}));
+console.log(JSON.stringify({pages:13,lesson_themes:data.lessons.length,photos:Object.keys(data.assets).length,reading_volumes:Object.keys(data.books).length,readable_pages:pageImages,resource_records:data.resources.length,event_results:data.eventIds.length,official_indicators:24,local_links:'valid',internal_paths_in_deployment:false,script_syntax:'valid'}));
 
 for(const id of data.eventIds){const e=data.resources.find(r=>r.id===id);assert.ok(e?.event?.result&&e.section==='活動與成果');assert.ok(['展演成果','比賽成果','成果展'].includes(e.type));}
 assert.equal(data.resources.filter(r=>r.section==='活動與成果').length,25);
@@ -79,7 +79,7 @@ assert.equal(history.chapters.length,7);
 for(const t of data.historyMuseum.topics){if(t.hasContent){assert.ok(history.chapters[t.chapter-1]);assert.ok(ids.has(t.resourceId));for(const s of t.sections)assert.ok(s.paragraph<history.chapters[t.chapter-1].blocks.length);}}
 assert.equal(data.historyMuseum.topics.find(t=>t.id==='short-stories').sections.length,8);
 assert.equal(Object.keys(data.books).length,20);
-assert.equal(Object.keys(data.assets).length,471);
+assert.equal(Object.keys(data.assets).length,506);
 console.log('Museum index verified: 15 topics, 7 full articles; withdrawn plan absent.');
 
 const visit=data.visit115;
@@ -103,3 +103,16 @@ for(const r of data.resources)assert.ok(Array.isArray(r.topics));
 console.log('Visit verified: 12 items, 3 forms, 8 training records, 29-file finance catalog; amounts reconcile.');
 
 assert.ok(home.includes('data-place="language-island"'));assert.ok(home.includes('data-place="song-island"'));assert.ok(home.includes('https://laierin615.github.io/saopo-songs-review/'));assert.ok(fs.existsSync(path.join(dist,'media/audio/saopo-tasoki-12s.mp3')));assert.ok(home.includes('https://laierin615.github.io/amis-language-competition/'));assert.ok(home.includes('salimpo-home-logo'));
+
+// 我們怎麼學：10 堂課的步驟卡；每一步要有照片或替代的題目文字，關聯的教案與資料都要找得到
+const lessonIds=new Set(data.lessons.map(l=>l.id));
+assert.equal(data.journeys.length,10);
+assert.equal(new Set(data.journeys.map(j=>j.id)).size,10);
+for(const j of data.journeys){
+  assert.ok(j.title&&j.short&&j.lead&&j.term);
+  assert.ok(j.steps.length>=3&&j.steps.length<=4,'Steps '+j.id);
+  for(const s of j.steps){assert.ok(s.title&&s.text);assert.ok(s.photo?data.assets[s.photo]&&s.alt:s.paper,'Step image '+j.id);}
+  for(const id of j.lessons)assert.ok(lessonIds.has(id),'Unknown lesson '+id);
+  for(const id of j.resources)assert.ok(ids.has(id),'Unknown resource '+id);
+}
+console.log('Journeys verified: 10 lessons in steps, images registered, links valid.');
