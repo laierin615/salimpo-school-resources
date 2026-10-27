@@ -11,6 +11,25 @@
   let whisperPaused=matchMedia('(prefers-reduced-motion:reduce)').matches;
   function updateWhispers(){if(!whispers)return;whispers.classList.toggle('is-paused',whisperPaused);pause.setAttribute('aria-pressed',String(whisperPaused));pause.setAttribute('aria-label',whisperPaused?'繼續跑馬燈':'暫停跑馬燈');pause.textContent=whisperPaused?'繼續':'暫停';}
   pause?.addEventListener('click',()=>{whisperPaused=!whisperPaused;if(!whisperPaused)whispers.classList.add('motion-approved');updateWhispers();});updateWhispers();
+  // 族語小語：從文史館〈短文〉每篇挑一句，每次打開都不一樣；讀不到時保留頁面原本的句子
+  if(whispers)fetch('books/historyMuseum.json').then(r=>r.ok?r.json():Promise.reject()).then(book=>{
+    const chapter=book.chapters.find(c=>c.topic==='short-stories');if(!chapter)return;
+    const clean=t=>t.replace(/\u000b/g,' ').replace(/^\s*\d+\.\s*/,'').replace(/\s+/g,' ').trim();
+    const esc=t=>t.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#x27;'}[c]));
+    const starts=(window.SCHOOL_DATA?.historyMuseum?.topics.find(t=>t.id==='short-stories')?.sections||[{paragraph:0}]).map(s=>s.paragraph);
+    const phrases=starts.map((start,i)=>{
+      const blocks=chapter.blocks.slice(start,starts[i+1]??chapter.blocks.length).filter(b=>b.text.trim()),pairs=[];
+      for(let j=0;j<blocks.length;){const ami=[],zh=[];while(j<blocks.length&&blocks[j].lang==='ami')ami.push(clean(blocks[j++].text));while(j<blocks.length&&blocks[j].lang!=='ami')zh.push(clean(blocks[j++].text));if(ami.length&&zh.length)pairs.push({ami:ami.join(' '),zh:zh.join(' ')});}
+      const short=pairs.slice(1).filter(p=>p.ami.length<=60&&p.zh.length<=28),pool=short.length?short:pairs;
+      return pool[Math.floor(Math.random()*pool.length)];
+    }).filter(Boolean);
+    if(phrases.length<3)return;
+    const track=whispers.querySelector('.whisper-track'),copies=whispers.querySelectorAll('.whisper-copy'),before=copies[0].offsetWidth;
+    const html=phrases.map(p=>`<div class="whisper-phrase"><span class="whisper-ami" lang="ami">${esc(p.ami)}</span><span class="whisper-zh" lang="zh-Hant">${esc(p.zh)}</span></div>`).join('');
+    copies.forEach(c=>c.innerHTML=html);
+    // 句子變多也維持原本的捲動速度（village.css 的 whisper-loop 是 110 秒）
+    if(before)track.style.animationDuration=(110*copies[0].offsetWidth/before).toFixed(1)+'s';
+  }).catch(()=>{});
   let selected=-1;
   const number=i=>String(i+1).padStart(2,'0');
   places.forEach((place,i)=>{

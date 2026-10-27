@@ -76,7 +76,8 @@ assert.equal(data.curriculum115.spiral.relations.length,9);
 const history=JSON.parse(fs.readFileSync(path.join(dist,'books/historyMuseum.json'),'utf8'));
 assert.equal(data.historyMuseum.topics.length,15);
 assert.equal(history.chapters.length,7);
-for(const t of data.historyMuseum.topics){if(t.hasContent){assert.ok(history.chapters[t.chapter-1]);assert.ok(ids.has(t.resourceId));}}
+for(const t of data.historyMuseum.topics){if(t.hasContent){assert.ok(history.chapters[t.chapter-1]);assert.ok(ids.has(t.resourceId));for(const s of t.sections)assert.ok(s.paragraph<history.chapters[t.chapter-1].blocks.length);}}
+assert.equal(data.historyMuseum.topics.find(t=>t.id==='short-stories').sections.length,8);
 assert.equal(Object.keys(data.books).length,20);
 assert.equal(Object.keys(data.assets).length,471);
 console.log('Museum index verified: 15 topics, 7 full articles; withdrawn plan absent.');

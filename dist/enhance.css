@@ -91,3 +91,30 @@
 .place-listen:hover{transform:translateY(-2px)}
 .place-listen[aria-pressed=true]{background:#d2453a;color:#fff;border-color:transparent}
 @media(prefers-reduced-motion:no-preference){.place-listen[aria-pressed=true]{animation:fx-bob 1.2s ease-in-out infinite}}
+
+/* 手機字級：整站放大一點，首頁的小標籤再多放大；英文小標放大會擠成三行，手機版改由「山海學習聚落」標籤代替；校名只在「山海」後換行 */
+@media(max-width:600px){
+  html{font-size:106.25%}
+  .village-brand p{display:none}
+  .village-header nav .pill{font-size:.76rem}
+  .world-caption,.world-scroll{font-size:.8rem}
+  .world-whispers,.whisper-label{font-size:.8rem}
+  .whisper-zh{font-size:.82rem}
+  .place-picker button{font-size:.8rem}
+  .village-welcome p{font-size:.9rem}
+  .place-card>p:not(.place-meta),.directory-group>p,.directory-row>[data-place-description]{font-size:.95rem}
+  .brand small{font-size:.72rem}
+  .brand .school-prefix{font-size:.66rem}
+  .brand .school-prefix,.village-brand .school-prefix{word-break:keep-all}
+}
+@media(min-width:361px) and (max-width:600px){.village-header nav{max-width:168px}.village-brand{max-width:175px}}
+
+/* 聚落站牌：平常半透明、不擋住小屋；點選（直接點小屋也算）、滑過或用鍵盤選到時才完整顯示 */
+.place-pin:not([aria-pressed=true]):not(:hover):not(:focus-visible){background:color-mix(in srgb,var(--surface) 35%,transparent);border-color:color-mix(in srgb,#fff 55%,transparent);box-shadow:none}
+.place-pin:not([aria-pressed=true]):not(:hover):not(:focus-visible) b{background:color-mix(in srgb,var(--green) 45%,transparent)}
+.place-pin[data-index="11"]:not([aria-pressed=true]):not(:hover):not(:focus-visible) b{background:color-mix(in srgb,#73c6ce 50%,transparent)}
+.place-pin[aria-pressed=true]{z-index:2}
+@media(max-width:600px){
+  .place-pin:not([aria-pressed=true]):not(:focus-visible){padding:2px;min-height:0}
+  .place-pin:not([aria-pressed=true]):not(:focus-visible) b{width:21px;height:21px;font-size:.7rem}
+}

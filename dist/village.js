@@ -100,26 +100,35 @@ function buildVillage(){
   const kiosk=building(8,0xddcca3,0x58a8a0,.95,.9,.65);box(.55,.42,.06,0,.81,.54,0x37758c,kiosk);box(.055,.2,.04,0,.8,.58,0xf8f1d9,kiosk);box(.055,.04,.04,0,.97,.58,0xf8f1d9,kiosk);
   const history=building(9,0xe8cda3,0x82785b,1.3,1.18,.94);for(const x of [-.54,.54])beam(new THREE.Vector3(x,.15,.75),new THREE.Vector3(x,1.3,.75),.035,0x806348,history);box(.82,.19,.045,0,1.18,.67,0x578875,history);for(let i=0;i<4;i++)box(.13,.31,.09,-.26+i*.15,.48,.72,[0xaf7d61,0x5b8290,0xb5a063,0x638367][i],history);
   const visitHouse=building(10,0xe6dfc5,0x419080,1.25,1.1,.93);box(.72,.18,.04,0,1.14,.63,0xc3a35f,visitHouse);box(1.4,.1,.38,0,.18,.8,0xc1ae83,visitHouse);
+  // 外島不要像圓柱那樣整齊：岩壁、沙灘、草地共用一條起伏的海岸線，岩壁往下收窄、凹凸不一
+  function coast(p,q,r){return a=>1+.14*Math.sin(2*a+p)+.08*Math.sin(3*a+q)+.05*Math.sin(5*a+r);}
+  function islet(edge,radius,height,y,color,parent,bottom=1){
+    const g=new THREE.CylinderGeometry(1,bottom,1,22,2),v=g.attributes.position;
+    for(let i=0;i<v.count;i++){const x=v.getX(i),y=v.getY(i),z=v.getZ(i);if(!x&&!z)continue;const a=Math.atan2(z,x),k=edge(a)*(bottom<1?1+(y<0?.12*Math.sin(7*a+1.3):y<.5?.06*Math.sin(5*a+.4):0):1);v.setX(i,x*k);v.setZ(i,z*k);}
+    g.computeVertexNormals();const o=mesh(g,color,parent);o.scale.set(radius,height,radius);o.position.y=y;return o;}
   // A separate island across a real water gap links to the language training site.
   const [islandX,islandZ]=positions[11];
   const outerIsland=new THREE.Group();outerIsland.position.set(islandX,0,islandZ);outerIsland.userData.placeIndex=11;scene.add(outerIsland);buildings.push(outerIsland);
-  cylinder(1.32,1.08,0,-.69,0,0xa8a082,outerIsland,14);
-  cylinder(1.47,.18,0,-.07,0,0xe9dcb2,outerIsland,14);
-  cylinder(1.19,.1,0,.06,0,0x96bd7a,outerIsland,14);
+  const langCoast=coast(0,1.6,1.6);
+  islet(langCoast,1.32,1.08,-.69,0xa8a082,outerIsland,.88);
+  islet(langCoast,1.47,.18,-.07,0xe9dcb2,outerIsland);
+  islet(a=>langCoast(a)*(1+.1*Math.sin(3*a+2.3)+.05*Math.sin(4*a+5)),1.19,.1,.06,0x96bd7a,outerIsland);
   const languageHouse=building(11,0xeaddbd,0x38928d,.94,.9,.78);
   box(.54,.18,.05,0,1.03,.57,0xe3b650,languageHouse);
   for(const x of [-.42,.42])box(.055,.9,.055,x,.65,.67,0x8b6c4b,languageHouse);
   box(1.12,.1,.32,0,.18,.75,0xc5ab7c,languageHouse);
   const littleTree=tree(islandX-.7,islandZ-.4,.62,1);littleTree.userData.placeIndex=11;buildings.push(littleTree);
-  for(let i=0;i<8;i++){const a=i/8*Math.PI*2;rock(.11,islandX+Math.cos(a)*1.39,-.17,islandZ+Math.sin(a)*1.39,0x9baca0);}
-  const islandWake=mesh(new THREE.RingGeometry(1.6,1.64,48),new THREE.MeshBasicMaterial({color:0xe5fffb,transparent:true,opacity:.46,side:THREE.DoubleSide}));islandWake.rotation.x=-Math.PI/2;islandWake.position.set(islandX,-1.24,islandZ);islandWake.castShadow=false;
+  for(const [a,size] of [[.35,.12],[1.2,.09],[1.75,.13],[2.6,.1],[3.4,.14],[4.15,.08],[4.85,.12],[5.65,.1]]){const r=1.39*langCoast(a);rock(size,islandX+Math.cos(a)*r,-.17,islandZ+Math.sin(a)*r,0x9baca0);}
+  const wakeRing=new THREE.RingGeometry(1.6,1.64,48),wakeEdge=wakeRing.attributes.position;for(let i=0;i<wakeEdge.count;i++){const k=langCoast(Math.atan2(-wakeEdge.getY(i),wakeEdge.getX(i)));wakeEdge.setXY(i,wakeEdge.getX(i)*k,wakeEdge.getY(i)*k);}
+  const islandWake=mesh(wakeRing,new THREE.MeshBasicMaterial({color:0xe5fffb,transparent:true,opacity:.46,side:THREE.DoubleSide}));islandWake.rotation.x=-Math.PI/2;islandWake.position.set(islandX,-1.24,islandZ);islandWake.castShadow=false;
 
   // 女人島：靈感來自阿美族女人島的口傳故事。女人們圍成一圈唱歌，鯨魚在外海來回游，連到 Sa'opo 歌謠採譜網站。
   const [songX,songZ]=positions[12];
   const songIsland=new THREE.Group();songIsland.position.set(songX,0,songZ);songIsland.userData.placeIndex=12;scene.add(songIsland);buildings.push(songIsland);
-  cylinder(1.36,1.08,0,-.69,0,0xa89a86,songIsland,14);
-  cylinder(1.52,.18,0,-.07,0,0xf1dec0,songIsland,14);
-  cylinder(1.2,.1,0,.06,0,0xa5c27c,songIsland,14);
+  const songCoast=coast(.8,1.2,5.2);
+  islet(songCoast,1.36,1.08,-.69,0xa89a86,songIsland,.88);
+  islet(songCoast,1.52,.18,-.07,0xf1dec0,songIsland);
+  islet(a=>songCoast(a)*(1+.1*Math.sin(3*a+2.3)+.05*Math.sin(4*a+5)),1.2,.1,.06,0xa5c27c,songIsland);
   cylinder(.64,.04,.12,.13,.1,0xe6d3a8,songIsland,18);
   const fire=new THREE.Group();fire.position.set(.12,.15,.1);songIsland.add(fire);
   for(let i=0;i<3;i++){const log=box(.3,.045,.045,0,.03,0,0x7a5638,fire);log.rotation.y=i*Math.PI/3;}
@@ -187,9 +196,9 @@ function buildVillage(){
   let night=false;function setTheme(theme){night=theme==='night';hemi.intensity=night?.7:2.3;hemi.color.set(night?0x9bb7eb:0xeafaff);sun.intensity=night?.5:3.2;sun.color.set(night?0xb0c4ed:0xfff1d2);fill.intensity=night?.25:.65;renderer.toneMappingExposure=night?.88:1.18;seaMaterial.color.set(night?0x173f59:0x73bfc0);stars.visible=night;nightMoon.visible=night;clouds.forEach(c=>c.group.visible=!night);lights.forEach(light=>light.intensity=night?2.2:0);scene.fog=new THREE.Fog(night?0x102d45:0xb5ddd9,35,110);}
   setTheme(document.documentElement.dataset.theme);window.addEventListener('salimpo:theme',event=>setTheme(event.detail));
   let selected=-1;const focus=new THREE.Vector3(0,0,0),targetFocus=new THREE.Vector3(0,0,0);
-  window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.position.set(positions[selected][0],.135,positions[selected][1]);targetFocus.set(positions[selected][0]*.1,0,positions[selected][1]*.1);}else targetFocus.set(0,0,0);});
+  window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.position.set(positions[selected][0],.135,positions[selected][1]);/* 選到小外島時鏡頭靠過去 */const pull=Math.hypot(...positions[selected])>7?.55:.1;targetFocus.set(positions[selected][0]*pull,0,positions[selected][1]*pull);}else targetFocus.set(0,0,0);});
   let yaw=.61,targetYaw=.61,zoom=1,width=1,height=1;
-  function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);const aspect=width/height;const half=width<600?12/aspect:9.65;camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
+  function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);const aspect=width/height;/* 左右兩座小外島在任何寬度都要完整入鏡 */const half=width<600?13/aspect:Math.max(9.65,13/aspect);camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
   new ResizeObserver(resize).observe(canvas);resize();
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let down=null,dragging=false;
   canvas.addEventListener('pointerdown',event=>{down={x:event.clientX,y:event.clientY,yaw:targetYaw,id:event.pointerId};dragging=false;if(event.pointerType==='mouse')canvas.setPointerCapture(event.pointerId);});
@@ -202,7 +211,7 @@ function buildVillage(){
   let visible=true;new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;}).observe(world);
   const point=new THREE.Vector3();
   function labels(){
-    const pins=[...document.querySelectorAll('.place-pin')];const mobile=width<600;const entries=positions.map(([x,z],i)=>{point.set(x,1.4,z).project(camera);return {i,x:(point.x*.5+.5)*width,y:(-point.y*.5+.5)*height+(mobile?28:0),w:mobile?(selected===i?130:30):pins[i]?.offsetWidth||130};}).sort((a,b)=>a.y-b.y);
+    const pins=[...document.querySelectorAll('.place-pin')];const mobile=width<600;const entries=positions.map(([x,z],i)=>{/* 小外島的標籤浮高一點，不要蓋住島 */point.set(x,Math.hypot(x,z)>7?3:1.4,z).project(camera);return {i,x:(point.x*.5+.5)*width,y:(-point.y*.5+.5)*height+(mobile?28:0),w:mobile?(selected===i?130:30):pins[i]?.offsetWidth||130};}).sort((a,b)=>a.y-b.y);
     const placed=[];const guard=document.querySelector('.world-whispers');const minY=guard?guard.offsetTop+guard.offsetHeight+(mobile?22:26):(mobile?230:239);
     entries.forEach(entry=>{entry.x=THREE.MathUtils.clamp(entry.x,entry.w/2+8,width-entry.w/2-8);entry.y=Math.max(minY,entry.y);for(let attempts=0;attempts<8;attempts++){if(!placed.some(other=>Math.abs(other.x-entry.x)<(other.w+entry.w)/2+3&&Math.abs(other.y-entry.y)<(mobile?32:38)))break;entry.y+=mobile?33:38;}placed.push(entry);const pin=pins[entry.i];if(pin){pin.style.left=entry.x+'px';pin.style.top=entry.y+'px';}});
   }
@@ -212,5 +221,5 @@ function buildVillage(){
     if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});boat.position.y=-.95+Math.sin(elapsed*1.4)*.055;boat.rotation.z=Math.sin(elapsed*.9)*.035;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);}
     labels();renderer.render(scene,camera);
   }
-  frame(performance.now());requestAnimationFrame(()=>requestAnimationFrame(()=>{world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;}));
+  frame(performance.now());requestAnimationFrame(()=>requestAnimationFrame(()=>{/* 超過 15 秒才載好時，從備用清單切回 3D 版面 */world.classList.remove('scene-unavailable');world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;}));
 }
