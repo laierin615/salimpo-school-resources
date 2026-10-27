@@ -106,7 +106,7 @@
       const records=data.indicators.filter(item=>!group||item.group===group);
       main.querySelector('#indicator-heading').textContent=group?data.groups[group-1]:'全部評鑑指標';
       main.querySelector('#indicator-count').textContent=`${records.length} 項指標`;
-      main.querySelector('#indicator-results').innerHTML=records.map(item=>`<article class="indicator"><div class="indicator-head"><span class="indicator-code">${esc(item.code)}</span><h3>${esc(item.title)}</h3></div><p>${esc(item.description)}</p>${item.related.length?`<div class="related-links">${item.related.map(resourceById).filter(Boolean).map(r=>`<a href="${resourceURL(r.id)}">${esc(r.title)}</a>`).join('')}</div>`:`<p>這項指標尚未連結本站的課程資料。</p>`}</article>`).join('');
+      main.querySelector('#indicator-results').innerHTML=records.map(item=>`<article class="indicator"><div class="indicator-head"><span class="indicator-code">${esc(item.code)}</span><h3>${esc(item.title)}</h3></div><p>${esc(item.description)}</p>${item.practice?`<p class="indicator-practice"><b>學校做法</b>${esc(item.practice)}</p>`:''}${item.related.length?`<div class="related-links">${item.related.map(resourceById).filter(Boolean).map(r=>`<a href="${resourceURL(r.id)}">${esc(r.title)}</a>`).join('')}</div>`:''}</article>`).join('');
       main.querySelectorAll('[data-group]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.group)===group)));
       if(sync){const url=new URL(location.href);if(group)url.searchParams.set('group',String(group));else url.searchParams.delete('group');history.replaceState(null,'',url);}
     }

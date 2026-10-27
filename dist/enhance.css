@@ -1,0 +1,89 @@
+/* 流暢與生動：圖片淡入、進場動畫、卡片回饋、徽章、山海數字、站點圖示 */
+@view-transition{navigation:auto}
+::view-transition-old(root),::view-transition-new(root){animation-duration:.28s}
+
+/* 圖片載入：先有柔和色塊與光澤，再淡入 */
+.fx img.fx-wait{opacity:0}
+.fx img{transition:opacity .45s ease}
+.card-image:has(img.fx-wait),.photo-open:has(img.fx-wait),.story-hero:has(img.fx-wait),.museum-card :has(> img.fx-wait),.about-photo:has(img.fx-wait){background:linear-gradient(100deg,var(--soft) 30%,rgba(255,255,255,.55) 50%,var(--soft) 70%) 0 0/300% 100%;animation:fx-shimmer 1.4s linear infinite}
+@keyframes fx-shimmer{to{background-position:-150% 0}}
+
+/* 卡片：滑過浮起、點下回彈 */
+.resource-card{position:relative;border-radius:22px;transition:transform .4s cubic-bezier(.34,1.56,.64,1),box-shadow .3s ease}
+.resource-card .card-image{border-radius:16px}
+.resource-card:hover{transform:translateY(-6px) rotate(-.35deg);box-shadow:0 18px 40px rgba(15,32,45,.14)}
+.resource-card:active{transform:translateY(-2px) scale(.985)}
+.resource-card:hover .card-image img{transform:scale(1.06)}
+.pill,.button,.place-go,.reading-entry,.topic-nav a,.review-nav button{transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .2s,box-shadow .2s}
+.pill:hover,.button:hover,.place-go:hover,.topic-nav a:hover{transform:translateY(-2px)}
+.pill:active,.button:active,.place-go:active,.topic-nav a:active,.review-nav button:active{transform:scale(.95)}
+.reading-entry:hover{transform:translateX(4px)}
+.place-pin{transition:background .2s,box-shadow .2s,scale .3s cubic-bezier(.34,1.56,.64,1)}
+.place-pin:hover,.place-pin[aria-pressed=true]{scale:1.08}
+
+/* 獎牌徽章 */
+.card-image,.story-hero{position:relative}
+.medal{position:absolute;top:12px;left:12px;z-index:2;display:inline-flex;align-items:center;gap:6px;padding:5px 11px 5px 5px;border-radius:999px;background:rgba(255,255,255,.94);color:#3b2a06;font-size:.78rem;font-weight:800;box-shadow:0 6px 16px rgba(15,32,45,.18);pointer-events:none}
+.medal i{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:.8rem;color:#fff;background:radial-gradient(circle at 35% 30%,#fff6c9,#f2b705 45%,#b98100);box-shadow:inset 0 -2px 0 rgba(0,0,0,.15)}
+.medal.silver i{background:radial-gradient(circle at 35% 30%,#ffffff,#b9c4cf 45%,#7b8794)}
+.medal.bronze i{background:radial-gradient(circle at 35% 30%,#ffe2c6,#d98a4e 45%,#9b5427)}
+.medal.ribbon i{background:radial-gradient(circle at 35% 30%,#d9fff0,#1fd16c 45%,#0a8743)}
+[data-theme=night] .medal{background:rgba(17,26,39,.92);color:#fbe7a9}
+
+/* 站點圖示 */
+.st-icon{width:44px;height:44px;flex:none;color:var(--ink)}
+.directory-row{position:relative;transition:background .25s,transform .35s cubic-bezier(.34,1.56,.64,1)}
+.directory-row:hover{background:var(--soft);transform:translateX(6px)}
+.directory-row .st-icon{position:absolute;right:calc(130px + 30px);top:50%;translate:0 -50%;width:38px;height:38px;opacity:.9;transition:rotate .4s cubic-bezier(.34,1.56,.64,1)}
+.directory-row:hover .st-icon{rotate:-8deg}
+.place-card .st-icon{float:right;width:56px;height:56px;margin:-4px 26px 0 8px}
+@media(max-width:900px){.directory-row .st-icon{display:none}}
+
+/* 山海數字 */
+.fx-stats{padding:56px 0 8px}
+.fx-stats ul{list-style:none;margin:22px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px}
+.fx-stats li{background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:20px 18px;display:flex;gap:12px;align-items:center;transition:transform .4s cubic-bezier(.34,1.56,.64,1)}
+.fx-stats li:hover{transform:translateY(-4px) rotate(.5deg)}
+.fx-stats b{display:block;font-family:Outfit,"Noto Sans TC",sans-serif;font-size:2rem;line-height:1;color:var(--green-text);font-variant-numeric:tabular-nums}
+.fx-stats span{font-size:.85rem;color:var(--muted)}
+.fx-stats .st-icon{width:40px;height:40px}
+
+/* 成果時間軸 */
+.fx-timeline{display:flex;gap:8px;overflow-x:auto;padding:4px 2px 14px;margin:0 0 6px;scrollbar-width:thin}
+.fx-timeline button{flex:none;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:16px;padding:9px 14px;font:inherit;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;min-width:72px;transition:transform .3s cubic-bezier(.34,1.56,.64,1),background .2s}
+.fx-timeline button small{font-weight:500;color:var(--muted);font-size:.72rem}
+.fx-timeline button:hover{transform:translateY(-3px)}
+.fx-timeline button[aria-pressed=true]{background:var(--green-text);color:#fff;border-color:transparent}
+.fx-timeline button[aria-pressed=true] small{color:rgba(255,255,255,.85)}
+
+/* 回頂端小船 */
+.fx-top{position:fixed;right:18px;bottom:18px;z-index:40;width:54px;height:54px;border-radius:50%;border:0;background:var(--surface);box-shadow:0 10px 26px rgba(15,32,45,.2);cursor:pointer;display:grid;place-items:center;opacity:0;pointer-events:none;translate:0 20px;transition:opacity .3s,translate .4s cubic-bezier(.34,1.56,.64,1)}
+.fx-top.is-on{opacity:1;pointer-events:auto;translate:0 0}
+.fx-top svg{width:34px;height:34px}
+
+/* 3D 載入前的聚落剪影 */
+.scene-poster{position:absolute;left:50%;top:52%;width:min(560px,78vw);translate:-50% -50%;z-index:1;pointer-events:none;transition:opacity .7s ease}
+.scene-ready .scene-poster,.scene-unavailable .scene-poster{opacity:0}
+
+@media(prefers-reduced-motion:no-preference){
+  .fx-reveal{opacity:0;translate:0 26px;transition:opacity .6s ease var(--fx-delay,0s),translate .7s cubic-bezier(.22,1,.36,1) var(--fx-delay,0s)}
+  .fx-reveal.is-in{opacity:1;translate:0 0}
+  .page-heading{animation:fx-rise .6s cubic-bezier(.22,1,.36,1) both}
+  .scene-poster .wave{animation:fx-wave 3.2s ease-in-out infinite alternate}
+  .scene-poster .boat{animation:fx-bob 2.4s ease-in-out infinite}
+  .scene-poster .cloud{animation:fx-drift 7s ease-in-out infinite alternate}
+  .fx-top:hover svg{animation:fx-bob 1s ease-in-out infinite}
+  .medal i{animation:fx-shine 4s ease-in-out infinite}
+}
+@keyframes fx-rise{from{opacity:0;translate:0 18px}}
+@keyframes fx-wave{to{translate:-18px 0}}
+@keyframes fx-bob{50%{translate:0 -5px;rotate:-4deg}}
+@keyframes fx-drift{to{translate:26px 0}}
+@keyframes fx-shine{0%,80%,100%{filter:none}88%{filter:brightness(1.35)}}
+@media(prefers-reduced-motion:reduce){::view-transition-old(root),::view-transition-new(root){animation:none}.resource-card:hover{transform:none}}
+
+.indicator-practice{background:var(--soft);border-radius:14px;padding:12px 14px;line-height:1.75}
+.indicator-practice b{display:inline-block;margin-right:8px;padding:1px 8px;border-radius:999px;background:var(--green-text);color:#fff;font-size:.78rem}
+.village-labels{opacity:0;transition:opacity .5s ease .15s}
+.scene-ready .village-labels{opacity:1}
+@media(max-width:600px){.scene-poster{top:37%;width:86vw}}

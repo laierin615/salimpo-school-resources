@@ -7,11 +7,11 @@ const dist=path.resolve('dist');
 const context={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(dist,'data.js'),'utf8'),context);
 const data=context.window.SCHOOL_DATA;
-assert.equal(data.resources.length,58);
-assert.equal(data.eventIds.length,22);
+assert.equal(data.resources.length,63);
+assert.equal(data.eventIds.length,25);
 assert.equal(data.indicators.length,24);
 const ids=new Set(data.resources.map(r=>r.id));
-assert.equal(ids.size,58);
+assert.equal(ids.size,63);
 for(const resource of data.resources){
   assert.ok(resource.title&&resource.summary);
   assert.ok(!('source' in resource));
@@ -35,7 +35,7 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
   const content=fs.readFileSync(path.join(dist,filename),'utf8');
   for(const pattern of ['/Users/','source_repository_credential','relative_path','private_token'])assert.ok(!content.includes(pattern),'Private field in '+filename);
 }
-for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','museum.js','visits.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
+for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','museum.js','visits.js','enhance.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
 assert.equal([...home.matchAll(/data-place="/g)].length,12);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
@@ -49,7 +49,7 @@ for(const l of data.lessons){const b=JSON.parse(fs.readFileSync(path.join(dist,'
 console.log(JSON.stringify({pages:12,lesson_themes:data.lessons.length,photos:Object.keys(data.assets).length,reading_volumes:Object.keys(data.books).length,readable_pages:pageImages,resource_records:data.resources.length,event_results:data.eventIds.length,official_indicators:24,local_links:'valid',internal_paths_in_deployment:false,script_syntax:'valid'}));
 
 for(const id of data.eventIds){const e=data.resources.find(r=>r.id===id);assert.ok(e?.event?.result&&e.section==='活動與成果');assert.ok(['展演成果','比賽成果','成果展'].includes(e.type));}
-assert.equal(data.resources.filter(r=>r.section==='活動與成果').length,22);
+assert.equal(data.resources.filter(r=>r.section==='活動與成果').length,25);
 
 assert.equal(data.curriculum115.cores.length,3);
 assert.equal(data.curriculum115.cores.flatMap(c=>c.directions).length,9);
@@ -75,11 +75,11 @@ assert.equal(data.curriculum115.spiral.relations.length,9);
 
 const history=JSON.parse(fs.readFileSync(path.join(dist,'books/historyMuseum.json'),'utf8'));
 assert.equal(data.historyMuseum.topics.length,15);
-assert.equal(history.chapters.length,5);
+assert.equal(history.chapters.length,7);
 for(const t of data.historyMuseum.topics){if(t.hasContent){assert.ok(history.chapters[t.chapter-1]);assert.ok(ids.has(t.resourceId));}}
 assert.equal(Object.keys(data.books).length,20);
-assert.equal(Object.keys(data.assets).length,466);
-console.log('Museum index verified: 15 topics, 5 full articles; withdrawn plan absent.');
+assert.equal(Object.keys(data.assets).length,471);
+console.log('Museum index verified: 15 topics, 7 full articles; withdrawn plan absent.');
 
 const visit=data.visit115;
 assert.equal(visit.date,'2026-10-30');

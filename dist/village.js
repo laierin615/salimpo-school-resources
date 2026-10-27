@@ -145,8 +145,8 @@ function buildVillage(){
   const point=new THREE.Vector3();
   function labels(){
     const pins=[...document.querySelectorAll('.place-pin')];const mobile=width<600;const entries=positions.map(([x,z],i)=>{point.set(x,1.4,z).project(camera);return {i,x:(point.x*.5+.5)*width,y:(-point.y*.5+.5)*height+(mobile?28:0),w:mobile?(selected===i?130:30):pins[i]?.offsetWidth||130};}).sort((a,b)=>a.y-b.y);
-    const placed=[];
-    entries.forEach(entry=>{entry.x=THREE.MathUtils.clamp(entry.x,entry.w/2+8,width-entry.w/2-8);entry.y=Math.max(mobile?230:239,entry.y);for(let attempts=0;attempts<8;attempts++){if(!placed.some(other=>Math.abs(other.x-entry.x)<(other.w+entry.w)/2+3&&Math.abs(other.y-entry.y)<(mobile?32:38)))break;entry.y+=mobile?33:38;}placed.push(entry);const pin=pins[entry.i];if(pin){pin.style.left=entry.x+'px';pin.style.top=entry.y+'px';}});
+    const placed=[];const guard=document.querySelector('.world-whispers');const minY=guard?guard.offsetTop+guard.offsetHeight+(mobile?22:26):(mobile?230:239);
+    entries.forEach(entry=>{entry.x=THREE.MathUtils.clamp(entry.x,entry.w/2+8,width-entry.w/2-8);entry.y=Math.max(minY,entry.y);for(let attempts=0;attempts<8;attempts++){if(!placed.some(other=>Math.abs(other.x-entry.x)<(other.w+entry.w)/2+3&&Math.abs(other.y-entry.y)<(mobile?32:38)))break;entry.y+=mobile?33:38;}placed.push(entry);const pin=pins[entry.i];if(pin){pin.style.left=entry.x+'px';pin.style.top=entry.y+'px';}});
   }
   let start=performance.now(),last=0;
   function frame(now){requestAnimationFrame(frame);if(document.hidden||!visible||now-last<1000/30)return;last=now;const elapsed=(now-start)/1000;
@@ -154,5 +154,5 @@ function buildVillage(){
     if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});boat.position.y=-.95+Math.sin(elapsed*1.4)*.055;boat.rotation.z=Math.sin(elapsed*.9)*.035;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});}
     labels();renderer.render(scene,camera);
   }
-  frame(performance.now());world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;
+  frame(performance.now());requestAnimationFrame(()=>requestAnimationFrame(()=>{world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;}));
 }
