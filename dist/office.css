@@ -1,0 +1,65 @@
+/* 村辦公室：密碼門、打卡與工作檔案 */
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.office-page{padding-bottom:56px}
+.office-lock{max-width:520px;margin:12px auto 40px;padding:34px 28px 30px;border:1px solid var(--line);border-radius:22px;background:var(--surface);text-align:center;box-shadow:var(--shadow,0 14px 44px rgba(20,42,59,.08))}
+.office-house{width:96px;height:auto;color:var(--green-text);margin-bottom:8px}
+.office-lock h2{margin:0 0 8px;font-size:1.3rem}
+.office-lock>p{margin:0 0 18px;color:var(--muted)}
+.office-lock>p a{color:var(--green-text)}
+#office-form{display:flex;gap:10px}
+#office-form input{flex:1;min-width:0;min-height:46px;padding:10px 14px;border:1px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);font:inherit;font-size:1rem}
+#office-form input:focus{outline:2px solid var(--green);outline-offset:1px}
+#office-form .button{border-radius:12px;background:var(--green);border-color:var(--green);color:#06210f;font-weight:700;min-width:84px}
+#office-form .button[disabled]{opacity:.65;cursor:progress}
+.office-error{margin:14px 0 0;color:#b42318;font-weight:600}
+[data-theme=night] .office-error{color:#ff9b8f}
+
+.office-room{display:grid;gap:22px}
+.office-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.office-bar p{margin:0;color:var(--muted)}
+.office-bar button{min-height:40px;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;cursor:pointer}
+.office-card{padding:22px;border:1px solid var(--line);border-radius:20px;background:var(--surface)}
+.office-card h2{margin:0 0 4px;font-size:1.15rem}
+.office-card>p{margin:0 0 14px;color:var(--muted);font-size:.92rem}
+
+/* 打卡 */
+.office-punch{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:18px;align-items:center;position:relative;overflow:hidden}
+.punch-clock{font-variant-numeric:tabular-nums;font-size:clamp(2.4rem,7vw,3.6rem);font-weight:800;letter-spacing:.02em;line-height:1;color:var(--ink)}
+.punch-date{margin-top:6px;color:var(--muted)}
+.punch-today{margin-top:10px;font-size:.92rem;color:var(--muted)}
+.punch-today b{color:var(--green-text)}
+.punch-buttons{display:flex;gap:10px}
+.punch-buttons button{min-width:112px;min-height:56px;border-radius:16px;border:0;font:inherit;font-weight:800;font-size:1.05rem;cursor:pointer;transition:transform .15s}
+.punch-buttons button:active{transform:scale(.96)}
+.punch-in{background:var(--green);color:#06210f}
+.punch-out{background:#11283b;color:#fff}
+[data-theme=night] .punch-out{background:#2a3d52}
+.punch-stamp{position:absolute;left:clamp(220px,30%,340px);top:18px;padding:10px 16px;border:4px solid #c2410c;border-radius:14px;color:#c2410c;background:var(--surface);font-weight:900;text-align:center;transform:rotate(-8deg);pointer-events:none;opacity:0}
+.punch-stamp b{display:block;font-size:1.35rem;letter-spacing:.06em}
+.punch-stamp span{display:block;font-size:.85rem;font-weight:700}
+.punch-stamp.is-on{animation:stamp 2.6s ease forwards}
+@keyframes stamp{0%{opacity:0;transform:rotate(-8deg) scale(1.9)}12%{opacity:1;transform:rotate(-8deg) scale(.92)}20%{transform:rotate(-8deg) scale(1)}80%{opacity:1}100%{opacity:0;transform:rotate(-8deg) scale(1)}}
+.punch-message{grid-column:1/-1;margin:0;min-height:1.5em;font-weight:600}
+.punch-message .ami{color:var(--green-text)}
+.punch-note{grid-column:1/-1;margin:0;font-size:.82rem;color:var(--muted)}
+
+/* 工作檔案 */
+.office-links{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px}
+.office-links a,.office-grid a{display:flex;align-items:center;gap:10px;padding:12px 14px;border-radius:14px;background:var(--soft);color:var(--ink);text-decoration:none;font-weight:600}
+.office-links a.is-main{background:var(--green);color:#06210f}
+.office-links a:hover,.office-links a:focus-visible,.office-grid a:hover,.office-grid a:focus-visible{outline:2px solid var(--green);outline-offset:1px}
+.office-kind{flex:none;font-size:.72rem;font-weight:800;padding:2px 8px;border-radius:999px;background:var(--surface);color:var(--muted)}
+.office-links a span:nth-child(2){flex:1;min-width:0}
+.office-go{flex:none;opacity:.6}
+.office-grid{margin-top:14px;display:grid;gap:8px}
+.office-grid-row{display:grid;grid-template-columns:5.5em repeat(3,minmax(0,1fr));gap:8px;align-items:center}
+.office-grid-row>b{font-size:.92rem}
+.office-grid a{justify-content:center;padding:10px 8px;font-weight:600}
+@media(max-width:620px){
+  .office-punch{grid-template-columns:1fr}
+  .punch-buttons button{flex:1}
+  .punch-stamp{left:auto;right:12px;top:10px}
+  .office-grid-row{grid-template-columns:4.6em repeat(3,minmax(0,1fr))}
+  .office-grid a{font-size:.88rem;padding:10px 4px}
+}
+@media(prefers-reduced-motion:reduce){.punch-stamp.is-on{animation:none;opacity:1}}

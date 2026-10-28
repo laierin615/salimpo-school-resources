@@ -3,7 +3,7 @@ import * as THREE from './vendor/three.module.js';
 const canvas=document.getElementById('village-canvas');
 const world=document.getElementById('village-world');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3]];
+const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3],[3.8,2.75]];
 let renderer;
 try{
   renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
@@ -70,7 +70,8 @@ function buildVillage(){
   const paverGeometry=new THREE.CylinderGeometry(.135,.16,.055,6);
   const pavers=[];
   function path(a,b,count=14){for(let i=0;i<count;i++){const t=i/(count-1);pavers.push(new THREE.Vector3(a[0]*(1-t)+b[0]*t,.13,a[1]*(1-t)+b[1]*t));}}
-  for(let i=0;i<positions.length-2;i++)path(positions[i],[.4,1.5],15);
+  // 0–10 在本島，11、12 是外島；13 村辦公室的步道在蓋房子時另外鋪，不改動這裡的亂數順序
+  for(let i=0;i<11;i++)path(positions[i],[.4,1.5],15);
   for(let i=0;i<65;i++){const a=i/65*Math.PI*2;pavers.push(new THREE.Vector3(Math.cos(a)*5.85,.13,Math.sin(a)*5.85));}
   const stone=new THREE.InstancedMesh(paverGeometry,material(0xe1dfc7),pavers.length);const transform=new THREE.Object3D();pavers.forEach((p,i)=>{transform.position.copy(p);transform.rotation.y=random()*Math.PI;transform.scale.set(1+random()*.2,1,1);transform.updateMatrix();stone.setMatrixAt(i,transform.matrix);});stone.receiveShadow=true;scene.add(stone);
 
@@ -82,7 +83,7 @@ function buildVillage(){
     upper.position.set(x,h*.84+.05,z);upper.rotation.y=i*.43;
   });
   function tree(x,z,size=1,type=0){const group=new THREE.Group();group.position.set(x,.09,z);group.scale.setScalar(size);scene.add(group);cylinder(.07,.65,0,.35,0,0x876849,group,7);if(type===0){for(let i=0;i<2;i++){const crown=mesh(geometry.cone,i?0x5d9b5c:0x72b371,group);crown.scale.set(.46-i*.11,.73,.46-i*.11);crown.position.y=.72+i*.33;}}else{const crown=mesh(geometry.leaf,0x7db971,group);crown.scale.set(.52,.65,.52);crown.position.y=1.03;}return group;}
-  for(let i=0;i<55;i++){const a=random()*Math.PI*2;const r=4.4+random()*2.85;const x=Math.cos(a)*r,z=Math.sin(a)*r;if(positions.some(([px,pz])=>Math.hypot(x-px,z-pz)<1.35)||Math.abs(x)<2.8&&z<-3.6||Math.hypot(x+3.1,z-5.45)<1.45||Math.hypot(x+.35,z-6.35)<.9)continue;tree(x,z,.75+random()*.5,i%3===0?1:0);}
+  for(let i=0;i<55;i++){const a=random()*Math.PI*2;const r=4.4+random()*2.85;const x=Math.cos(a)*r,z=Math.sin(a)*r;if(positions.slice(0,13).some(([px,pz])=>Math.hypot(x-px,z-pz)<1.35)||Math.abs(x)<2.8&&z<-3.6||Math.hypot(x+3.1,z-5.45)<1.45||Math.hypot(x+.35,z-6.35)<.9)continue;const t=tree(x,z,.75+random()*.5,i%3===0?1:0);if(Math.hypot(x-positions[13][0],z-positions[13][1])<1.35)t.visible=false;}
   for(let i=0;i<12;i++)tree(-6.2+(i%3)*.4,-4.5+Math.floor(i/3)*.65,.65+random()*.3,1);
   const grassGeo=new THREE.ConeGeometry(.035,.14,3);const grass=new THREE.InstancedMesh(grassGeo,material(0x548a49),250);for(let i=0;i<250;i++){const a=random()*Math.PI*2,r=Math.sqrt(random())*7.2;transform.position.set(Math.cos(a)*r,.15,Math.sin(a)*r);transform.rotation.set(0,random()*6.28,random()*.2);transform.scale.setScalar(.75+random()*.7);transform.updateMatrix();grass.setMatrixAt(i,transform.matrix);}scene.add(grass);
 
@@ -100,6 +101,16 @@ function buildVillage(){
   const kiosk=building(8,0xddcca3,0x58a8a0,.95,.9,.65);box(.55,.42,.06,0,.81,.54,0x37758c,kiosk);box(.055,.2,.04,0,.8,.58,0xf8f1d9,kiosk);box(.055,.04,.04,0,.97,.58,0xf8f1d9,kiosk);
   const history=building(9,0xe8cda3,0x82785b,1.3,1.18,.94);for(const x of [-.54,.54])beam(new THREE.Vector3(x,.15,.75),new THREE.Vector3(x,1.3,.75),.035,0x806348,history);box(.82,.19,.045,0,1.18,.67,0x578875,history);for(let i=0;i<4;i++)box(.13,.31,.09,-.26+i*.15,.48,.72,[0xaf7d61,0x5b8290,0xb5a063,0x638367][i],history);
   const visitHouse=building(10,0xe6dfc5,0x419080,1.25,1.1,.93);box(.72,.18,.04,0,1.14,.63,0xc3a35f,visitHouse);box(1.4,.1,.38,0,.18,.8,0xc1ae83,visitHouse);
+  // 第 14 站村辦公室：山牆上有小時鐘，門口招牌與雨遮，右邊公布欄、左邊紅色信箱
+  const office=building(13,0xf3e7cf,0xb4553d,1.15,1,.88);box(.56,.14,.04,0,.95,.53,0x2f7a5e,office);box(.7,.05,.3,0,.8,.64,0xc9b48a,office);
+  for(const [r,z,c] of [[.15,.64,0x6c5640],[.12,.66,0xf8f1d9]]){const face=cylinder(r,.05,0,1.27,z,c,office,24);face.rotation.x=Math.PI/2;}
+  box(.018,.085,.01,0,1.3,.69,0x34393d,office);box(.065,.018,.01,.028,1.27,.69,0x34393d,office);
+  for(const x of [.86,1.3])beam(new THREE.Vector3(x,0,.62),new THREE.Vector3(x,.86,.62),.03,0x7a5c41,office);box(.56,.36,.05,1.08,.66,.62,0xc89f6a,office);
+  for(const [x,y,c] of [[.94,.7,0xf8f1d9],[1.1,.62,0xf2d27a],[1.24,.72,0xa9d1e6]])box(.12,.15,.012,x,y,.65,c,office);
+  cylinder(.03,.5,-.86,.25,.62,0x7a5c41,office,6);box(.2,.15,.15,-.86,.56,.62,0xd6553f,office);
+  const officeStones=new THREE.InstancedMesh(paverGeometry,material(0xe1dfc7),12);
+  for(let i=0;i<12;i++){const t=i/11;transform.position.set(positions[13][0]*(1-t)+.4*t,.13,positions[13][1]*(1-t)+1.5*t);transform.rotation.y=i*1.7;transform.scale.set(1.1,1,1);transform.updateMatrix();officeStones.setMatrixAt(i,transform.matrix);}
+  officeStones.receiveShadow=true;scene.add(officeStones);
   // 外島不要像圓柱那樣整齊：岩壁、沙灘、草地共用一條起伏的海岸線，岩壁往下收窄、凹凸不一
   function coast(p,q,r){return a=>1+.14*Math.sin(2*a+p)+.08*Math.sin(3*a+q)+.05*Math.sin(5*a+r);}
   function islet(edge,radius,height,y,color,parent,bottom=1){

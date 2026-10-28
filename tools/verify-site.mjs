@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import vm from 'node:vm';
+import crypto from 'node:crypto';
 import assert from 'node:assert/strict';
 
 const dist=path.resolve('dist');
@@ -21,7 +22,7 @@ for(const resource of data.resources){
   for(const id of resource.related)assert.ok(ids.has(id),'Unknown related resource '+id);
 }
 for(const indicator of data.indicators){for(const id of indicator.related)assert.ok(ids.has(id));}
-for(const name of ['index','about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','journeys','museum','visits']){
+for(const name of ['index','about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','journeys','museum','visits','office']){
   const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');
   assert.ok(html.includes('lang="zh-Hant"'));
   assert.ok(html.includes('rel="icon"'));
@@ -36,9 +37,9 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
   const content=fs.readFileSync(path.join(dist,filename),'utf8');
   for(const pattern of ['/Users/','source_repository_credential','relative_path','private_token'])assert.ok(!content.includes(pattern),'Private field in '+filename);
 }
-for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
+for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js','office.js','office-data.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
-assert.equal([...home.matchAll(/data-place="/g)].length,13);
+assert.equal([...home.matchAll(/data-place="/g)].length,14);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
 for(const a of Object.values(data.assets)){assert.ok(fs.existsSync(path.join(dist,a.src)));assert.ok(fs.existsSync(path.join(dist,a.thumb)));}
 let pageImages=0;
@@ -47,7 +48,7 @@ assert.equal(pageImages,1194);
 assert.equal(data.lessons.length,31);
 assert.equal(new Set(data.lessons.map(l=>l.id)).size,31);
 for(const l of data.lessons){const b=JSON.parse(fs.readFileSync(path.join(dist,'books',l.book+'.json'),'utf8'));assert.ok(l.start>=1&&l.end<=b.count&&l.start<=l.end);assert.ok(l.band&&l.topic&&l.title);if(l.cover)assert.ok(data.assets[l.cover]);}
-console.log(JSON.stringify({pages:13,lesson_themes:data.lessons.length,photos:Object.keys(data.assets).length,reading_volumes:Object.keys(data.books).length,readable_pages:pageImages,resource_records:data.resources.length,event_results:data.eventIds.length,official_indicators:24,local_links:'valid',internal_paths_in_deployment:false,script_syntax:'valid'}));
+console.log(JSON.stringify({pages:14,lesson_themes:data.lessons.length,photos:Object.keys(data.assets).length,reading_volumes:Object.keys(data.books).length,readable_pages:pageImages,resource_records:data.resources.length,event_results:data.eventIds.length,official_indicators:24,local_links:'valid',internal_paths_in_deployment:false,script_syntax:'valid'}));
 
 for(const id of data.eventIds){const e=data.resources.find(r=>r.id===id);assert.ok(e?.event?.result&&e.section==='活動與成果');assert.ok(['展演成果','比賽成果','成果展'].includes(e.type));}
 assert.equal(data.resources.filter(r=>r.section==='活動與成果').length,25);
@@ -146,9 +147,9 @@ for(const [id,code] of Object.entries(lessonDirections)){assert.ok(lessonIds.has
 for(const name of ['visits','reviews']){const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');assert.ok(html.includes('room.js?v=')&&html.includes('room.css?v='),'Room assets missing on '+name);}
 console.log(`Room verified: ${visitItems.length} visit items and ${data.indicators.length} indicators, ${evidenceCount} evidence links resolve; 31 lessons mapped to directions.`);
 
-// 主選單用聚落站名；聚落 13 站都有族語詞，若本機有 tatokem 詞庫，就核對全部是已驗證的詞
+// 主選單用聚落站名；聚落 14 站中前 13 站有族語詞（村辦公室的詞待族語老師建議），若本機有 tatokem 詞庫，就核對全部是已驗證的詞
 const navLine='<a href="about.html">學校與部落</a><a href="learning.html">山海探索站</a><a href="lessons.html">教案書屋</a><a href="stories.html">成果廣場</a><a href="museum.html">文史資料館</a><a href="resources.html">資料服務站</a><a href="visits.html">訪視評鑑會客室</a>';
-const subpages=['about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','journeys','museum','visits'];
+const subpages=['about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','journeys','museum','visits','office'];
 for(const name of subpages)assert.ok(fs.readFileSync(path.join(dist,name+'.html'),'utf8').includes(navLine),'Main nav on '+name);
 for(const name of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,name+'.html'),'utf8').includes('lang="ami">Aray!</i>'),'Footer word on '+name);
 const amiWords=[...home.matchAll(/data-ami="([^"]+)" data-ami-zh="([^"]+)"/g)].map(m=>m[1].replace(/&#x27;/g,"'"));
@@ -173,3 +174,20 @@ for(const [group,valid] of [['lessons',id=>mediaLessonIds.has(id)],['topics',t=>
 }
 assert.ok(fs.readFileSync(path.join(dist,'lessons.html'),'utf8').includes('media-links.js?v='),'media-links.js missing on lessons page');
 console.log(`Media links verified: ${mediaCount} Padlet boards and videos on ${Object.keys(media.lessons).length} lessons and ${Object.keys(media.topics).length} topics.`);
+
+// 村辦公室：網站上只能有加密後的連結；原文與密碼留在本機 .runtime，不會進到 dist
+const officeHtml=fs.readFileSync(path.join(dist,'office.html'),'utf8'),officeData=fs.readFileSync(path.join(dist,'office-data.js'),'utf8');
+assert.ok(officeHtml.includes('name="robots" content="noindex'),'Office page must not be indexed');
+const officeVault=JSON.parse(officeData.slice(officeData.indexOf('{'),officeData.lastIndexOf('}')+1));
+assert.ok(officeVault.v===1&&officeVault.iterations>=600000&&officeVault.salt&&officeVault.iv&&officeVault.data,'Office vault fields');
+// 三份文件的代號只記 SHA-256（倉庫是公開的）；站內任何一段 44 字元的代號都不能對上
+const officeDocHashes=new Set(['7c50c068d47332d5584cb09201d322a537d62724e4315cae1e607d9300b1f3f0','52db006f95d32b82a53a57b999bc54b95e5fcac3bbc03cef9129f7fb8190bb4f','f651c8c2a14de64d7fe22cd90b2cd1c910a80509c2c5a639c19fae8dc6613b50']);
+const sha256=text=>crypto.createHash('sha256').update(text).digest('hex');
+for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js|css|json)$/.test(f))){
+  const text=fs.readFileSync(path.join(dist,file),'utf8');
+  for(const secret of ['office-password.txt','office-links.json"'])assert.ok(!text.includes(secret),`Office secret ${secret} leaked into ${file}`);
+  for(const [token] of text.matchAll(/[\w-]{44,}/g))for(let i=0;i+44<=token.length;i++)assert.ok(!officeDocHashes.has(sha256(token.slice(i,i+44))),`Office document address leaked into ${file}`);
+}
+for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('href="office.html">村辦公室</a>'),'Office entrance missing on '+page);
+assert.ok(home.includes('data-place="office"')&&home.includes('14 個地點'),'Office station missing on the home village');
+console.log('Office verified: links encrypted, no document addresses in the site, entrance on every page and a 14th village station.');
