@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import vm from 'node:vm';
 import assert from 'node:assert/strict';
 
@@ -35,7 +36,7 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
   const content=fs.readFileSync(path.join(dist,filename),'utf8');
   for(const pattern of ['/Users/','source_repository_credential','relative_path','private_token'])assert.ok(!content.includes(pattern),'Private field in '+filename);
 }
-for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
+for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
 assert.equal([...home.matchAll(/data-place="/g)].length,13);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
@@ -116,3 +117,49 @@ for(const j of data.journeys){
   for(const id of j.resources)assert.ok(ids.has(id),'Unknown resource '+id);
 }
 console.log('Journeys verified: 10 lessons in steps, images registered, links valid.');
+
+// 訪視評鑑會客室：訪視 12 項與評鑑 24 項的佐證，依計畫、課程、成果、部落四類，每一條都要找得到
+const journeyIds=new Set(data.journeys.map(j=>j.id)),evidenceKeys=['plan','course','results','community'];
+const bookCache={},book=id=>bookCache[id]??=JSON.parse(fs.readFileSync(path.join(dist,'books',id+'.json'),'utf8'));
+function checkRef(ref,owner){
+  const kind=ref[0],rest=ref.slice(2);
+  if(kind==='R')return assert.ok(ids.has(rest),`Unknown resource ${rest} in ${owner}`);
+  if(kind==='J')return assert.ok(journeyIds.has(rest),`Unknown journey ${rest} in ${owner}`);
+  const [target,label]=rest.split('|');assert.ok(label,`Missing label ${ref} in ${owner}`);
+  if(kind==='P')return assert.ok(fs.existsSync(path.join(dist,target.split(/[?#]/)[0])),`Missing page ${target} in ${owner}`);
+  if(kind==='U')return assert.ok(target.startsWith('https://'),`External link ${target} in ${owner}`);
+  assert.equal(kind,'B',`Unknown reference ${ref} in ${owner}`);
+  const [id,chapter]=target.split(':');assert.ok(data.books[id],`Unknown book ${id} in ${owner}`);
+  if(chapter){const b=book(id);assert.ok(b.format==='pages'?+chapter<=b.count:b.chapters[+chapter-1],`Missing chapter ${target} in ${owner}`);}
+}
+const visitItems=visit.groups.flatMap(g=>g.items);let evidenceCount=0;
+for(const owner of [...visitItems,...data.indicators]){
+  const ev=owner.evidence;assert.ok(ev,'No evidence for '+owner.code);
+  for(const key of Object.keys(ev))assert.ok([...evidenceKeys,'extra'].includes(key),`Unknown evidence group ${key}`);
+  for(const key of evidenceKeys)for(const ref of ev[key]||[]){checkRef(ref,owner.code);evidenceCount++;}
+  if(ev.extra)assert.ok(['domains','integrations'].includes(ev.extra));
+}
+for(const item of visitItems)assert.ok(evidenceKeys.some(k=>item.evidence[k]?.length),'Visit item without evidence '+item.code);
+const directionCodes=new Set(data.curriculum115.cores.flatMap(c=>c.directions.map(d=>d.code))),lessonDirections=data.curriculum115.lessonDirections;
+assert.equal(Object.keys(lessonDirections).length,31);
+for(const [id,code] of Object.entries(lessonDirections)){assert.ok(lessonIds.has(id));assert.ok(directionCodes.has(code));}
+for(const name of ['visits','reviews']){const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');assert.ok(html.includes('room.js?v=')&&html.includes('room.css?v='),'Room assets missing on '+name);}
+console.log(`Room verified: ${visitItems.length} visit items and ${data.indicators.length} indicators, ${evidenceCount} evidence links resolve; 31 lessons mapped to directions.`);
+
+// 主選單用聚落站名；聚落 13 站都有族語詞，若本機有 tatokem 詞庫，就核對全部是已驗證的詞
+const navLine='<a href="about.html">學校與部落</a><a href="learning.html">山海探索站</a><a href="lessons.html">教案書屋</a><a href="stories.html">成果廣場</a><a href="museum.html">文史資料館</a><a href="resources.html">資料服務站</a><a href="visits.html">訪視評鑑會客室</a>';
+const subpages=['about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','journeys','museum','visits'];
+for(const name of subpages)assert.ok(fs.readFileSync(path.join(dist,name+'.html'),'utf8').includes(navLine),'Main nav on '+name);
+for(const name of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,name+'.html'),'utf8').includes('lang="ami">Aray!</i>'),'Footer word on '+name);
+const amiWords=[...home.matchAll(/data-ami="([^"]+)" data-ami-zh="([^"]+)"/g)].map(m=>m[1].replace(/&#x27;/g,"'"));
+assert.equal(amiWords.length,13);
+for(const control of ['data-zoom="in"','data-zoom="out"','data-zoom="reset"','id="village-hint"','id="place-ami"',"lang=\"ami\">Nga'ay ho!</i>"])assert.ok(home.includes(control),'Home missing '+control);
+const appSource=fs.readFileSync(path.join(dist,'app.js'),'utf8'),stationWords=Function('return '+appSource.match(/const stationWords = (\{.*?\});/)[1])();
+for(const [word] of Object.values(stationWords))assert.ok(amiWords.includes(word),'Station word not on the home stations: '+word);
+const lexiconFile=path.join(os.homedir(),'.claude/mcp_servers/tatokem/lexicon/verified.json');
+if(fs.existsSync(lexiconFile)){
+  const verified=new Set(Object.values(JSON.parse(fs.readFileSync(lexiconFile,'utf8')).categories).flatMap(c=>Object.keys(c)).map(w=>w.toLowerCase()));
+  for(const word of [...amiWords,'Aray',"Nga'ay ho"])assert.ok(verified.has(word.replace(/!$/,'').toLowerCase()),'Unverified Amis word '+word);
+  console.log('Amis words verified against the tatokem lexicon: 13 stations, greeting and footer.');
+}
+

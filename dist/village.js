@@ -195,18 +195,50 @@ function buildVillage(){
 
   let night=false;function setTheme(theme){night=theme==='night';hemi.intensity=night?.7:2.3;hemi.color.set(night?0x9bb7eb:0xeafaff);sun.intensity=night?.5:3.2;sun.color.set(night?0xb0c4ed:0xfff1d2);fill.intensity=night?.25:.65;renderer.toneMappingExposure=night?.88:1.18;seaMaterial.color.set(night?0x173f59:0x73bfc0);stars.visible=night;nightMoon.visible=night;clouds.forEach(c=>c.group.visible=!night);lights.forEach(light=>light.intensity=night?2.2:0);scene.fog=new THREE.Fog(night?0x102d45:0xb5ddd9,35,110);}
   setTheme(document.documentElement.dataset.theme);window.addEventListener('salimpo:theme',event=>setTheme(event.detail));
-  let selected=-1;const focus=new THREE.Vector3(0,0,0),targetFocus=new THREE.Vector3(0,0,0);
-  window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.position.set(positions[selected][0],.135,positions[selected][1]);/* 選到小外島時鏡頭靠過去 */const pull=Math.hypot(...positions[selected])>7?.55:.1;targetFocus.set(positions[selected][0]*pull,0,positions[selected][1]*pull);}else targetFocus.set(0,0,0);});
-  let yaw=.61,targetYaw=.61,zoom=1,width=1,height=1;
-  function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);const aspect=width/height;/* 左右兩座小外島在任何寬度都要完整入鏡 */const half=width<600?13/aspect:Math.max(9.65,13/aspect);camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
+  let selected=-1;const focus=new THREE.Vector3(0,0,0),targetFocus=new THREE.Vector3(0,0,0),pan=new THREE.Vector3(),targetPan=new THREE.Vector3();
+  const VIEW={yaw:.61,pitch:Math.atan2(17,24)},RADIUS=Math.hypot(17,24),ZOOM=[.8,2.6],PITCH=[.32,1.25];
+  let yaw=VIEW.yaw,targetYaw=VIEW.yaw,pitch=VIEW.pitch,targetPitch=VIEW.pitch,zoom=1,targetZoom=1,width=1,height=1;
+  // 選到地點時鏡頭靠過去；放得越大，越把那一站擺到畫面中間
+  function aimFocus(){if(selected<0){targetFocus.set(0,0,0);return;}const [x,z]=positions[selected],base=Math.hypot(x,z)>7?.55:.1,pull=base+(1-base)*THREE.MathUtils.clamp((targetZoom-1)/.8,0,1);targetFocus.set(x*pull,0,z*pull);}
+  window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.position.set(positions[selected][0],.135,positions[selected][1]);targetPan.set(0,0,0);}aimFocus();});
+  function project(){const aspect=width/height;/* 左右兩座小外島在任何寬度都要完整入鏡 */const half=width<600?13/aspect:Math.max(9.65,13/aspect);camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
+  function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);project();}
   new ResizeObserver(resize).observe(canvas);resize();
-  const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let down=null,dragging=false;
-  canvas.addEventListener('pointerdown',event=>{down={x:event.clientX,y:event.clientY,yaw:targetYaw,id:event.pointerId};dragging=false;if(event.pointerType==='mouse')canvas.setPointerCapture(event.pointerId);});
-  canvas.addEventListener('pointermove',event=>{if(!down)return;const dx=event.clientX-down.x,dy=event.clientY-down.y;if(Math.abs(dx)>6&&Math.abs(dx)>Math.abs(dy)){dragging=true;targetYaw=down.yaw-dx*.006;canvas.classList.add('is-dragging');}});
-  canvas.addEventListener('pointerup',event=>{if(down&&!dragging){const rect=canvas.getBoundingClientRect();pointer.set((event.clientX-rect.left)/rect.width*2-1,-(event.clientY-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);for(const hit of raycaster.intersectObjects(buildings,true)){let item=hit.object;while(item&&item.userData.placeIndex===undefined)item=item.parent;if(item&&item.userData.placeIndex!==undefined){window.SALIMPO_VILLAGE?.select(item.userData.placeIndex);break;}}}down=null;dragging=false;canvas.classList.remove('is-dragging');});
-  function resetPointer(){down=null;dragging=false;canvas.classList.remove('is-dragging');}
+  // 號碼平常收起來：滑過、拖曳、點選或縮放聚落時才浮現，停下來一會兒再淡出
+  const labelRoot=document.getElementById('village-labels'),hint=document.getElementById('village-hint'),zoomIn=document.querySelector('[data-zoom=in]'),zoomOut=document.querySelector('[data-zoom=out]');
+  let revealTimer=0,hintTimer=0,hovered=-1,hoverAt=null;const hintAt={};
+  function reveal(){labelRoot.classList.add('is-revealed');clearTimeout(revealTimer);revealTimer=setTimeout(()=>labelRoot.classList.remove('is-revealed'),2200);}
+  labelRoot.addEventListener('pointermove',reveal);labelRoot.addEventListener('focusin',reveal);
+  function showHint(key,text,once){const now=performance.now();if(!hint||(key in hintAt&&(once||now-hintAt[key]<8000)))return;hintAt[key]=now;hint.textContent=text;hint.classList.add('is-on');clearTimeout(hintTimer);hintTimer=setTimeout(()=>hint.classList.remove('is-on'),3000);}
+  function setHover(index){if(index===hovered)return;hovered=index;document.querySelectorAll('.place-pin').forEach((pin,i)=>pin.classList.toggle('is-hover',i===index));canvas.classList.toggle('is-pointing',index>=0);}
+  function zoomTo(value){targetZoom=THREE.MathUtils.clamp(value,...ZOOM);aimFocus();reveal();if(zoomIn)zoomIn.disabled=targetZoom>=ZOOM[1]-.001;if(zoomOut)zoomOut.disabled=targetZoom<=ZOOM[0]+.001;}
+  // 拖著地面平移：手指下的那一點跟著手指走；放大後才能走得比較遠
+  function panFrom(start,dx,dy){const unit=(camera.right-camera.left)/width,limit=2.5+7.5*THREE.MathUtils.clamp((targetZoom-1)/1.6,0,1);targetPan.copy(start).addScaledVector(new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw)),-dx*unit).addScaledVector(new THREE.Vector3(Math.sin(yaw),0,Math.cos(yaw)),-dy*unit/Math.sin(pitch));if(targetPan.length()>limit)targetPan.setLength(limit);}
+  const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
+  function placeAt(x,y){const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);for(const hit of raycaster.intersectObjects(buildings,true)){let item=hit.object;while(item&&item.userData.placeIndex===undefined)item=item.parent;if(item)return item.userData.placeIndex;}return -1;}
+  function pick(x,y){const index=placeAt(x,y);if(index>=0)window.SALIMPO_VILLAGE?.select(index);reveal();}
+  const dragging=on=>canvas.classList.toggle('is-dragging',on);
+  // 滑鼠：左鍵拖曳轉動與俯仰，右鍵或 Shift 拖曳平移，Ctrl／⌘＋滾輪（含觸控板雙指）縮放
+  let down=null;
+  canvas.addEventListener('pointerdown',event=>{if(event.pointerType==='touch')return;down={x:event.clientX,y:event.clientY,yaw:targetYaw,pitch:targetPitch,pan:targetPan.clone(),mode:event.button===2||event.shiftKey?'pan':'turn',moved:false};canvas.setPointerCapture(event.pointerId);reveal();});
+  canvas.addEventListener('pointermove',event=>{if(event.pointerType==='touch')return;reveal();if(!down){hoverAt=[event.clientX,event.clientY];return;}const dx=event.clientX-down.x,dy=event.clientY-down.y;if(!down.moved&&Math.hypot(dx,dy)<5)return;down.moved=true;dragging(true);setHover(-1);if(down.mode==='pan')panFrom(down.pan,dx,dy);else{targetYaw=down.yaw-dx*.006;targetPitch=THREE.MathUtils.clamp(down.pitch+dy*.005,...PITCH);}});
+  canvas.addEventListener('pointerup',event=>{if(event.pointerType==='touch')return;if(down&&!down.moved&&event.button===0)pick(event.clientX,event.clientY);down=null;dragging(false);});
+  function resetPointer(){down=null;dragging(false);}
   canvas.addEventListener('pointercancel',resetPointer);canvas.addEventListener('lostpointercapture',resetPointer);
-  canvas.addEventListener('wheel',event=>{if(!event.ctrlKey)return;event.preventDefault();zoom=THREE.MathUtils.clamp(zoom-event.deltaY*.002,.8,1.3);resize();},{passive:false});
+  canvas.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')showHint('intro','拖曳可以轉動聚落，按住 Ctrl 或 ⌘ 再滾動可以放大',true);});
+  canvas.addEventListener('pointerleave',()=>{hoverAt=null;setHover(-1);});
+  canvas.addEventListener('contextmenu',event=>event.preventDefault());
+  canvas.addEventListener('wheel',event=>{if(!event.ctrlKey&&!event.metaKey){showHint('wheel','想放大聚落？按住 Ctrl 或 ⌘ 再滾動，或按＋');return;}event.preventDefault();zoomTo(targetZoom*(Math.abs(event.deltaY)>=40?(event.deltaY<0?1.15:1/1.15):Math.exp(-event.deltaY*.01)));},{passive:false});
+  // 觸控：單指左右滑動轉動（上下滑照常捲動頁面），雙指張合縮放、一起移動平移
+  let touch=null,gestureZoom=1;const fingers=event=>[...event.touches].filter(t=>t.touchType!=='stylus');
+  canvas.addEventListener('touchstart',event=>{const list=fingers(event);reveal();showHint('intro','左右滑動可以轉動聚落，兩指張開可以放大',true);if(list.length>=2){const [a,b]=list;touch={mode:'pinch',dist:Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)||1,zoom:targetZoom,mx:(a.clientX+b.clientX)/2,my:(a.clientY+b.clientY)/2,pan:targetPan.clone()};dragging(true);}else if(list.length===1)touch={mode:'wait',x:list[0].clientX,y:list[0].clientY,yaw:targetYaw,time:performance.now(),tap:true};},{passive:true});
+  canvas.addEventListener('touchmove',event=>{if(!touch)return;const list=fingers(event);reveal();if(touch.mode==='pinch'){if(list.length<2)return;event.preventDefault();const [a,b]=list;zoomTo(touch.zoom*Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY)/touch.dist);panFrom(touch.pan,(a.clientX+b.clientX)/2-touch.mx,(a.clientY+b.clientY)/2-touch.my);return;}const t=list[0];if(!t)return;const dx=t.clientX-touch.x,dy=t.clientY-touch.y;if(touch.mode==='wait'){if(Math.abs(dx)>8&&Math.abs(dx)>Math.abs(dy)){touch.mode='turn';dragging(true);}else if(Math.abs(dy)>8)touch.mode='scroll';}if(touch.mode==='turn'){event.preventDefault();targetYaw=touch.yaw-dx*.008;}},{passive:false});
+  function endTouch(event){if(!touch)return;const list=fingers(event);if(event.type==='touchend'&&touch.mode==='wait'&&touch.tap&&!list.length&&performance.now()-touch.time<700){const t=event.changedTouches[0];pick(t.clientX,t.clientY);event.preventDefault();}if(list.length===1&&touch.mode==='pinch')touch={mode:'wait',x:list[0].clientX,y:list[0].clientY,yaw:targetYaw,time:0,tap:false};else if(!list.length){touch=null;dragging(false);}}
+  canvas.addEventListener('touchend',endTouch);canvas.addEventListener('touchcancel',endTouch);
+  // Safari 的觸控板雙指縮放走 gesture 事件；iPad 上雙指已由 touch 處理，這裡跳過
+  canvas.addEventListener('gesturestart',event=>{event.preventDefault();gestureZoom=targetZoom;});
+  canvas.addEventListener('gesturechange',event=>{event.preventDefault();if(touch?.mode!=='pinch')zoomTo(gestureZoom*event.scale);});
+  document.querySelectorAll('[data-zoom]').forEach(button=>button.addEventListener('click',()=>{const kind=button.dataset.zoom;if(kind==='in')zoomTo(targetZoom*1.25);else if(kind==='out')zoomTo(targetZoom/1.25);else{targetYaw=VIEW.yaw+Math.round((targetYaw-VIEW.yaw)/(Math.PI*2))*Math.PI*2;targetPitch=VIEW.pitch;targetPan.set(0,0,0);zoomTo(1);}}));
   canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();world.classList.remove('scene-ready');window.failVillage?.();});
   let visible=true;new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;}).observe(world);
   const point=new THREE.Vector3();
@@ -217,7 +249,9 @@ function buildVillage(){
   }
   let start=performance.now(),last=0;
   function frame(now){requestAnimationFrame(frame);if(document.hidden||!visible||now-last<1000/30)return;last=now;const elapsed=(now-start)/1000;
-    yaw=THREE.MathUtils.lerp(yaw,targetYaw,.12);focus.lerp(targetFocus,.12);camera.position.set(focus.x+Math.sin(yaw)*24,17,focus.z+Math.cos(yaw)*24);camera.lookAt(focus.x,.05,focus.z);
+    yaw=THREE.MathUtils.lerp(yaw,targetYaw,.12);pitch=THREE.MathUtils.lerp(pitch,targetPitch,.12);if(Math.abs(zoom-targetZoom)>.0005){zoom=THREE.MathUtils.lerp(zoom,targetZoom,.18);project();}focus.lerp(targetFocus,.12);pan.lerp(targetPan,.18);
+    const lookX=focus.x+pan.x,lookZ=focus.z+pan.z,flat=Math.cos(pitch)*RADIUS;camera.position.set(lookX+Math.sin(yaw)*flat,Math.sin(pitch)*RADIUS,lookZ+Math.cos(yaw)*flat);camera.lookAt(lookX,.05,lookZ);
+    if(hoverAt&&!down){setHover(placeAt(...hoverAt));hoverAt=null;}
     if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});boat.position.y=-.95+Math.sin(elapsed*1.4)*.055;boat.rotation.z=Math.sin(elapsed*.9)*.035;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);}
     labels();renderer.render(scene,camera);
   }
