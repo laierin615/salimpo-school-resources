@@ -36,7 +36,7 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
   const content=fs.readFileSync(path.join(dist,filename),'utf8');
   for(const pattern of ['/Users/','source_repository_credential','relative_path','private_token'])assert.ok(!content.includes(pattern),'Private field in '+filename);
 }
-for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
+for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
 assert.equal([...home.matchAll(/data-place="/g)].length,13);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
@@ -163,3 +163,13 @@ if(fs.existsSync(lexiconFile)){
   console.log('Amis words verified against the tatokem lexicon: 13 stations, greeting and footer.');
 }
 
+
+// Padlet 原板與影片連結：只連 Padlet、YouTube、Facebook，課程與主題要存在，標籤不放老師姓名中常見的「授課」字樣
+const mediaContext={window:{}};vm.runInNewContext(fs.readFileSync(path.join(dist,'media-links.js'),'utf8'),mediaContext);
+const media=mediaContext.window.SCHOOL_MEDIA,mediaLessonIds=new Set(data.lessons.map(l=>l.id));let mediaCount=0;
+for(const [group,valid] of [['lessons',id=>mediaLessonIds.has(id)],['topics',t=>data.lessonTopics.includes(t)]])for(const [key,list] of Object.entries(media[group])){
+  assert.ok(valid(key),'Unknown media '+group+' key '+key);
+  for(const m of list){mediaCount++;assert.ok(/^https:\/\/(padlet\.com|www\.youtube\.com|www\.facebook\.com)\//.test(m.url),'Unexpected media host '+m.url);assert.ok(!/授課|老師/.test(m.label),'Teacher wording in media label '+m.label);}
+}
+assert.ok(fs.readFileSync(path.join(dist,'lessons.html'),'utf8').includes('media-links.js?v='),'media-links.js missing on lessons page');
+console.log(`Media links verified: ${mediaCount} Padlet boards and videos on ${Object.keys(media.lessons).length} lessons and ${Object.keys(media.topics).length} topics.`);
