@@ -4,7 +4,7 @@
   const page = document.body.dataset.page;
   const calm = matchMedia('(prefers-reduced-motion:reduce)').matches;
   const icon = id => `<svg class="st-icon" aria-hidden="true"><use href="media/icons.svg#${id}"></use></svg>`;
-  const stationIcons = {school:'st-school',course:'st-course',lesson:'st-book',material:'st-material',farm:'st-farm',ocean:'st-ocean',stage:'st-stage',archive:'st-archive',search:'st-search',history:'st-history',visit:'st-visit','language-island':'st-island','song-island':'st-song'};
+  const stationIcons = {school:'st-school',course:'st-course',library:'st-book',farm:'st-farm',ocean:'st-ocean',stage:'st-stage',reception:'st-visit',search:'st-search','language-island':'st-island','song-island':'st-song'};
 
   // 圖片：載入前顯示光澤色塊，載入後淡入
   root.classList.add('fx');

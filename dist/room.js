@@ -1,5 +1,5 @@
 (() => {
- // 訪視評鑑會客室：原民會訪視與實驗教育評鑑兩頁共用的分頁、佐證資料與文化領域區塊
+ // 會客室：入口頁，以及原民會訪視、實驗教育評鑑兩頁共用的分頁、佐證資料與文化領域區塊
  const d=window.SCHOOL_DATA;
  const e=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const groups={plan:'計畫與文件',course:'課程與教案',results:'學習歷程與成果',community:'部落與夥伴'};
@@ -31,7 +31,13 @@
  }
  function tabs(active){
   const v=d.visit115,items=v.groups.reduce((n,g)=>n+g.items.length,0);
-  return `<nav class="room-tabs" aria-label="訪視評鑑會客室">${[['visits','原民會訪視',`${v.dateLabel} · ${v.groups.length}大面向${items}項`],['reviews','實驗教育評鑑',`115學年度 · ${d.groups.length}大面向${d.indicators.length}項`]].map(([page,title,sub])=>`<a href="${page}.html"${page===active?' aria-current="page"':''}><b>${title}</b><small>${e(sub)}</small></a>`).join('')}</nav>`;
+  return `<nav class="room-tabs" aria-label="會客室">${[['visits','原民會訪視',`${v.dateLabel} · ${v.groups.length}大面向${items}項`],['reviews','實驗教育評鑑',`115學年度 · ${d.groups.length}大面向${d.indicators.length}項`]].map(([page,title,sub])=>`<a href="${page}.html"${page===active?' aria-current="page"':''}><b>${title}</b><small>${e(sub)}</small></a>`).join('')}</nav>`;
  }
  window.SalimpoRoom={tabs,evidence,count};
+ // 入口頁：兩扇門，門下列出可以直接前往的段落
+ if(document.body.dataset.page==='reception'){
+  const v=d.visit115,items=v.groups.reduce((n,g)=>n+g.items.length,0);
+  const door=(href,icon,eyebrow,title,sub,text,go,links)=>`<article class="reception-door"><a class="reception-door-main" href="${href}"><svg class="reception-icon" aria-hidden="true"><use href="media/icons.svg#${icon}"></use></svg><p class="eyebrow">${e(eyebrow)}</p><h2>${e(title)}</h2><p class="reception-sub">${e(sub)}</p><p>${e(text)}</p><span class="text-link">${e(go)} →</span></a><nav class="reception-quick" aria-label="${e(title)}：直接前往"><span>直接前往</span>${links.map(([to,label])=>`<a href="${e(to)}">${e(label)}</a>`).join('')}</nav></article>`;
+  document.getElementById('main').insertAdjacentHTML('beforeend',`<div class="page-body reception-doors">${door('visits.html','st-visit','115年原住民族實驗教育訪視','原民會訪視',`${v.dateLabel} · ${v.groups.length}大面向${items}項`,'從課程地圖到孩子的作品與部落的陪伴，沿著四大面向走進寧埔的山海教育。','走進原民會訪視',[['visits.html#flow','訪視流程'],...(v.briefing?[['visits.html#briefing','學校簡報']]:[]),...v.groups.map(g=>[`visits.html#${g.id}`,g.title])])}${door('reviews.html','st-archive','115學年度 · 學校型態實驗教育','實驗教育評鑑',`${d.groups.length}大面向${d.indicators.length}項指標`,'從評鑑指標出發，一步步看見課程、學習成果與評鑑資料的關聯。','走進實驗教育評鑑',d.groups.map((name,i)=>[`reviews.html?group=${i+1}`,name]))}</div>`);
+ }
 })();

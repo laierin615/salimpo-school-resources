@@ -15,7 +15,7 @@
   const SIZE = {三美: 10, 四大文化領域: 8.5, 九向: 7, 教案主題: 7, 課程: 7, 課程單元: 5.5, 課: 4.2, 學習步驟卡: 5, 成果主題: 6.5, 成果: 4.2, 合作計畫: 6, 文史: 5.5, 館別: 7};
   const NAMED = new Set(['三美', '四大文化領域', '九向', '教案主題', '課程', '成果主題', '合作計畫', '館別']);  // 平常就顯示名字的大星
   const SHOWN = new Set(['學習步驟卡', '課程單元', '文史']);  // 數量少的小星，位置夠就顯示名字
-  const HUBS = {history: ['hub:museum', '文史資料館', 'museum.html'], event: ['hub:stories', '成果廣場', 'stories.html'], journey: ['hub:journeys', '我們怎麼學', 'journeys.html'], lesson: ['hub:lessons', '教案書屋', 'lessons.html'], theme: ['hub:lessons', '教案書屋', 'lessons.html'], coop: ['hub:partners', '合作計畫', 'partnerships.html'], culture: ['hub:learning', '山海探索站', 'learning.html']};
+  const HUBS = {history: ['hub:museum', '文史資料館', 'museum.html'], event: ['hub:stories', '成果廣場', 'stories.html'], journey: ['hub:journeys', '我們怎麼學', 'journeys.html'], lesson: ['hub:lessons', '山海探索站', 'lessons.html'], theme: ['hub:lessons', '山海探索站', 'lessons.html'], coop: ['hub:partners', '合作計畫', 'partnerships.html'], culture: ['hub:learning', '課程架構屋', 'resource.html?id=PLAN-002']};
 
   function buildGraph(d) {
     const nodes = [], links = [], byId = new Map(), pairs = new Set();
@@ -32,14 +32,14 @@
 
     // 三美九向與四大文化領域
     for (const core of c.cores || []) {
-      add('core:' + core.code, 'culture', '三美', core.title, {summary: core.description || '', href: 'learning.html#course-core'});
+      add('core:' + core.code, 'culture', '三美', core.title, {summary: core.description || '', href: 'resource.html?id=PLAN-002#course-core'});
       for (const dir of core.directions || []) {
-        add('dir:' + dir.code, 'culture', '九向', dir.title, {meta: `${dir.code}・${core.title}`, summary: (dir.items || []).join('、'), href: 'learning.html#course-core'});
+        add('dir:' + dir.code, 'culture', '九向', dir.title, {meta: `${dir.code}・${core.title}`, summary: (dir.items || []).join('、'), href: 'resource.html?id=PLAN-002#course-core'});
         link('dir:' + dir.code, 'core:' + core.code);
       }
     }
     for (const [name, codes, text] of c.domains || []) {
-      add('domain:' + name, 'culture', '四大文化領域', name.replace(/（.*）/, ''), {title: name, meta: codes, summary: text || '', href: 'learning.html#course-integration'});
+      add('domain:' + name, 'culture', '四大文化領域', name.replace(/（.*）/, ''), {title: name, meta: codes, summary: text || '', href: 'resource.html?id=PLAN-002#course-integration'});
       for (const code of String(codes).split(/[、,，\s]+/)) link('domain:' + name, 'dir:' + code);
     }
 

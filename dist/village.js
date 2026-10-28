@@ -4,6 +4,8 @@ const canvas=document.getElementById('village-canvas');
 const world=document.getElementById('village-world');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3],[3.8,2.75]];
+// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）、9（原文史資料館）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去
+const spots=[0,1,2,4,5,6,7,8,11,12,13],placeOf=spot=>spots.indexOf(spot);
 let renderer;
 try{
   renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
@@ -88,7 +90,7 @@ function buildVillage(){
   const grassGeo=new THREE.ConeGeometry(.035,.14,3);const grass=new THREE.InstancedMesh(grassGeo,material(0x548a49),250);for(let i=0;i<250;i++){const a=random()*Math.PI*2,r=Math.sqrt(random())*7.2;transform.position.set(Math.cos(a)*r,.15,Math.sin(a)*r);transform.rotation.set(0,random()*6.28,random()*.2);transform.scale.setScalar(.75+random()*.7);transform.updateMatrix();grass.setMatrixAt(i,transform.matrix);}scene.add(grass);
 
   const buildings=[],lights=[];
-  function building(i,color,roofColor,w=1.35,d=1.15,h=.95){const group=new THREE.Group();group.position.set(positions[i][0],.14,positions[i][1]);group.userData.placeIndex=i;scene.add(group);box(w+.17,.14,d+.17,0,.07,0,0xd8cbb1,group);box(w,h,d,0,h/2+.14,0,color,group);roof(w+.24,d+.22,.55,h+.14,roofColor,group);box(.32,.6,.04,0,.44,d/2+.025,0x6c5640,group);for(const x of [-w*.29,w*.29]){box(.24,.27,.045,x,.72,d/2+.03,0xb0e3e0,group);box(.018,.27,.055,x,.72,d/2+.057,0xf8f1d9,group);}const windowLight=new THREE.PointLight(0xffc86d,0,2.5);windowLight.position.set(0,.6,d/2+.17);group.add(windowLight);lights.push(windowLight);buildings.push(group);return group;}
+  function building(i,color,roofColor,w=1.35,d=1.15,h=.95){const group=new THREE.Group();group.position.set(positions[i][0],.14,positions[i][1]);group.userData.placeIndex=placeOf(i);scene.add(group);box(w+.17,.14,d+.17,0,.07,0,0xd8cbb1,group);box(w,h,d,0,h/2+.14,0,color,group);roof(w+.24,d+.22,.55,h+.14,roofColor,group);box(.32,.6,.04,0,.44,d/2+.025,0x6c5640,group);for(const x of [-w*.29,w*.29]){box(.24,.27,.045,x,.72,d/2+.03,0xb0e3e0,group);box(.018,.27,.055,x,.72,d/2+.057,0xf8f1d9,group);}const windowLight=new THREE.PointLight(0xffc86d,0,2.5);windowLight.position.set(0,.6,d/2+.17);group.add(windowLight);lights.push(windowLight);buildings.push(group);return group;}
   const school=building(0,0xf0eadb,0x377b8e,1.65,1.3,1.04);box(1.35,.09,.5,0,.18,.96,0xb99866,school);box(.8,.15,.04,0,1.18,.72,0x31886b,school);for(let i=0;i<3;i++){const pole=beam(new THREE.Vector3(.9,.1,.8),new THREE.Vector3(.9,1.8,.8),.025,0xe8ede3,school);if(i===0)box(.31,.2,.02,1.05,1.6,.8,0x50b875,school);}
   const course=building(1,0xbf9271,0x9e634b,1.25,1.25,.9);box(1.6,.13,.52,0,.17,.91,0xc69c70,course);for(const x of [-.62,.62])beam(new THREE.Vector3(x,.2,.77),new THREE.Vector3(x,1.28,.77),.035,0x735536,course);
   const library=building(2,0xf0dec1,0x599579,1.5,1.25,1.15);for(let i=0;i<4;i++)box(.13,.4,.09,-.5+i*.16,.45,.76,[0xd88467,0x5c9aba,0xc9b66c,0x81a76f][i],library);box(1.35,.08,.24,0,.22,.78,0x8b694b,library);
@@ -96,7 +98,7 @@ function buildVillage(){
   const farm=building(4,0xddbe88,0x829468,.85,.85,.65);for(let row=0;row<3;row++){box(1.5,.09,.24,-.55,.12,.95+row*.38,0x806647,farm);for(let j=0;j<5;j++){const x=-1.1+j*.29;const stem=cylinder(.018,.22,x,.26,.95+row*.38,0x4e8b45,farm,5);const leaf=mesh(geometry.leaf,0x4f9c55,farm);leaf.scale.set(.11,.12,.11);leaf.position.set(x,.38,.95+row*.38);if(row===1)rock(.045,x+.055,.36,1.34,0xd6654c,farm);}}
   for(let j=0;j<5;j++){box(.045,.3,.045,-1.35+j*.62,.29,2.03,0xccb68b,farm);}box(2.5,.045,.045,-.12,.37,2.03,0xccb68b,farm);
   const ocean=building(5,0xe4e8dc,0x638fa3,.86,.86,.72);for(let j=0;j<8;j++)box(1.1,.055,.19,0,.11,1+j*.2,0xb9956e,ocean);for(const x of [-.5,.5])for(let j=0;j<3;j++)cylinder(.055,.75,x,-.15,1.05+j*.6,0x8b7257,ocean);
-  const stage=new THREE.Group();stage.position.set(...[positions[6][0],.14,positions[6][1]]);stage.userData.placeIndex=6;scene.add(stage);buildings.push(stage);cylinder(1,.22,0,.11,0,0xe8d6ad,stage,24);for(const x of [-.74,.74])for(const z of [-.55,.55])box(.055,1.15,.055,x,.79,z,0xc8bda2,stage);roof(1.85,1.45,.45,1.38,0xc59b68,stage);box(.45,.44,.26,-.48,.46,-.3,0x8c7152,stage);box(.45,.44,.26,.48,.46,-.3,0x8c7152,stage);
+  const stage=new THREE.Group();stage.position.set(...[positions[6][0],.14,positions[6][1]]);stage.userData.placeIndex=placeOf(6);scene.add(stage);buildings.push(stage);cylinder(1,.22,0,.11,0,0xe8d6ad,stage,24);for(const x of [-.74,.74])for(const z of [-.55,.55])box(.055,1.15,.055,x,.79,z,0xc8bda2,stage);roof(1.85,1.45,.45,1.38,0xc59b68,stage);box(.45,.44,.26,-.48,.46,-.3,0x8c7152,stage);box(.45,.44,.26,.48,.46,-.3,0x8c7152,stage);
   const archive=building(7,0xe8e4d9,0x5b7f95,1.7,1.35,1.1);for(const x of [-.7,-.35,.35,.7])box(.09,1.02,.09,x,.69,.8,0xe7e8dd,archive);box(1.95,.1,.6,0,.19,.86,0xc8c9b4,archive);box(.75,.1,.04,0,1.19,.79,0x50a578,archive);
   const kiosk=building(8,0xddcca3,0x58a8a0,.95,.9,.65);box(.55,.42,.06,0,.81,.54,0x37758c,kiosk);box(.055,.2,.04,0,.8,.58,0xf8f1d9,kiosk);box(.055,.04,.04,0,.97,.58,0xf8f1d9,kiosk);
   const history=building(9,0xe8cda3,0x82785b,1.3,1.18,.94);for(const x of [-.54,.54])beam(new THREE.Vector3(x,.15,.75),new THREE.Vector3(x,1.3,.75),.035,0x806348,history);box(.82,.19,.045,0,1.18,.67,0x578875,history);for(let i=0;i<4;i++)box(.13,.31,.09,-.26+i*.15,.48,.72,[0xaf7d61,0x5b8290,0xb5a063,0x638367][i],history);
@@ -119,7 +121,7 @@ function buildVillage(){
     g.computeVertexNormals();const o=mesh(g,color,parent);o.scale.set(radius,height,radius);o.position.y=y;return o;}
   // A separate island across a real water gap links to the language training site.
   const [islandX,islandZ]=positions[11];
-  const outerIsland=new THREE.Group();outerIsland.position.set(islandX,0,islandZ);outerIsland.userData.placeIndex=11;scene.add(outerIsland);buildings.push(outerIsland);
+  const outerIsland=new THREE.Group();outerIsland.position.set(islandX,0,islandZ);outerIsland.userData.placeIndex=placeOf(11);scene.add(outerIsland);buildings.push(outerIsland);
   const langCoast=coast(0,1.6,1.6);
   islet(langCoast,1.32,1.08,-.69,0xa8a082,outerIsland,.88);
   islet(langCoast,1.47,.18,-.07,0xe9dcb2,outerIsland);
@@ -128,14 +130,14 @@ function buildVillage(){
   box(.54,.18,.05,0,1.03,.57,0xe3b650,languageHouse);
   for(const x of [-.42,.42])box(.055,.9,.055,x,.65,.67,0x8b6c4b,languageHouse);
   box(1.12,.1,.32,0,.18,.75,0xc5ab7c,languageHouse);
-  const littleTree=tree(islandX-.7,islandZ-.4,.62,1);littleTree.userData.placeIndex=11;buildings.push(littleTree);
+  const littleTree=tree(islandX-.7,islandZ-.4,.62,1);littleTree.userData.placeIndex=placeOf(11);buildings.push(littleTree);
   for(const [a,size] of [[.35,.12],[1.2,.09],[1.75,.13],[2.6,.1],[3.4,.14],[4.15,.08],[4.85,.12],[5.65,.1]]){const r=1.39*langCoast(a);rock(size,islandX+Math.cos(a)*r,-.17,islandZ+Math.sin(a)*r,0x9baca0);}
   const wakeRing=new THREE.RingGeometry(1.6,1.64,48),wakeEdge=wakeRing.attributes.position;for(let i=0;i<wakeEdge.count;i++){const k=langCoast(Math.atan2(-wakeEdge.getY(i),wakeEdge.getX(i)));wakeEdge.setXY(i,wakeEdge.getX(i)*k,wakeEdge.getY(i)*k);}
   const islandWake=mesh(wakeRing,new THREE.MeshBasicMaterial({color:0xe5fffb,transparent:true,opacity:.46,side:THREE.DoubleSide}));islandWake.rotation.x=-Math.PI/2;islandWake.position.set(islandX,-1.24,islandZ);islandWake.castShadow=false;
 
   // 女人島：靈感來自阿美族女人島的口傳故事。女人們圍成一圈唱歌，鯨魚在外海來回游，連到 Sa'opo 歌謠採譜網站。
   const [songX,songZ]=positions[12];
-  const songIsland=new THREE.Group();songIsland.position.set(songX,0,songZ);songIsland.userData.placeIndex=12;scene.add(songIsland);buildings.push(songIsland);
+  const songIsland=new THREE.Group();songIsland.position.set(songX,0,songZ);songIsland.userData.placeIndex=placeOf(12);scene.add(songIsland);buildings.push(songIsland);
   const songCoast=coast(.8,1.2,5.2);
   islet(songCoast,1.36,1.08,-.69,0xa89a86,songIsland,.88);
   islet(songCoast,1.52,.18,-.07,0xf1dec0,songIsland);
@@ -171,7 +173,7 @@ function buildVillage(){
     if(i%2){const flag=box(.11,.03,.018,.12,.26,0,noteMaterial,group);flag.rotation.z=-.6;flag.castShadow=false;}
     group.scale.setScalar(1.4);group.position.set(.12,1.1+i*.3,.1);notes.push({group,material:noteMaterial});}
   // 鯨魚在島前方面向鏡頭的海面來回游，避開主島；頭朝 +z，好讓 lookAt 直接轉向前進方向。
-  const whale=new THREE.Group();scene.add(whale);whale.userData.placeIndex=12;buildings.push(whale);
+  const whale=new THREE.Group();scene.add(whale);whale.userData.placeIndex=placeOf(12);buildings.push(whale);
   const whaleBody=mesh(new THREE.SphereGeometry(1,12,8),0x4a6d85,whale);whaleBody.scale.set(.34,.26,.82);
   const whaleBelly=mesh(new THREE.SphereGeometry(1,12,8),0xd9e6e6,whale);whaleBelly.scale.set(.27,.16,.66);whaleBelly.position.set(0,-.1,.08);
   const tail=new THREE.Group();tail.position.set(0,.02,-.78);whale.add(tail);
@@ -210,8 +212,8 @@ function buildVillage(){
   const VIEW={yaw:.61,pitch:Math.atan2(17,24)},RADIUS=Math.hypot(17,24),ZOOM=[.8,2.6],PITCH=[.32,1.25];
   let yaw=VIEW.yaw,targetYaw=VIEW.yaw,pitch=VIEW.pitch,targetPitch=VIEW.pitch,zoom=1,targetZoom=1,width=1,height=1;
   // 選到地點時鏡頭靠過去；放得越大，越把那一站擺到畫面中間
-  function aimFocus(){if(selected<0){targetFocus.set(0,0,0);return;}const [x,z]=positions[selected],base=Math.hypot(x,z)>7?.55:.1,pull=base+(1-base)*THREE.MathUtils.clamp((targetZoom-1)/.8,0,1);targetFocus.set(x*pull,0,z*pull);}
-  window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.position.set(positions[selected][0],.135,positions[selected][1]);targetPan.set(0,0,0);}aimFocus();});
+  function aimFocus(){if(selected<0){targetFocus.set(0,0,0);return;}const [x,z]=positions[spots[selected]],base=Math.hypot(x,z)>7?.55:.1,pull=base+(1-base)*THREE.MathUtils.clamp((targetZoom-1)/.8,0,1);targetFocus.set(x*pull,0,z*pull);}
+  window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.position.set(positions[spots[selected]][0],.135,positions[spots[selected]][1]);targetPan.set(0,0,0);}aimFocus();});
   function project(){const aspect=width/height;/* 左右兩座小外島在任何寬度都要完整入鏡 */const half=width<600?13/aspect:Math.max(9.65,13/aspect);camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
   function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);project();}
   new ResizeObserver(resize).observe(canvas);resize();
@@ -254,7 +256,7 @@ function buildVillage(){
   let visible=true;new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;}).observe(world);
   const point=new THREE.Vector3();
   function labels(){
-    const pins=[...document.querySelectorAll('.place-pin')];const mobile=width<600;const entries=positions.map(([x,z],i)=>{/* 小外島的標籤浮高一點，不要蓋住島 */point.set(x,Math.hypot(x,z)>7?3:1.4,z).project(camera);return {i,x:(point.x*.5+.5)*width,y:(-point.y*.5+.5)*height+(mobile?28:0),w:mobile?(selected===i?130:30):pins[i]?.offsetWidth||130};}).sort((a,b)=>a.y-b.y);
+    const pins=[...document.querySelectorAll('.place-pin')];const mobile=width<600;const entries=spots.map((spot,i)=>{const [x,z]=positions[spot];/* 小外島的標籤浮高一點，不要蓋住島 */point.set(x,Math.hypot(x,z)>7?3:1.4,z).project(camera);return {i,x:(point.x*.5+.5)*width,y:(-point.y*.5+.5)*height+(mobile?28:0),w:mobile?(selected===i?130:30):pins[i]?.offsetWidth||130};}).sort((a,b)=>a.y-b.y);
     const placed=[];const guard=document.querySelector('.world-whispers');const minY=guard?guard.offsetTop+guard.offsetHeight+(mobile?22:26):(mobile?230:239);
     entries.forEach(entry=>{entry.x=THREE.MathUtils.clamp(entry.x,entry.w/2+8,width-entry.w/2-8);entry.y=Math.max(minY,entry.y);for(let attempts=0;attempts<8;attempts++){if(!placed.some(other=>Math.abs(other.x-entry.x)<(other.w+entry.w)/2+3&&Math.abs(other.y-entry.y)<(mobile?32:38)))break;entry.y+=mobile?33:38;}placed.push(entry);const pin=pins[entry.i];if(pin){pin.style.left=entry.x+'px';pin.style.top=entry.y+'px';}});
   }
