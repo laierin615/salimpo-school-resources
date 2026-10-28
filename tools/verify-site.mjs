@@ -9,11 +9,11 @@ const dist=path.resolve('dist');
 const context={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(dist,'data.js'),'utf8'),context);
 const data=context.window.SCHOOL_DATA;
-assert.equal(data.resources.length,63);
+assert.equal(data.resources.length,62);
 assert.equal(data.eventIds.length,25);
 assert.equal(data.indicators.length,24);
 const ids=new Set(data.resources.map(r=>r.id));
-assert.equal(ids.size,63);
+assert.equal(ids.size,62);
 for(const resource of data.resources){
   assert.ok(resource.title&&resource.summary);
   assert.ok(!('source' in resource));
@@ -80,7 +80,7 @@ assert.equal(data.historyMuseum.topics.length,15);
 assert.equal(history.chapters.length,7);
 for(const t of data.historyMuseum.topics){if(t.hasContent){assert.ok(history.chapters[t.chapter-1]);assert.ok(ids.has(t.resourceId));for(const s of t.sections)assert.ok(s.paragraph<history.chapters[t.chapter-1].blocks.length);}}
 assert.equal(data.historyMuseum.topics.find(t=>t.id==='short-stories').sections.length,8);
-assert.equal(Object.keys(data.books).length,20);
+assert.equal(Object.keys(data.books).length,19);
 assert.equal(Object.keys(data.assets).length,506);
 console.log('Museum index verified: 15 topics, 7 full articles; withdrawn plan absent.');
 
@@ -174,6 +174,16 @@ for(const [group,valid] of [['lessons',id=>mediaLessonIds.has(id)],['topics',t=>
 }
 assert.ok(fs.readFileSync(path.join(dist,'lessons.html'),'utf8').includes('media-links.js?v='),'media-links.js missing on lessons page');
 console.log(`Media links verified: ${mediaCount} Padlet boards and videos on ${Object.keys(media.lessons).length} lessons and ${Object.keys(media.topics).length} topics.`);
+
+// 教材整合：還沒填的「115上學期各科學習成果評量單」先不呈現（資料存在 archive/），會客室佐證也不列；教材工坊改成單元教材包，每一課的整合頁連得到教材與作品
+assert.ok(!ids.has('PLAN-015')&&!data.books.assessment,'Blank assessment sheets must stay hidden');
+for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js)$/.test(f)))assert.ok(!/PLAN-015|book=assessment|B:assessment|type=學習單/.test(fs.readFileSync(path.join(dist,file),'utf8')),'Hidden assessment sheets linked from '+file);
+assert.ok(/data-place="material"[^>]*href="lessons\.html\?view=materials"/.test(home),'Materials station should open the materials workshop');
+const lessonsJs=fs.readFileSync(path.join(dist,'lessons.js'),'utf8'),units=data.resources.filter(r=>r.type==='課程單元');
+assert.ok(lessonsJs.includes("params.get('view')==='materials'")&&lessonsJs.includes('id="lesson-material"')&&lessonsJs.includes('id="lesson-works"'),'Lesson hub sections missing');
+for(const l of data.lessons.filter(l=>l.resource))assert.equal(data.resources.find(r=>r.id===l.resource)?.type,'課程單元','Lesson material must be a course unit: '+l.id);
+for(const u of units)for(const id of u.related)assert.ok(ids.has(id),'Unknown unit link '+id);
+console.log(`Materials verified: ${units.length} units in the workshop, ${data.lessons.filter(l=>l.resource).length} lesson hubs with materials; blank assessment sheets hidden.`);
 
 // 村辦公室：網站上只能有加密後的連結；原文與密碼留在本機 .runtime，不會進到 dist
 const officeHtml=fs.readFileSync(path.join(dist,'office.html'),'utf8'),officeData=fs.readFileSync(path.join(dist,'office-data.js'),'utf8');

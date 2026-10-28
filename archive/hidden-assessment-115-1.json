@@ -1,0 +1,95 @@
+{
+  "說明": "115上學期各科學習成果評量單（表格還沒填）先從網站拿掉，2026-10-28 依使用者指示。要恢復時：把 resource 放回 data.js 的 resources、book 放回 books（鍵名 assessment），再依 references 把引用加回去；表件內容 dist/books/assessment.json 沒有刪。",
+  "removed_on": "2026-10-28",
+  "resource": {
+    "id": "PLAN-015",
+    "title": "115上學期各科學習成果評量單",
+    "type": "學習單",
+    "section": "課程與教材",
+    "year": 115,
+    "semester": 1,
+    "bands": [],
+    "topics": [],
+    "summary": "從115上學期評量單的資料入口，認識學習成果如何被記錄。",
+    "sections": [
+      {
+        "title": "讓學習變得看得見",
+        "text": "從學習目標、任務與證據計畫出發，搭配四級規準、學生自評與教師評量，認識不同科目的成果如何被記錄。"
+      },
+      {
+        "title": "翻開各科表件",
+        "text": "下方閱讀入口收錄各科評量單的完整文字與表格，可依章節找到任務主題、規準與學生自評內容。"
+      }
+    ],
+    "related": [
+      "PLAN-002"
+    ],
+    "download": false,
+    "photos": [],
+    "cover": null,
+    "reading": [
+      {
+        "book": "assessment",
+        "label": "閱讀各科評量單"
+      }
+    ],
+    "coverStyle": "assessment"
+  },
+  "book": {
+    "assessment": {
+      "title": "115上學期｜學習成果評量單",
+      "format": "document",
+      "chapters": 93
+    }
+  },
+  "references": [
+    {
+      "where": "resources[VISIT-005].related",
+      "value": "PLAN-015"
+    },
+    {
+      "where": "resources[VISIT-007].related",
+      "value": "PLAN-015"
+    },
+    {
+      "where": "indicators[1-5].related",
+      "value": "PLAN-015"
+    },
+    {
+      "where": "indicators[1-5].evidence.course",
+      "value": "R:PLAN-015"
+    },
+    {
+      "where": "indicators[3-2].related",
+      "value": "PLAN-015"
+    },
+    {
+      "where": "indicators[3-2].evidence.course",
+      "value": "R:PLAN-015"
+    },
+    {
+      "where": "indicators[3-2].evidence.course",
+      "value": "B:assessment:|115上學期學習成果評量單"
+    },
+    {
+      "where": "visit115[1-3].resources",
+      "value": "PLAN-015"
+    },
+    {
+      "where": "visit115[1-3].evidence.course",
+      "value": "R:PLAN-015"
+    },
+    {
+      "where": "visit115[2-1].resources",
+      "value": "PLAN-015"
+    },
+    {
+      "where": "visit115[2-1].evidence.course",
+      "value": "R:PLAN-015"
+    },
+    {
+      "where": "visit115[2-1].evidence.course",
+      "value": "B:assessment:|115上學期學習成果評量單"
+    }
+  ]
+}
