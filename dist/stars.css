@@ -1,0 +1,70 @@
+/* 星空 fo'is：互動知識圖譜 */
+.visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.stars-page{padding-bottom:56px}
+.stars-page .page-heading h1 .ami{font-size:.6em;margin-left:.35em;color:var(--green-text)}
+.sky-wrap{display:grid;gap:12px}
+.sky-toolbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
+.sky-search{display:flex;gap:8px;flex:1 1 280px;max-width:430px}
+.sky-search input{flex:1;min-width:0;min-height:44px;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit}
+.sky-search input:focus{outline:2px solid var(--green,#1fd16c);outline-offset:1px}
+.sky-search button{min-height:44px;min-width:64px;padding:0 16px;border:0;border-radius:999px;background:var(--green,#1fd16c);color:#06210f;font:inherit;font-weight:800;cursor:pointer}
+.sky-legend{display:flex;flex-wrap:wrap;gap:6px}
+.sky-legend-chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:.86rem;font-weight:600;cursor:pointer}
+.sky-legend-chip span{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px rgba(15,32,45,.28),0 0 8px var(--c)}
+.sky-legend-chip small{color:var(--muted);font-variant-numeric:tabular-nums}
+.sky-legend-chip[aria-pressed=false]{opacity:.5}
+.sky-legend-chip[aria-pressed=false] span{background:transparent;box-shadow:inset 0 0 0 2px var(--c),0 0 0 1px rgba(15,32,45,.28)}
+
+/* 星空本體：不論白天夜晚都是夜空 */
+.sky{position:relative;height:min(74vh,740px);min-height:440px;border-radius:24px;overflow:hidden;background:#060d1d;box-shadow:var(--shadow,0 14px 44px rgba(15,32,45,.13));isolation:isolate}
+.sky canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
+.sky canvas:focus-visible{box-shadow:inset 0 0 0 3px #2ee67a}
+.sky-zoom{position:absolute;right:14px;top:14px;display:grid;gap:8px;z-index:2}
+.sky-zoom button{width:42px;height:42px;border:1px solid rgba(255,255,255,.18);border-radius:50%;background:rgba(10,20,38,.72);color:#eef4ff;font:inherit;font-size:1.15rem;font-weight:800;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sky-zoom button:hover,.sky-zoom button:focus-visible{border-color:#2ee67a;outline:none}
+.sky-hint{position:absolute;left:18px;right:76px;bottom:14px;margin:0;color:rgba(226,236,255,.7);font-size:.82rem;pointer-events:none;z-index:2;transition:opacity .2s}
+.sky.has-card .sky-hint{opacity:0}
+.hint-narrow{display:none}
+.sky-tip{position:absolute;left:50%;top:16px;transform:translateX(-50%);max-width:calc(100% - 120px);margin:0;padding:8px 16px;border-radius:999px;background:rgba(10,20,38,.88);color:#eef4ff;font-size:.86rem;text-align:center;pointer-events:none;z-index:4}
+.sky-noscript{position:absolute;inset:auto 18px 18px;color:#eef4ff}
+
+.sky-card{position:absolute;top:14px;left:14px;width:min(340px,calc(100% - 84px));max-height:calc(100% - 28px);overflow:auto;padding:16px 18px 18px;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(8,16,32,.88);color:#eef4ff;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);z-index:3;overscroll-behavior:contain}
+.sky-card-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sky-chip{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;color:var(--c)}
+.sky-chip::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.sky-card-close{width:34px;height:34px;border:0;border-radius:50%;background:rgba(255,255,255,.08);color:#eef4ff;font-size:1.25rem;line-height:1;cursor:pointer}
+.sky-card h2{margin:8px 0 4px;font-size:1.2rem;line-height:1.35;color:#fff}
+.sky-card-meta{margin:0 0 8px;color:rgba(226,236,255,.66);font-size:.82rem}
+.sky-card-summary{margin:0 0 12px;color:rgba(238,244,255,.9);font-size:.92rem;line-height:1.65}
+.sky-card-go{display:inline-flex;align-items:center;min-height:40px;padding:6px 14px;border-radius:999px;background:#2ee67a;color:#06210f;font-weight:800;text-decoration:none}
+.sky-card-go:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.sky-card h3{margin:16px 0 8px;font-size:.88rem;color:rgba(226,236,255,.8)}
+.sky-card h3 span{font-variant-numeric:tabular-nums;color:rgba(226,236,255,.55)}
+.sky-card-near p{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:0 0 8px}
+.sky-card-near b{flex:0 0 100%;font-size:.74rem;color:rgba(226,236,255,.55);font-weight:700}
+.sky-card-near button{min-height:32px;padding:4px 10px;border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:999px;background:rgba(255,255,255,.06);color:#eef4ff;font:inherit;font-size:.84rem;cursor:pointer}
+.sky-card-near button:hover,.sky-card-near button:focus-visible{background:rgba(255,255,255,.14);border-color:var(--c);outline:none}
+.sky-count{margin:0;color:var(--muted);font-size:.86rem}
+
+/* 清單檢視 */
+.sky-list{margin-top:6px;padding:4px 20px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
+.sky-list summary{padding:14px 0;font-weight:800;cursor:pointer}
+.sky-list-groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px 24px;padding:4px 0 18px}
+.sky-list h3{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:1rem}
+.sky-list h3::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px rgba(15,32,45,.28)}
+.sky-list h3 small{color:var(--muted);font-weight:600}
+.sky-list ul{display:grid;gap:5px;margin:0;padding:0;list-style:none}
+.sky-list li{display:flex;justify-content:space-between;gap:10px;font-size:.92rem}
+.sky-list li a{color:var(--ink)}
+.sky-list li span{flex:none;color:var(--muted);font-size:.78rem}
+
+@media(max-width:620px){
+  .sky{height:70vh;min-height:400px;border-radius:18px}
+  .sky-card{top:auto;right:10px;bottom:10px;left:10px;width:auto;max-height:54%}
+  .sky-hint{top:12px;bottom:auto;left:14px;right:64px;font-size:.78rem}
+  .hint-wide{display:none}
+  .hint-narrow{display:inline;padding:5px 10px;border-radius:999px;background:rgba(10,20,38,.7)}
+  .sky.touched .sky-hint{opacity:0}
+  .sky-zoom{right:10px;top:10px}
+  .sky-legend-chip{min-height:34px;padding:3px 10px;font-size:.82rem}
+}

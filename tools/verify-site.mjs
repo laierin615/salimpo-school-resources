@@ -22,7 +22,7 @@ for(const resource of data.resources){
   for(const id of resource.related)assert.ok(ids.has(id),'Unknown related resource '+id);
 }
 for(const indicator of data.indicators){for(const id of indicator.related)assert.ok(ids.has(id));}
-for(const name of ['index','about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','journeys','museum','visits','office']){
+for(const name of ['index','about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','journeys','museum','visits','office','stars']){
   const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');
   assert.ok(html.includes('lang="zh-Hant"'));
   assert.ok(html.includes('rel="icon"'));
@@ -37,7 +37,7 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
   const content=fs.readFileSync(path.join(dist,filename),'utf8');
   for(const pattern of ['/Users/','source_repository_credential','relative_path','private_token'])assert.ok(!content.includes(pattern),'Private field in '+filename);
 }
-for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js','office.js','office-data.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
+for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js','office.js','office-data.js','stars.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
 assert.equal([...home.matchAll(/data-place="/g)].length,14);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
@@ -48,7 +48,7 @@ assert.equal(pageImages,1194);
 assert.equal(data.lessons.length,31);
 assert.equal(new Set(data.lessons.map(l=>l.id)).size,31);
 for(const l of data.lessons){const b=JSON.parse(fs.readFileSync(path.join(dist,'books',l.book+'.json'),'utf8'));assert.ok(l.start>=1&&l.end<=b.count&&l.start<=l.end);assert.ok(l.band&&l.topic&&l.title);if(l.cover)assert.ok(data.assets[l.cover]);}
-console.log(JSON.stringify({pages:14,lesson_themes:data.lessons.length,photos:Object.keys(data.assets).length,reading_volumes:Object.keys(data.books).length,readable_pages:pageImages,resource_records:data.resources.length,event_results:data.eventIds.length,official_indicators:24,local_links:'valid',internal_paths_in_deployment:false,script_syntax:'valid'}));
+console.log(JSON.stringify({pages:15,lesson_themes:data.lessons.length,photos:Object.keys(data.assets).length,reading_volumes:Object.keys(data.books).length,readable_pages:pageImages,resource_records:data.resources.length,event_results:data.eventIds.length,official_indicators:24,local_links:'valid',internal_paths_in_deployment:false,script_syntax:'valid'}));
 
 for(const id of data.eventIds){const e=data.resources.find(r=>r.id===id);assert.ok(e?.event?.result&&e.section==='活動與成果');assert.ok(['展演成果','比賽成果','成果展'].includes(e.type));}
 assert.equal(data.resources.filter(r=>r.section==='活動與成果').length,25);
@@ -147,9 +147,9 @@ for(const [id,code] of Object.entries(lessonDirections)){assert.ok(lessonIds.has
 for(const name of ['visits','reviews']){const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');assert.ok(html.includes('room.js?v=')&&html.includes('room.css?v='),'Room assets missing on '+name);}
 console.log(`Room verified: ${visitItems.length} visit items and ${data.indicators.length} indicators, ${evidenceCount} evidence links resolve; 31 lessons mapped to directions.`);
 
-// 主選單用聚落站名；聚落 14 站中前 13 站有族語詞（村辦公室的詞待族語老師建議），若本機有 tatokem 詞庫，就核對全部是已驗證的詞
+// 主選單用聚落站名；聚落 14 站中前 13 站有族語詞（村辦公室的詞待族語老師建議），若本機有 tatokem 詞庫，就核對全部（連同星空的 fo'is）是已驗證的詞
 const navLine='<a href="about.html">學校與部落</a><a href="learning.html">山海探索站</a><a href="lessons.html">教案書屋</a><a href="stories.html">成果廣場</a><a href="museum.html">文史資料館</a><a href="resources.html">資料服務站</a><a href="visits.html">訪視評鑑會客室</a>';
-const subpages=['about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','journeys','museum','visits','office'];
+const subpages=['about','learning','stories','reviews','resources','resource','reader','lessons','partnerships','journeys','museum','visits','office','stars'];
 for(const name of subpages)assert.ok(fs.readFileSync(path.join(dist,name+'.html'),'utf8').includes(navLine),'Main nav on '+name);
 for(const name of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,name+'.html'),'utf8').includes('lang="ami">Aray!</i>'),'Footer word on '+name);
 const amiWords=[...home.matchAll(/data-ami="([^"]+)" data-ami-zh="([^"]+)"/g)].map(m=>m[1].replace(/&#x27;/g,"'"));
@@ -160,8 +160,8 @@ for(const [word] of Object.values(stationWords))assert.ok(amiWords.includes(word
 const lexiconFile=path.join(os.homedir(),'.claude/mcp_servers/tatokem/lexicon/verified.json');
 if(fs.existsSync(lexiconFile)){
   const verified=new Set(Object.values(JSON.parse(fs.readFileSync(lexiconFile,'utf8')).categories).flatMap(c=>Object.keys(c)).map(w=>w.toLowerCase()));
-  for(const word of [...amiWords,'Aray',"Nga'ay ho"])assert.ok(verified.has(word.replace(/!$/,'').toLowerCase()),'Unverified Amis word '+word);
-  console.log('Amis words verified against the tatokem lexicon: 13 stations, greeting and footer.');
+  for(const word of [...amiWords,'Aray',"Nga'ay ho","fo'is"])assert.ok(verified.has(word.replace(/!$/,'').toLowerCase()),'Unverified Amis word '+word);
+  console.log('Amis words verified against the tatokem lexicon: 13 stations, greeting, footer and the star map.');
 }
 
 
@@ -191,3 +191,27 @@ for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js|css|json)$/.test(f)
 for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('href="office.html">村辦公室</a>'),'Office entrance missing on '+page);
 assert.ok(home.includes('data-place="office"')&&home.includes('14 個地點'),'Office station missing on the home village');
 console.log('Office verified: links encrypted, no document addresses in the site, entrance on every page and a 14th village station.');
+
+// 星空 fo'is：星星與連線都由 data.js 算出；每顆星至少一條連線、連到存在的頁面與資料，每頁頁尾和首頁都有入口
+const starContext={window:{SCHOOL_DATA:data}};vm.runInNewContext(fs.readFileSync(path.join(dist,'stars.js'),'utf8'),starContext);
+const sky=starContext.window.SALIMPO_STARS.buildGraph(data),starIds=new Set(sky.nodes.map(n=>n.id)),starDegree=new Map();
+assert.ok(sky.nodes.length>=100,'Too few stars: '+sky.nodes.length);
+assert.equal(starIds.size,sky.nodes.length,'Duplicate star ids');
+for(const {source,target} of sky.links){assert.ok(starIds.has(source)&&starIds.has(target)&&source!==target,`Bad star link ${source} - ${target}`);for(const id of [source,target])starDegree.set(id,(starDegree.get(id)||0)+1);}
+const historyIds=new Set(data.historyMuseum.topics.map(t=>t.id));
+for(const n of sky.nodes){
+  assert.ok(starDegree.get(n.id)>0,'Star without links '+n.id);
+  assert.ok(n.href&&fs.existsSync(path.join(dist,n.href.split(/[?#]/)[0])),'Star links to a missing page '+n.id);
+  const [page,rest='']=n.href.split(/[?#]/),value=decodeURIComponent(rest.split('=').pop());
+  if(page==='resource.html')assert.ok(ids.has(value),'Star links to an unknown resource '+n.id);
+  if(rest.startsWith('lesson='))assert.ok(lessonIds.has(value),'Star links to an unknown lesson '+n.id);
+  if(page==='journeys.html')assert.ok(journeyIds.has(value),'Star links to an unknown journey '+n.id);
+  if(page==='museum.html'&&rest)assert.ok(historyIds.has(value),'Star links to an unknown history topic '+n.id);
+}
+const starsHtml=fs.readFileSync(path.join(dist,'stars.html'),'utf8');
+assert.ok(starsHtml.includes(`lang="ami">fo'is</i>`)&&starsHtml.includes('id="sky-canvas"')&&starsHtml.includes('id="sky-list-groups"'),'Star map page incomplete');
+for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('<a href="stars.html">星空</a></p>'),'Star map footer link missing on '+page);
+for(const entrance of ['<a class="pill" href="stars.html">星空</a>','class="sky-door sky-door-top" href="stars.html"'])assert.ok(home.includes(entrance),'Home missing star entrance '+entrance);
+const villageCss=fs.readFileSync(path.join(dist,'village.css'),'utf8');
+assert.ok(villageCss.includes('[data-theme=night] .sky-door-top{')&&villageCss.includes('[data-theme=night] .village-header .pill[href="stars.html"]{'),'Night star entrances missing in village.css');
+console.log(`Star map verified: ${sky.nodes.length} stars and ${sky.links.length} links from data.js, every star linked to a page; entrance on every page and in the home night sky.`);

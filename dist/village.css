@@ -40,3 +40,10 @@
 .village-welcome .village-hello{display:inline-flex;align-items:baseline;gap:6px;margin:0;padding:2px 11px;border-radius:999px;background:var(--panel);color:var(--muted);font-size:.78rem}
 .village-hello .ami{font-size:1.02rem;color:var(--green-text)}
 
+/* 夜晚的星空入口：寬螢幕放在天空右側，和「山海學習聚落」同一列；窄螢幕的歡迎區塊不能變高，改讓頂端列的「星空」亮起來。白天都不顯示 */
+.sky-door{display:inline-flex;align-items:center;gap:8px;padding:9px 16px;border-radius:999px;background:rgba(9,18,36,.82);color:#ffe7a8;font-size:.875rem;font-weight:800;text-decoration:none;box-shadow:0 0 0 1px rgba(255,207,110,.42),0 0 22px rgba(255,207,110,.28)}
+.sky-door .ami{color:#ffe7a8}
+.sky-door:hover,.sky-door:focus-visible{box-shadow:0 0 0 2px #ffcf6e,0 0 28px rgba(255,207,110,.45);outline:none}
+.sky-door-top{display:none}
+[data-theme=night] .sky-door-top{position:absolute;top:151px;right:clamp(18px,4vw,52px);z-index:6;display:inline-flex}
+@media(max-width:900px){[data-theme=night] .sky-door-top{display:none}[data-theme=night] .village-header .pill[href="stars.html"]{background:rgba(9,18,36,.82);border-color:rgba(255,207,110,.62);color:#ffe7a8;box-shadow:0 0 16px rgba(255,207,110,.38)}}

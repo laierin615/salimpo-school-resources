@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Salimpo阿美山海文化實驗小學 寧埔國小：把課程、文化、成果與文史連成一片可以互動的星空。">
+  <meta name="theme-color" content="#11283b">
+  <title>星空 fo'is｜Salimpo 學校資料館</title>
+  <link rel="icon" type="image/png" sizes="64x64" href="media/brand/salimpo-icon-64.png"><link rel="apple-touch-icon" href="media/brand/salimpo-icon-180.png">
+  <link rel="stylesheet" href="styles.css?v=20261028d"><link rel="stylesheet" href="village-theme.css?v=20261028d">
+  <script src="data.js?v=20261028d" defer></script>
+  <script src="app.js?v=20261028d" defer></script>
+  <link rel="stylesheet" href="enhance.css?v=20261028d">
+  <link rel="stylesheet" href="stars.css?v=20261028d"><script src="stars.js?v=20261028d" defer></script>
+</head>
+<body data-page="stars">
+  <a class="skip-link" href="#main">跳到主要內容</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="index.html" aria-label="Salimpo 學校資料館首頁"><img class="salimpo-logo" src="media/brand/salimpo-logo-256.webp" alt="Salimpo手繪山海Logo" width="80" height="80"><span><strong><span class="school-prefix">Salimpo阿美山海<wbr>文化實驗小學</span><span class="school-short">寧埔國小</span></strong><small>SALIMPO 學校資料館</small></span></a>
+      <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav">選單</button>
+      <nav class="main-nav" id="main-nav" aria-label="主要導覽">
+        <a href="about.html">學校與部落</a><a href="learning.html">山海探索站</a><a href="lessons.html">教案書屋</a><a href="stories.html">成果廣場</a><a href="museum.html">文史資料館</a><a href="resources.html">資料服務站</a><a href="visits.html">訪視評鑑會客室</a>
+      </nav>
+    </div>
+  </header>
+  <main id="main" class="container stars-page">
+    <header class="page-heading"><div class="breadcrumb"><a href="index.html">首頁</a><span>/</span><span>星空</span></div><h1>星空<i class="ami" lang="ami">fo'is</i></h1><p>每一顆星，是一堂課、一個文化方向、一項成果或一段文史；有關係的星星連成星座。拖拖看、點點看，看寧埔的山海學習怎麼串在一起。</p></header>
+    <section class="sky-wrap" aria-label="星空知識圖譜">
+      <div class="sky-toolbar">
+        <form class="sky-search" id="sky-search" role="search"><label class="visually-hidden" for="sky-q">找一顆星</label><input id="sky-q" list="sky-names" placeholder="找一顆星，例如：海祭、十字繡" autocomplete="off"><datalist id="sky-names"></datalist><button type="submit">找</button></form>
+        <div class="sky-legend" id="sky-legend" role="group" aria-label="依種類顯示或隱藏星星"></div>
+      </div>
+      <div class="sky" id="sky">
+        <canvas id="sky-canvas" tabindex="0" role="img" aria-label="星空知識圖譜。方向鍵移動、加減號縮放、0 回到全景；所有星星也可以在下方清單瀏覽。"></canvas>
+        <div class="sky-zoom"><button type="button" data-zoom="in" aria-label="放大">＋</button><button type="button" data-zoom="out" aria-label="縮小">－</button><button type="button" data-zoom="fit" aria-label="回到全景">↺</button></div>
+        <p class="sky-hint"><span class="hint-wide">拖曳移動星空，點星星看介紹；Ctrl／⌘＋滾輪、觸控板或雙指可以縮放。</span><span class="hint-narrow">點星星看介紹，雙指可以縮放</span></p>
+        <p class="sky-tip" id="sky-tip" hidden></p>
+        <aside class="sky-card" id="sky-card" aria-label="星星介紹" hidden></aside>
+        <noscript><p class="sky-noscript">請開啟 JavaScript 才能看到星空。</p></noscript>
+      </div>
+      <p class="visually-hidden" id="sky-status" aria-live="polite"></p>
+      <p class="sky-count" id="sky-count"></p>
+    </section>
+    <details class="sky-list"><summary>用清單看所有星星</summary><div class="sky-list-groups" id="sky-list-groups"></div></details>
+  </main>
+  <footer class="site-footer"><div class="container"><div class="footer-brand"><img class="salimpo-footer-logo" src="media/brand/salimpo-logo-256.webp" alt="Salimpo" width="92" height="92" loading="lazy"><div><strong><span class="school-prefix">Salimpo阿美山海文化實驗小學</span><span class="school-short">寧埔國小</span></strong><p>臺東縣長濱鄉寧埔國民小學</p></div></div><div><p>網站更新 · 2026.10.28</p><p><i class="ami" lang="ami">Aray!</i> 謝謝你來逛逛，走進課程，發現山海生活。</p></div><p class="footer-links"><a href="resources.html">查找資料</a><a href="office.html">村辦公室</a><a href="stars.html">星空</a></p></div></footer>
+</body>
+</html>
