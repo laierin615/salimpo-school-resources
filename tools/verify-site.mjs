@@ -81,7 +81,7 @@ assert.equal(history.chapters.length,7);
 for(const t of data.historyMuseum.topics){if(t.hasContent){assert.ok(history.chapters[t.chapter-1]);assert.ok(ids.has(t.resourceId));for(const s of t.sections)assert.ok(s.paragraph<history.chapters[t.chapter-1].blocks.length);}}
 assert.equal(data.historyMuseum.topics.find(t=>t.id==='short-stories').sections.length,8);
 assert.equal(Object.keys(data.books).length,19);
-assert.equal(Object.keys(data.assets).length,506);
+assert.equal(Object.keys(data.assets).length,529);
 console.log('Museum index verified: 15 topics, 7 full articles; withdrawn plan absent.');
 
 const visit=data.visit115;
@@ -103,6 +103,9 @@ assert.equal(visit.finance.approved-visit.finance.reported,73528);
 for(const f of visit.forms){const book=JSON.parse(fs.readFileSync(path.join(dist,'books',f.book+'.json'),'utf8'));assert.ok(book.chapters[f.chapter-1].blocks.some(b=>b.kind==='table'));}
 for(const r of data.resources)assert.ok(Array.isArray(r.topics));
 console.log('Visit verified: 12 items, 3 forms, 8 training records, 29-file finance catalog; amounts reconcile.');
+{const b=data.visit115.briefing;assert.ok(b&&b.slides.length===23);for(const x of b.slides){const a=data.assets[x.photo];assert.ok(a&&a.width&&a.height&&x.title);}
+const vjs=fs.readFileSync(path.join(dist,'visits.js'),'utf8');assert.ok(vjs.includes('id="briefing"')&&vjs.includes('href="#briefing"'));assert.ok(fs.readFileSync(path.join(dist,'rich-ui.js'),'utf8').includes('.slide-deck'));
+console.log(`Briefing verified: ${b.slides.length} slides of the school briefing in the visit room, each with size and title.`);}
 
 assert.ok(home.includes('data-place="language-island"'));assert.ok(home.includes('data-place="song-island"'));assert.ok(home.includes('https://laierin615.github.io/saopo-songs-review/'));assert.ok(fs.existsSync(path.join(dist,'media/audio/saopo-tasoki-12s.mp3')));assert.ok(home.includes('https://laierin615.github.io/amis-language-competition/'));assert.ok(home.includes('salimpo-home-logo'));
 
