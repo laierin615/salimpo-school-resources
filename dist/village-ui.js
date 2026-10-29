@@ -38,18 +38,25 @@
     const quick=document.createElement('button');quick.type='button';quick.textContent=number(i)+' '+place.title;quick.setAttribute('aria-pressed','false');quick.addEventListener('click',()=>select(i));picker.append(quick);
     const dot=document.createElement('button');dot.type='button';dot.setAttribute('aria-label',number(i)+' '+place.title);dot.setAttribute('aria-pressed','false');dot.addEventListener('click',()=>select(i));dots.append(dot);
   });
+  // 竹筏不算編號的一站：用自己的卡片，打開時先收起地點卡
+  const raftCard=document.getElementById('raft-card');
+  function showRaft(){select(-1);if(!raftCard)return;welcome.hidden=true;raftCard.hidden=false;raftPin.setAttribute('aria-pressed','true');raftQuick.setAttribute('aria-pressed','true');}
+  const raftPin=document.createElement('button');raftPin.type='button';raftPin.className='place-pin raft-pin';raftPin.setAttribute('aria-label','竹筏 Dadangoyan');raftPin.setAttribute('aria-pressed','false');raftPin.innerHTML='<b>筏</b><span class="pin-name">竹筏</span>';raftPin.addEventListener('click',showRaft);labelRoot.append(raftPin);
+  const raftQuick=document.createElement('button');raftQuick.type='button';raftQuick.textContent='筏 竹筏';raftQuick.setAttribute('aria-pressed','false');raftQuick.addEventListener('click',showRaft);picker.append(raftQuick);
+  document.getElementById('raft-close')?.addEventListener('click',()=>select(-1));
   function select(index){
     selected=index;const place=places[index];
+    if(raftCard)raftCard.hidden=true;raftPin.setAttribute('aria-pressed','false');raftQuick.setAttribute('aria-pressed','false');
     welcome.hidden=!!place;card.hidden=!place;
     if(place){document.getElementById('place-number').textContent=number(index);document.getElementById('place-category').textContent=place.category;document.getElementById('place-title').textContent=place.title;document.getElementById('place-description').textContent=place.description;const ami=document.getElementById('place-ami');if(ami){ami.hidden=!place.ami;ami.querySelector('i').textContent=place.ami;ami.querySelector('span').textContent=place.amiZh;}const link=document.getElementById('place-link');link.href=place.url;link.textContent=place.go||(place.external?'出發到族語挑戰島 ↗':'走進這一站 →');window.dispatchEvent(new CustomEvent('salimpo:listen',{detail:place.listen||''}));if(place.external){link.target='_blank';link.rel='noopener noreferrer';}else{link.removeAttribute('target');link.removeAttribute('rel');}const link2=document.getElementById('place-link2');if(link2){link2.hidden=!place.url2;if(place.url2){link2.href=place.url2;link2.textContent=place.go2;}}document.getElementById('place-counter').textContent=number(index)+' / '+places.length;}
     else document.getElementById('place-counter').textContent='探索聚落';
-    [labelRoot,picker,dots].forEach(container=>[...container.children].forEach((button,i)=>button.setAttribute('aria-pressed',String(i===selected))));
+    [labelRoot,picker,dots].forEach(container=>[...container.children].forEach((button,i)=>{if(button!==raftPin&&button!==raftQuick)button.setAttribute('aria-pressed',String(i===selected));}));
     window.dispatchEvent(new CustomEvent('salimpo:place',{detail:index}));
   }
   document.getElementById('place-next').addEventListener('click',()=>select((selected+1)%places.length));
   document.getElementById('place-prev').addEventListener('click',()=>select(selected<0?places.length-1:(selected-1+places.length)%places.length));
   document.getElementById('place-close').addEventListener('click',()=>select(-1));
-  window.SALIMPO_VILLAGE={places,select,get selected(){return selected;}};
+  window.SALIMPO_VILLAGE={places,select,raft:showRaft,get selected(){return selected;}};
   window.failVillage=()=>{if(world.classList.contains('scene-ready'))return;world.classList.add('scene-unavailable');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=false;};
   setTimeout(()=>{if(!world.classList.contains('scene-ready'))window.failVillage();},15000);
 })();
