@@ -82,6 +82,7 @@
 .village-world.is-talking .place-picker{display:none}
 @media(max-width:600px){.village-world.is-talking .village-zoom{display:none}}
 @media(min-width:768px){.singsi-card{position:absolute;bottom:56px;width:min(460px,calc(50vw - 110px))}.singsi-card[data-side=left]{left:calc(282px - 50vw)}.singsi-card[data-side=right]{right:calc(326px - 50vw)}}
+.singsi-intro{margin:-4px 0 10px;font-size:.8125rem;line-height:1.6;color:var(--muted)}
 .singsi-say{margin:2px 0 10px;padding:11px 14px;border-radius:14px;background:var(--soft);color:var(--ink);font-size:.9375rem;line-height:1.6}
 .singsi-word{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
 .singsi-word .ami{font-size:1.15rem;color:var(--green-text)}

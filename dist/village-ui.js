@@ -49,21 +49,21 @@
   const monsterPin=document.createElement('button');monsterPin.type='button';monsterPin.className='place-pin monster-pin';monsterPin.setAttribute('aria-label','海怪 · 傳說故事');monsterPin.setAttribute('aria-pressed','false');monsterPin.innerHTML='<span class="pin-name">海怪</span>';monsterPin.addEventListener('click',showMonster);labelRoot.append(monsterPin);
   const monsterQuick=document.createElement('button');monsterQuick.type='button';monsterQuick.textContent='海怪';monsterQuick.setAttribute('aria-pressed','false');monsterQuick.addEventListener('click',showMonster);picker.append(monsterQuick);
   document.getElementById('monster-close')?.addEventListener('click',()=>select(-1));
-  // 村子裡的 singsi：點 3D 小人、頭上的名字或下方清單，跳出對話卡；一次說一則小知識，「再教我一個」換下一則，「考考我」出一題三選一，最後連到教案
+  // 村子裡的 singsi：點 3D 小人、頭上的名字或下方清單，跳出對話卡；先自我介紹，一次說一則小知識，「再教我一個」換下一則，「考考我」出一題三選一（再按一次換一題），最後連到教案
   const singsiList=window.SALIMPO_SINGSI||[],singsiCard=document.getElementById('singsi-card'),$=id=>document.getElementById(id);
   const lessonTitle=id=>(window.SCHOOL_DATA?.lessons||[]).find(l=>l.id===id)?.title||id;
-  let talking=-1,tip=0;
+  let talking=-1,tip=0,quizAt=0;
   const singsiPins=singsiList.map((s,i)=>{const pin=document.createElement('button');pin.type='button';pin.className='singsi-pin';pin.textContent=s.name;pin.setAttribute('aria-pressed','false');pin.addEventListener('click',()=>showSingsi(i));labelRoot.append(pin);return pin;});
-  function sayTip(){const s=singsiList[talking],t=s.tips[tip];$('singsi-say').textContent=t.text;$('singsi-ami').textContent=t.ami;$('singsi-zh').textContent=t.zh;$('singsi-count').textContent=(tip+1)+' / '+s.tips.length;$('singsi-talk').hidden=false;$('singsi-quiz').hidden=true;singsiCard.classList.remove('is-quiz');}
-  function askQuiz(){const s=singsiList[talking],box=$('singsi-options');$('singsi-question').textContent=s.quiz.q;$('singsi-result').textContent='';
-    // 正確答案不固定在第一個：依 singsi 的順序輪流換位置
-    box.replaceChildren(...s.quiz.options.map((_,k)=>(k+talking)%s.quiz.options.length).map(n=>{const b=document.createElement('button');b.type='button';b.textContent=s.quiz.options[n];b.addEventListener('click',()=>{const right=n===s.quiz.answer;b.classList.add(right?'is-right':'is-wrong');$('singsi-result').textContent=right?'答對了！':'再想想看';if(right)box.querySelectorAll('button').forEach(o=>o.disabled=true);});return b;}));
-    $('singsi-talk').hidden=true;$('singsi-quiz').hidden=false;singsiCard.classList.add('is-quiz');}
+  function sayTip(){const s=singsiList[talking],t=s.tips[tip];$('singsi-say').textContent=t.text;$('singsi-ami').textContent=t.ami;$('singsi-zh').textContent=t.zh;$('singsi-count').textContent=(tip+1)+' / '+s.tips.length;$('singsi-talk').hidden=false;$('singsi-quiz').hidden=true;$('singsi-test').textContent='考考我';singsiCard.classList.remove('is-quiz');}
+  function askQuiz(){const s=singsiList[talking],quizzes=s.quizzes||[s.quiz],n=quizAt++%quizzes.length,quiz=quizzes[n],box=$('singsi-options');$('singsi-question').textContent=quiz.q;$('singsi-result').textContent='';
+    // 正確答案不固定在第一個：依 singsi 的順序和第幾題輪流換位置
+    box.replaceChildren(...quiz.options.map((_,k)=>(k+talking+n)%quiz.options.length).map(m=>{const b=document.createElement('button');b.type='button';b.textContent=quiz.options[m];b.addEventListener('click',()=>{const right=m===quiz.answer;b.classList.add(right?'is-right':'is-wrong');$('singsi-result').textContent=right?'答對了！':'再想想看';if(right)box.querySelectorAll('button').forEach(o=>o.disabled=true);});return b;}));
+    $('singsi-test').textContent=quizzes.length>1?'換一題':'考考我';$('singsi-talk').hidden=true;$('singsi-quiz').hidden=false;singsiCard.classList.add('is-quiz');}
   function hideSingsi(){if(talking<0)return;talking=-1;if(singsiCard){singsiCard.hidden=true;singsiCard.closest('.village-world')?.classList.remove('is-talking');}singsiPins.forEach(pin=>pin.setAttribute('aria-pressed','false'));window.dispatchEvent(new CustomEvent('salimpo:singsi',{detail:-1}));}
-  function showSingsi(i){const s=singsiList[i];if(!s||!singsiCard)return;select(-1);talking=i;tip=0;welcome.hidden=true;singsiCard.hidden=false;
+  function showSingsi(i){const s=singsiList[i];if(!s||!singsiCard)return;select(-1);talking=i;tip=0;quizAt=0;welcome.hidden=true;singsiCard.hidden=false;
     // 桌機版對話卡靠到 singsi 的另一側，才看得到被點的人在說話；手機版先收起地點按鈕，讓卡片往下放
     singsiCard.dataset.side=(parseFloat(singsiPins[i].style.left)||0)>document.documentElement.clientWidth/2-22?'left':'right';singsiCard.closest('.village-world')?.classList.add('is-talking');
-    $('singsi-where').textContent=s.where+' · '+s.prop;$('singsi-name').textContent=s.name;sayTip();
+    $('singsi-where').textContent=s.where+' · '+s.prop;$('singsi-name').textContent=s.name;const intro=$('singsi-intro');if(intro){intro.textContent=s.intro||'';intro.hidden=!s.intro;}sayTip();
     $('singsi-links').replaceChildren(...[...(s.links||[]),...(s.lessons||[]).map(id=>({label:lessonTitle(id),href:'lessons.html?lesson='+encodeURIComponent(id)}))].map(link=>{const a=document.createElement('a');a.href=link.href;const out=/^https?:/.test(link.href);a.textContent=link.label+(out?' ↗':' →');if(out){a.target='_blank';a.rel='noopener noreferrer';}return a;}));
     singsiPins.forEach((pin,k)=>pin.setAttribute('aria-pressed',String(k===i)));window.dispatchEvent(new CustomEvent('salimpo:singsi',{detail:i}));}
   $('singsi-next')?.addEventListener('click',()=>{if(talking<0)return;tip=(tip+1)%singsiList[talking].tips.length;sayTip();});
