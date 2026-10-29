@@ -35,7 +35,7 @@
     out: `<i class="ami" lang="ami">Aray!</i> 謝謝你今天的辛苦，回家路上小心。`
   };
 
-  const linkItem = link => `<li><a class="${link.main ? 'is-main' : ''}" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer"><span class="office-kind">${link.kind === 'padlet' ? 'Padlet' : '文件'}</span><span>${esc(link.label)}</span><span class="office-go" aria-hidden="true">↗</span></a></li>`;
+  const linkItem = link => `<li><a class="${link.main ? 'is-main' : ''}" href="${esc(link.url)}" target="_blank" rel="noopener noreferrer"><span class="office-kind">${link.kind === 'padlet' ? 'Padlet' : link.kind === 'folder' ? '資料夾' : '文件'}</span><span>${esc(link.label)}</span><span class="office-go" aria-hidden="true">↗</span></a></li>`;
   const grid = rows => `<div class="office-grid" role="group" aria-label="各年段教案紀錄">${rows.map(row => {
     const cells = ['低年級', '中年級', '高年級'].map(band => { const cell = row.cells.find(c => c.band === band); return cell ? `<a href="${esc(cell.url)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(row.course + ' ' + band)}">${band}</a>` : '<span></span>'; }).join('');
     return `<div class="office-grid-row"><b>${esc(row.course)}</b>${cells}</div>`;

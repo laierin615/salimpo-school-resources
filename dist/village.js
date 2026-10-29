@@ -4,8 +4,8 @@ const canvas=document.getElementById('village-canvas');
 const world=document.getElementById('village-world');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3],[3.8,2.75]];
-// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）、9（原文史資料館）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去
-const spots=[0,1,2,4,5,6,7,8,11,12,13],placeOf=spot=>spots.indexOf(spot);
+// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去；位置 9 種了古謠樹
+const spots=[0,1,2,4,5,6,9,7,8,11,12,13],placeOf=spot=>spots.indexOf(spot);
 let renderer;
 try{
   renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
@@ -101,7 +101,21 @@ function buildVillage(){
   const stage=new THREE.Group();stage.position.set(...[positions[6][0],.14,positions[6][1]]);stage.userData.placeIndex=placeOf(6);scene.add(stage);buildings.push(stage);cylinder(1,.22,0,.11,0,0xe8d6ad,stage,24);for(const x of [-.74,.74])for(const z of [-.55,.55])box(.055,1.15,.055,x,.79,z,0xc8bda2,stage);roof(1.85,1.45,.45,1.38,0xc59b68,stage);box(.45,.44,.26,-.48,.46,-.3,0x8c7152,stage);box(.45,.44,.26,.48,.46,-.3,0x8c7152,stage);
   const archive=building(7,0xe8e4d9,0x5b7f95,1.7,1.35,1.1);for(const x of [-.7,-.35,.35,.7])box(.09,1.02,.09,x,.69,.8,0xe7e8dd,archive);box(1.95,.1,.6,0,.19,.86,0xc8c9b4,archive);box(.75,.1,.04,0,1.19,.79,0x50a578,archive);
   const kiosk=building(8,0xddcca3,0x58a8a0,.95,.9,.65);box(.55,.42,.06,0,.81,.54,0x37758c,kiosk);box(.055,.2,.04,0,.8,.58,0xf8f1d9,kiosk);box(.055,.04,.04,0,.97,.58,0xf8f1d9,kiosk);
-  const history=building(9,0xe8cda3,0x82785b,1.3,1.18,.94);for(const x of [-.54,.54])beam(new THREE.Vector3(x,.15,.75),new THREE.Vector3(x,1.3,.75),.035,0x806348,history);box(.82,.19,.045,0,1.18,.67,0x578875,history);for(let i=0;i<4;i++)box(.13,.31,.09,-.26+i*.15,.48,.72,[0xaf7d61,0x5b8290,0xb5a063,0x638367][i],history);
+  // 古謠樹（位置 9，原文史資料館的空房子）：樹根是耆老傳下的古調，捲成金色的音符線；樹冠長出孩子哼的新旋律，音符往上飄
+  const songTree=new THREE.Group();songTree.position.set(positions[9][0],.14,positions[9][1]);songTree.scale.setScalar(1.3);songTree.userData.placeIndex=placeOf(9);scene.add(songTree);buildings.push(songTree);
+  cylinder(.95,.1,0,.05,0,0xcdbb92,songTree,20);
+  beam(new THREE.Vector3(0,.05,0),new THREE.Vector3(.06,1.05,-.02),.13,0x7d5a3c,songTree);
+  for(const [a,l] of [[.3,.62],[1.9,.55],[3.4,.66],[4.8,.58]]){const tip=new THREE.Vector3(Math.cos(a)*l,.12,Math.sin(a)*l);beam(new THREE.Vector3(0,.22,0),tip,.045,0x7d5a3c,songTree);
+    const curl=mesh(new THREE.TorusGeometry(.11,.022,6,14,Math.PI*1.5),0xe0b04f,songTree);curl.position.copy(tip).setY(.16);curl.rotation.set(-Math.PI/2,0,a);curl.castShadow=false;}
+  for(const [x,y,z,r,c] of [[0,1.25,0,.55,0x5e9d5a],[-.36,1.05,.18,.36,0x72b36b],[.38,1.1,-.1,.38,0x6aa863],[.05,1.58,.05,.34,0x82bf74]]){const crown=mesh(geometry.leaf,c,songTree);crown.scale.setScalar(r);crown.position.set(x,y,z);}
+  for(const [x,y,z,c] of [[-.32,1.32,.42,0xd6553f],[.42,1.4,.25,0xf2c14e],[.15,1.05,.5,0xd6553f],[-.48,1.12,-.2,0xf2c14e]]){const fruit=mesh(geometry.leaf,c,songTree);fruit.scale.setScalar(.06);fruit.position.set(x,y,z);}
+  const treeNotes=[];
+  for(let i=0;i<3;i++){const group=new THREE.Group();songTree.add(group);const noteMaterial=new THREE.MeshStandardMaterial({color:[0xd6553f,0xf2c14e,0x7bcdd0][i],emissive:0x5a3a00,emissiveIntensity:.25,roughness:.7,flatShading:true,transparent:true});
+    const headNote=mesh(geometry.leaf,noteMaterial,group);headNote.scale.set(.075,.058,.062);headNote.rotation.z=.4;headNote.castShadow=false;
+    const stem=box(.016,.24,.016,.062,.125,0,noteMaterial,group);stem.castShadow=false;
+    if(i!==1){const flag=box(.1,.028,.016,.105,.23,0,noteMaterial,group);flag.rotation.z=-.6;flag.castShadow=false;}
+    treeNotes.push({group,material:noteMaterial});}
+  function animateSongTree(elapsed){treeNotes.forEach((n,i)=>{const t=(elapsed*.13+i/treeNotes.length)%1;n.group.position.set(Math.sin(t*4+i*2.1)*.45,1.55+t*1.3,Math.cos(t*3+i)*.3);n.group.rotation.y=elapsed*.5+i;n.material.opacity=Math.sin(t*Math.PI);});}
   const visitHouse=building(10,0xe6dfc5,0x419080,1.25,1.1,.93);box(.72,.18,.04,0,1.14,.63,0xc3a35f,visitHouse);box(1.4,.1,.38,0,.18,.8,0xc1ae83,visitHouse);
   // 第 14 站村辦公室：山牆上有小時鐘，門口招牌與雨遮，右邊公布欄、左邊紅色信箱
   const office=building(13,0xf3e7cf,0xb4553d,1.15,1,.88);box(.56,.14,.04,0,.95,.53,0x2f7a5e,office);box(.7,.05,.3,0,.8,.64,0xc9b48a,office);
@@ -265,7 +279,7 @@ function buildVillage(){
     yaw=THREE.MathUtils.lerp(yaw,targetYaw,.12);pitch=THREE.MathUtils.lerp(pitch,targetPitch,.12);if(Math.abs(zoom-targetZoom)>.0005){zoom=THREE.MathUtils.lerp(zoom,targetZoom,.18);project();}focus.lerp(targetFocus,.12);pan.lerp(targetPan,.18);
     const lookX=focus.x+pan.x,lookZ=focus.z+pan.z,flat=Math.cos(pitch)*RADIUS;camera.position.set(lookX+Math.sin(yaw)*flat,Math.sin(pitch)*RADIUS,lookZ+Math.cos(yaw)*flat);camera.lookAt(lookX,.05,lookZ);
     if(hoverAt&&!down){setHover(placeAt(...hoverAt));hoverAt=null;}
-    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});boat.position.y=-.95+Math.sin(elapsed*1.4)*.055;boat.rotation.z=Math.sin(elapsed*.9)*.035;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);}
+    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});boat.position.y=-.95+Math.sin(elapsed*1.4)*.055;boat.rotation.z=Math.sin(elapsed*.9)*.035;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);}
     labels();renderer.render(scene,camera);
   }
   frame(performance.now());requestAnimationFrame(()=>requestAnimationFrame(()=>{/* 超過 15 秒才載好時，從備用清單切回 3D 版面 */world.classList.remove('scene-unavailable');world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;}));

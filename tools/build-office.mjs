@@ -51,7 +51,7 @@ const payload = {
   }))
 };
 for (const group of payload.groups) for (const url of [...group.links.map(l => l.url), ...(group.grid || []).flatMap(r => r.cells.map(c => c.url))])
-  if (!/^https:\/\/(docs\.google\.com|padlet\.com)\//.test(url)) throw new Error('只接受 Google 文件與 Padlet 連結：' + url);
+  if (!/^https:\/\/(docs\.google\.com|drive\.google\.com\/drive\/folders|padlet\.com)\//.test(url)) throw new Error('只接受 Google 文件、雲端資料夾與 Padlet 連結：' + url);
 
 const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
 const data = new Uint8Array(await crypto.subtle.encrypt({name: 'AES-GCM', iv}, await deriveKey(salt, 'encrypt'), enc.encode(JSON.stringify(payload))));
