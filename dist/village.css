@@ -76,7 +76,7 @@
 /* 跟 singsi 說話時收起地點按鈕（手機版連縮放鈕一起收，卡片才不會頂到族語小語）；桌機版對話卡靠到說話那位的另一側，左邊對齊聚落標題、右邊讓出縮放鈕 */
 .village-world.is-talking .place-picker{display:none}
 @media(max-width:600px){.village-world.is-talking .village-zoom{display:none}}
-@media(min-width:1000px){.singsi-card{position:absolute;bottom:56px;width:min(460px,calc(50vw - 120px))}.singsi-card[data-side=left]{left:calc(282px - 50vw)}.singsi-card[data-side=right]{right:calc(326px - 50vw)}}
+@media(min-width:768px){.singsi-card{position:absolute;bottom:56px;width:min(460px,calc(50vw - 110px))}.singsi-card[data-side=left]{left:calc(282px - 50vw)}.singsi-card[data-side=right]{right:calc(326px - 50vw)}}
 .singsi-say{margin:2px 0 10px;padding:11px 14px;border-radius:14px;background:var(--soft);color:var(--ink);font-size:.9375rem;line-height:1.6}
 .singsi-word{display:flex;flex-wrap:wrap;align-items:baseline;gap:8px}
 .singsi-word .ami{font-size:1.15rem;color:var(--green-text)}
@@ -87,7 +87,7 @@
 /* 考考我的時候選項排成一排膠囊、先收起連結，卡片才不會長高蓋到上面的族語小語 */
 .singsi-options{display:flex;flex-wrap:wrap;gap:6px}
 .singsi-card.is-quiz .singsi-links{display:none}
-.singsi-options button{min-height:38px;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font-size:.875rem;text-align:left}
+.singsi-options button{min-height:38px;padding:7px 14px;border:1px solid var(--line);border-radius:18px;background:var(--surface);color:var(--ink);font-size:.875rem;text-align:left}
 .singsi-options button.is-right{background:var(--green);border-color:var(--green);color:#06270f}
 .singsi-options button.is-wrong{background:#fde2dc;border-color:#f0a796;color:#7a2a1a}
 .singsi-result{min-height:1.4em;margin-top:6px;font-size:.8125rem;font-weight:700;color:var(--green-text)}
