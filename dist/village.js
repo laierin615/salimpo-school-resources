@@ -124,7 +124,7 @@ function buildVillage(){
   // 村子裡的小人：大頭、圓臉、點點眼睛和腮紅，身體短短的；阿美族頭飾（白色頭帶加毛球）可以關掉。原點在腳底，高度約 0.42
   const smoothMaterials={};function smooth(color){return smoothMaterials[color]||(smoothMaterials[color]=new THREE.MeshStandardMaterial({color,roughness:.75}));}
   const chibiGeo={head:new THREE.SphereGeometry(.088,18,14),hair:new THREE.SphereGeometry(.094,18,10,0,Math.PI*2,0,Math.PI*.56),bun:new THREE.SphereGeometry(.04,10,8),eye:new THREE.SphereGeometry(.012,8,6),cheek:new THREE.SphereGeometry(.015,8,6),body:new THREE.CylinderGeometry(.048,.072,.13,14),skirt:new THREE.CylinderGeometry(.074,.08,.05,14),leg:new THREE.CylinderGeometry(.018,.018,.06,8),arm:new THREE.CylinderGeometry(.017,.019,.085,8),hand:new THREE.SphereGeometry(.022,8,6),band:new THREE.TorusGeometry(.086,.012,6,22),pom:new THREE.SphereGeometry(.022,10,8)};
-  function chibi(parent,{top=0xd2453a,bottom=0x2f2d36,hair=0x2b2422,skin=0xe8c09a,band=true,pom=0xffd166,sing=false,elder=false}={}){
+  function chibi(parent,{top=0xd2453a,bottom=0x2f2d36,hair=0x2b2422,skin=0xe8c09a,eyes=0x2a2220,band=true,pom=0xffd166,sing=false,elder=false}={}){
     const g=new THREE.Group();parent.add(g);const part=(geo,color,x,y,z,shadow=true)=>{const o=new THREE.Mesh(geo,smooth(color));o.position.set(x,y,z);o.castShadow=shadow;g.add(o);return o;};
     for(const x of [-.026,.026])part(chibiGeo.leg,0x5a4a42,x,.03,0);
     part(chibiGeo.skirt,bottom,0,.085,0);part(chibiGeo.body,top,0,.14,0);
@@ -132,7 +132,7 @@ function buildVillage(){
     part(chibiGeo.head,skin,0,.29,0);
     const cap=part(chibiGeo.hair,elder?0xe9e4da:hair,0,.296,-.006);cap.rotation.x=-.42;
     if(elder)part(chibiGeo.bun,0xe9e4da,0,.33,-.075);
-    for(const x of [-.03,.03])part(chibiGeo.eye,0x2a2220,x,.296,.081,false);
+    for(const x of [-.03,.03])part(chibiGeo.eye,eyes,x,.296,.081,false);
     for(const x of [-.054,.054]){const c=part(chibiGeo.cheek,0xf2a0a0,x,.268,.069,false);c.scale.z=.45;}
     if(sing){const mouth=part(chibiGeo.eye,0x8a3a3a,0,.255,.084,false);mouth.scale.set(.9,1.1,.4);}
     if(band){const ring=part(chibiGeo.band,0xf3ead8,0,.33,0);ring.rotation.x=Math.PI/2-.25;part(chibiGeo.pom,pom,0,.36,.07,false);}
@@ -404,8 +404,8 @@ function buildVillage(){
 
   let night=false;function setTheme(theme){night=theme==='night';hemi.intensity=night?.7:2.3;hemi.color.set(night?0x9bb7eb:0xeafaff);sun.intensity=night?.5:3.2;sun.color.set(night?0xb0c4ed:0xfff1d2);fill.intensity=night?.25:.65;renderer.toneMappingExposure=night?.88:1.18;seaMaterial.color.set(night?0x173f59:0x73bfc0);stars.visible=night;nightMoon.visible=night;clouds.forEach(c=>c.group.visible=!night);lights.forEach(light=>light.intensity=night?2.2:0);lampGlow.emissiveIntensity=night?1.4:0;scene.fog=new THREE.Fog(night?0x102d45:0xb5ddd9,35,110);}
   setTheme(document.documentElement.dataset.theme);window.addEventListener('salimpo:theme',event=>setTheme(event.detail));
-  // 村子裡的 singsi：11 位老師站在各站旁邊，手上拿著代表道具，頭上有對話泡泡；點一下跳出對話卡（文字在 singsi.js，順序和這裡一樣）
-  // at 是腳底位置，y 是站的高度（勤偉站在成果廣場的景觀台上），turn 是面向（0.61 正對鏡頭）
+  // 村子裡的 singsi：12 位老師站在各站旁邊，手上拿著代表道具，頭上有對話泡泡；點一下跳出對話卡（文字在 singsi.js，順序和這裡一樣）
+  // at 是腳底位置，y 是站的高度（勤偉站在成果廣場的景觀台上），turn 是面向（0.61 正對鏡頭）；Jeff singsi 站在素卿 singsi 左手邊，個子高一點、白頭髮綠眼睛
   const SINGSI=[
     {at:[2.25,-1.65],turn:.35,top:0x3b6ea5,band:true,prop:'book'},
     {at:[-.1,6.6],turn:.85,top:0x2f8f9d,prop:'spear'},
@@ -417,7 +417,8 @@ function buildVillage(){
     {at:[1.1,1.25],turn:.5,top:0x4a7f6a,prop:'map'},
     {at:[-3.5,6.6],turn:.9,top:0x6aa0c8,prop:'leaf'},
     {at:[-2.6,-2.6],turn:.5,top:0xc75f86,prop:'lens'},
-    {at:[.85,5.05],turn:.85,top:0xd9774a,prop:'basket'}
+    {at:[.85,5.05],turn:.85,top:0xd9774a,prop:'basket'},
+    {at:[.33,5.2],turn:.85,top:0x4f78c4,hair:0xdedbd3,eyes:0x2f9d5b,skin:0xf0c4a8,size:1.75,prop:'abc'}
   ];
   const singsiFigures=[],singsiBubbles=[];let talkingTo=-1,singsiHover=-1,waveArm=null,tapTube=null;
   {
@@ -434,8 +435,8 @@ function buildVillage(){
     const hitMaterial=new THREE.MeshBasicMaterial({visible:false}),hitGeo=new THREE.CylinderGeometry(.22,.22,.7,8);
     const glass=color=>new THREE.MeshStandardMaterial({color,transparent:true,opacity:.6,roughness:.15});
     SINGSI.forEach((s,i)=>{
-      const g=new THREE.Group();g.position.set(s.at[0],s.y||.13,s.at[1]);g.rotation.y=s.turn;g.scale.setScalar(1.65);g.userData.singsi=i;scene.add(g);singsiFigures.push(g);
-      const body=chibi(g,{top:s.top,hair:[0x2b2422,0x4a3428,0x3a2c26][i%3],band:!!s.band});
+      const g=new THREE.Group();g.position.set(s.at[0],s.y||.13,s.at[1]);g.rotation.y=s.turn;g.scale.setScalar(s.size||1.65);g.userData.singsi=i;scene.add(g);singsiFigures.push(g);
+      const body=chibi(g,{top:s.top,hair:s.hair??[0x2b2422,0x4a3428,0x3a2c26][i%3],eyes:s.eyes,skin:s.skin,band:!!s.band});
       const hit=new THREE.Mesh(hitGeo,hitMaterial);hit.position.y=.35;g.add(hit);
       const bubble=new THREE.Sprite(bubbleMaterial);bubble.scale.set(.28,.22,1);bubble.position.set(.07,.58,0);g.add(bubble);singsiBubbles.push(bubble);
       const p=s.prop;
@@ -450,6 +451,10 @@ function buildVillage(){
       if(p==='leaf'){/* 月桃葉：舉在手上 */const leaf=mesh(geometry.leaf,0x4f9c55,g);leaf.scale.set(.028,.12,.055);leaf.position.set(.11,.25,.05);leaf.rotation.z=-.35;beam(V(.095,.13,.04),V(.105,.17,.045),.006,0x3f7d3f,g);}
       if(p==='lens'){/* 放大鏡：拿在胸前看 */const lens=new THREE.Group();lens.position.set(.1,.19,.08);lens.rotation.set(0,-.3,-.4);g.add(lens);mesh(new THREE.TorusGeometry(.036,.008,6,18),0x3d4448,lens);const disc=mesh(new THREE.CylinderGeometry(.034,.034,.004,16),glass(0xcdeef7),lens);disc.rotation.x=Math.PI/2;beam(V(0,-.04,0),V(0,-.09,0),.008,0x6e4b32,lens);}
       if(p==='basket'){/* 一籃野番茄 */const basket=mesh(new THREE.CylinderGeometry(.07,.055,.06,12),0xa0784a,g);basket.position.set(0,.11,.09);const berry=new THREE.SphereGeometry(.02,8,6);for(const [x,z] of [[-.03,.075],[.02,.085],[.035,.105],[-.01,.11],[0,.09]])mesh(berry,0xd6453a,g).position.set(x,.15,z);}
+      if(p==='abc'){/* 英文字母卡：紅 A、藍 B、綠 C，捧在胸前 */const card=new THREE.Group();card.position.set(0,.17,.095);card.rotation.x=-.55;g.add(card);box(.155,.105,.008,0,0,0,0x2f4f7f,card);
+        const sheet=document.createElement('canvas');sheet.width=192;sheet.height=120;const ink=sheet.getContext('2d');ink.fillStyle='#fbf6e6';ink.fillRect(0,0,192,120);ink.font='800 86px Outfit, Arial, sans-serif';ink.textAlign='center';ink.textBaseline='middle';
+        for(const [letter,color,x] of [['A','#d6453a',40],['B','#3b7dd8',96],['C','#2f9d5b',152]]){ink.fillStyle=color;ink.fillText(letter,x,66);}
+        const letters=new THREE.CanvasTexture(sheet);letters.colorSpace=THREE.SRGBColorSpace;const face=new THREE.Mesh(new THREE.PlaneGeometry(.14,.09),new THREE.MeshStandardMaterial({map:letters,roughness:.8}));face.position.z=.0045;card.add(face);}
     });
     // 淑樺 singsi 的家屋工地在修煉場右前方（避開低空的雲和散步的路線）：木頭骨架先立好、屋頂一半鋪了茅草，地上堆著木頭和黃藤
     const site=new THREE.Group();site.position.set(6.95,.13,1.15);site.rotation.y=.61;scene.add(site);

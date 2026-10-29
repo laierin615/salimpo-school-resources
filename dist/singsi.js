@@ -1,4 +1,4 @@
-// 村子裡的 singsi：首頁 3D 聚落裡的 11 位老師（內容 1029 老師確認）。intro 是一打開對話卡的自我介紹；每位 5 則小知識各帶一個族語詞
+// 村子裡的 singsi：首頁 3D 聚落裡的 12 位老師（內容 1029 老師確認；Jeff singsi 教英文，族語、英文、中文三種說法一起教）。intro 是一打開對話卡的自我介紹；每位 5 則小知識各帶一個族語詞
 // （tatokem 詞庫或阿美語萌典查證，詞庫和萌典意思不一樣的詞先不用）；quizzes 每題三選一（answer 是正確選項在 options 裡的位置），
 // 「考考我」按一次換一題；最後連到的教案（lessons 填課號，標題從 data.js 帶入）或網站。只寫「X singsi」，不寫全名。
 window.SALIMPO_SINGSI=[
@@ -111,5 +111,15 @@ window.SALIMPO_SINGSI=[
       {text:'採野菜的時候不要全部摘光，留一些讓它再長。',ami:'midateng',zh:'採野菜'}],
     quizzes:[{q:'慢食的三個原則是什麼？',options:['好吃、乾淨、公平','快速、便宜、大份','甜、鹹、辣'],answer:0},
       {q:'「採野菜」的族語是哪一個？',options:['midateng','kamamit','omah'],answer:0}],
-    lessons:['L-B-04']}
+    lessons:['L-B-04']},
+  {id:'jeff',name:'Jeff singsi',where:'食農田區',prop:'英文字母卡',
+    intro:'Nga\'ay ho! 我是 Jeff singsi。我教大家英文：族語、英文、中文，我們一起學三種說法！',
+    tips:[{text:'見面打招呼，族語說 nga\'ay ho，英文說 Hello，兩種都要大聲說出來。',ami:'nga\'ay ho',zh:'你好 · Hello'},
+      {text:'別人幫了你的忙，族語說 aray，英文說 Thank you。',ami:'aray',zh:'謝謝 · Thank you'},
+      {text:'一起數數：cecay、tosa、tolo，英文是 one、two、three。',ami:'cecay',zh:'一 · one'},
+      {text:'我的頭髮是 kohecalay，英文說 white。',ami:'kohecalay',zh:'白色 · white'},
+      {text:'我的 mata 是綠色的，英文說 green eyes。你的 mata 是什麼顏色？',ami:'mata',zh:'眼睛 · eyes'}],
+    quizzes:[{q:'英文的 Thank you，族語要怎麼說？',options:['aray','nga\'ay ho','mata'],answer:0},
+      {q:'Jeff singsi 的頭髮是 kohecalay，那是什麼顏色？',options:['白色 white','綠色 green','紅色 red'],answer:0}],
+    links:[{label:'到書屋看繪本',href:'library.html'}]}
 ];
