@@ -98,10 +98,39 @@ function buildVillage(){
   const farm=building(4,0xddbe88,0x829468,.85,.85,.65);for(let row=0;row<3;row++){box(1.5,.09,.24,-.55,.12,.95+row*.38,0x806647,farm);for(let j=0;j<5;j++){const x=-1.1+j*.29;const stem=cylinder(.018,.22,x,.26,.95+row*.38,0x4e8b45,farm,5);const leaf=mesh(geometry.leaf,0x4f9c55,farm);leaf.scale.set(.11,.12,.11);leaf.position.set(x,.38,.95+row*.38);if(row===1)rock(.045,x+.055,.36,1.34,0xd6654c,farm);}}
   for(let j=0;j<5;j++){box(.045,.3,.045,-1.35+j*.62,.29,2.03,0xccb68b,farm);}box(2.5,.045,.045,-.12,.37,2.03,0xccb68b,farm);
   const ocean=building(5,0xe4e8dc,0x638fa3,.86,.86,.72);for(let j=0;j<8;j++)box(1.1,.055,.19,0,.11,1+j*.2,0xb9956e,ocean);for(const x of [-.5,.5])for(let j=0;j<3;j++)cylinder(.055,.75,x,-.15,1.05+j*.6,0x8b7257,ocean);
-  const stage=new THREE.Group();stage.position.set(...[positions[6][0],.14,positions[6][1]]);stage.userData.placeIndex=placeOf(6);scene.add(stage);buildings.push(stage);cylinder(1,.22,0,.11,0,0xe8d6ad,stage,24);for(const x of [-.74,.74])for(const z of [-.55,.55])box(.055,1.15,.055,x,.79,z,0xc8bda2,stage);roof(1.85,1.45,.45,1.38,0xc59b68,stage);box(.45,.44,.26,-.48,.46,-.3,0x8c7152,stage);box(.45,.44,.26,.48,.46,-.3,0x8c7152,stage);
+  const stage=new THREE.Group();stage.position.set(...[positions[6][0],.14,positions[6][1]]);stage.userData.placeIndex=placeOf(6);scene.add(stage);buildings.push(stage);
+  // 成果廣場是露天景觀台、沒有屋頂：石砌圓台上鋪木板，一圈欄杆，朝村子中央留台階；台上有作品展示板和獎盃台，靠海那側放望遠鏡和長椅
+  cylinder(1,.22,0,.11,0,0xd9c8a2,stage,24);cylinder(.96,.04,0,.24,0,0xc29a68,stage,24);for(let i=-3;i<=3;i++){const z=i*.24;box(2*Math.sqrt(.92*.92-z*z),.006,.012,0,.262,z,0x9a7650,stage);}
+  const deckIn=Math.atan2(-positions[6][1],-positions[6][0]),deckSea=deckIn+Math.PI,around=a=>new THREE.Vector3(Math.cos(a)*.9,.54,Math.sin(a)*.9);
+  const railPosts=[];for(let k=0;k<16;k++){const a=deckIn+.42+k/16*(Math.PI*2-.84);railPosts.push(a);cylinder(.022,.3,Math.cos(a)*.9,.41,Math.sin(a)*.9,0x8a6a48,stage,6);}
+  railPosts.forEach((a,k)=>{if(k)beam(around(railPosts[k-1]),around(a),.016,0x8a6a48,stage);});
+  const deckSteps=new THREE.Group();deckSteps.position.set(Math.cos(deckIn)*.98,0,Math.sin(deckIn)*.98);deckSteps.rotation.y=-(Math.PI/2+deckIn);stage.add(deckSteps);box(.6,.17,.16,0,.085,.02,0xc9b58c,deckSteps);box(.6,.085,.16,0,.043,-.14,0xc9b58c,deckSteps);
+  for(const [side,colors] of [[1,[0xd6553f,0xf2c14e]],[-1,[0x5cc1d8,0x7ad86f]]]){const a=deckIn+side*1.75,board=new THREE.Group();board.position.set(Math.cos(a)*.55,.26,Math.sin(a)*.55);board.rotation.y=-(Math.PI/2+a)+Math.PI;stage.add(board);
+    for(const x of [-.17,.17])beam(new THREE.Vector3(x,0,-.04),new THREE.Vector3(x*.8,.42,0),.012,0x6e5238,board);box(.42,.28,.025,0,.34,0,0x8a6a48,board);box(.17,.2,.01,-.095,.34,.016,colors[0],board);box(.17,.2,.01,.095,.34,.016,colors[1],board);}
+  cylinder(.11,.16,0,.34,0,0xe9e4da,stage,10);const cup=mesh(new THREE.CylinderGeometry(.07,.035,.1,12),0xf2c14e,stage);cup.position.set(0,.48,0);cylinder(.025,.05,0,.44,0,0xf2c14e,stage,8);for(const s of [-1,1]){const handle=mesh(new THREE.TorusGeometry(.03,.008,5,10),0xf2c14e,stage);handle.position.set(s*.08,.49,0);}
+  const scope=new THREE.Group();scope.position.set(Math.cos(deckSea)*.62,.26,Math.sin(deckSea)*.62);scope.rotation.y=-(Math.PI/2+deckSea);stage.add(scope);for(const a of [0,2.1,4.2])beam(new THREE.Vector3(Math.cos(a)*.08,0,Math.sin(a)*.08),new THREE.Vector3(0,.3,0),.01,0x4a5558,scope);
+  const tube=mesh(new THREE.CylinderGeometry(.03,.042,.28,10),0x37758c,scope);tube.position.set(0,.34,-.03);tube.rotation.x=-(Math.PI/2-.25);
+  const bench=new THREE.Group();bench.position.set(Math.cos(deckSea+.75)*.62,.26,Math.sin(deckSea+.75)*.62);bench.rotation.y=-(Math.PI/2+deckSea+.75);stage.add(bench);box(.42,.035,.13,0,.12,0,0xb58a5a,bench);for(const x of [-.17,.17])box(.03,.12,.11,x,.06,0,0x8a6a48,bench);
+
   const archive=building(7,0xe8e4d9,0x5b7f95,1.7,1.35,1.1);for(const x of [-.7,-.35,.35,.7])box(.09,1.02,.09,x,.69,.8,0xe7e8dd,archive);box(1.95,.1,.6,0,.19,.86,0xc8c9b4,archive);box(.75,.1,.04,0,1.19,.79,0x50a578,archive);
   const kiosk=building(8,0xddcca3,0x58a8a0,.95,.9,.65);box(.55,.42,.06,0,.81,.54,0x37758c,kiosk);box(.055,.2,.04,0,.8,.58,0xf8f1d9,kiosk);box(.055,.04,.04,0,.97,.58,0xf8f1d9,kiosk);
   const history=building(9,0xe8cda3,0x82785b,1.3,1.18,.94);for(const x of [-.54,.54])beam(new THREE.Vector3(x,.15,.75),new THREE.Vector3(x,1.3,.75),.035,0x806348,history);box(.82,.19,.045,0,1.18,.67,0x578875,history);for(let i=0;i<4;i++)box(.13,.31,.09,-.26+i*.15,.48,.72,[0xaf7d61,0x5b8290,0xb5a063,0x638367][i],history);
+  // 村子裡的小人：大頭、圓臉、點點眼睛和腮紅，身體短短的；阿美族頭飾（白色頭帶加毛球）可以關掉。原點在腳底，高度約 0.42
+  const smoothMaterials={};function smooth(color){return smoothMaterials[color]||(smoothMaterials[color]=new THREE.MeshStandardMaterial({color,roughness:.75}));}
+  const chibiGeo={head:new THREE.SphereGeometry(.088,18,14),hair:new THREE.SphereGeometry(.094,18,10,0,Math.PI*2,0,Math.PI*.56),bun:new THREE.SphereGeometry(.04,10,8),eye:new THREE.SphereGeometry(.012,8,6),cheek:new THREE.SphereGeometry(.015,8,6),body:new THREE.CylinderGeometry(.048,.072,.13,14),skirt:new THREE.CylinderGeometry(.074,.08,.05,14),leg:new THREE.CylinderGeometry(.018,.018,.06,8),arm:new THREE.CylinderGeometry(.017,.019,.085,8),hand:new THREE.SphereGeometry(.022,8,6),band:new THREE.TorusGeometry(.086,.012,6,22),pom:new THREE.SphereGeometry(.022,10,8)};
+  function chibi(parent,{top=0xd2453a,bottom=0x2f2d36,hair=0x2b2422,skin=0xe8c09a,band=true,pom=0xffd166,sing=false,elder=false}={}){
+    const g=new THREE.Group();parent.add(g);const part=(geo,color,x,y,z,shadow=true)=>{const o=new THREE.Mesh(geo,smooth(color));o.position.set(x,y,z);o.castShadow=shadow;g.add(o);return o;};
+    for(const x of [-.026,.026])part(chibiGeo.leg,0x5a4a42,x,.03,0);
+    part(chibiGeo.skirt,bottom,0,.085,0);part(chibiGeo.body,top,0,.14,0);
+    for(const s of [-1,1]){const arm=part(chibiGeo.arm,top,s*.066,.16,0);arm.rotation.z=s*.55;part(chibiGeo.hand,skin,s*.09,.125,.01,false);}
+    part(chibiGeo.head,skin,0,.29,0);
+    const cap=part(chibiGeo.hair,elder?0xe9e4da:hair,0,.296,-.006);cap.rotation.x=-.42;
+    if(elder)part(chibiGeo.bun,0xe9e4da,0,.33,-.075);
+    for(const x of [-.03,.03])part(chibiGeo.eye,0x2a2220,x,.296,.081,false);
+    for(const x of [-.054,.054]){const c=part(chibiGeo.cheek,0xf2a0a0,x,.268,.069,false);c.scale.z=.45;}
+    if(sing){const mouth=part(chibiGeo.eye,0x8a3a3a,0,.255,.084,false);mouth.scale.set(.9,1.1,.4);}
+    if(band){const ring=part(chibiGeo.band,0xf3ead8,0,.33,0);ring.rotation.x=Math.PI/2-.25;part(chibiGeo.pom,pom,0,.36,.07,false);}
+    return g;}
   // 古謠樹（位置 14，左岸望向女人島）：樹根是耆老傳下的古調，捲成金色的音符線；樹冠長出孩子哼的新旋律，音符往上飄
   const songTree=new THREE.Group();songTree.position.set(positions[14][0],.14,positions[14][1]);songTree.scale.setScalar(1.3);songTree.userData.placeIndex=placeOf(14);scene.add(songTree);buildings.push(songTree);
   cylinder(.6,.1,0,.05,0,0xb9a57a,songTree,20);
@@ -114,13 +143,8 @@ function buildVillage(){
   const treeSingers=[];
   for(const [a,r,shirt,hair,s,cane] of [[1.05,.4,0xd2453a,0xe9e4da,1,true],[1.75,.38,0xd2453a,0xe9e4da,1,false],[.75,.47,0x5cc1d8,0x2b2422,.72,false],[1.4,.5,0xffd166,0x2b2422,.7,false],[2.1,.46,0x7ad86f,0x2b2422,.72,false]]){
     const g=new THREE.Group();g.position.set(Math.cos(a)*r,.1,Math.sin(a)*r);g.rotation.y=Math.atan2(Math.cos(a),Math.sin(a));g.scale.setScalar(s);songTree.add(g);
-    const skirt=mesh(geometry.cone,s<1?0x3b4a6b:0x2f2d36,g);skirt.scale.set(.075,.17,.075);skirt.position.y=.085;skirt.rotation.x=Math.PI;
-    cylinder(.077,.025,0,.045,0,0xd2453a,g,7);cylinder(.05,.12,0,.22,0,shirt,g,6);
-    const head=mesh(geometry.leaf,0xdcb391,g);head.scale.set(.05,.058,.05);head.position.y=.33;
-    const hairCap=mesh(geometry.leaf,hair,g);hairCap.scale.set(.052,.04,.052);hairCap.position.set(0,.36,-.008);
-    cylinder(.056,.018,0,.355,0,0xf3ead8,g,8);
-    const pom=mesh(geometry.leaf,[0xffd166,0x7ad86f,0x5cc1d8][treeSingers.length%3],g);pom.scale.setScalar(.022);pom.position.set(0,.375,.05);
-    if(cane)beam(new THREE.Vector3(.08,0,.04),new THREE.Vector3(.07,.24,.03),.012,0x8a6a48,g);
+    chibi(g,{top:shirt,bottom:s<1?0x3b4a6b:0x2f2d36,hair,elder:s===1,sing:true,pom:[0xffd166,0x7ad86f,0x5cc1d8][treeSingers.length%3]});
+    if(cane)beam(new THREE.Vector3(.1,0,.03),new THREE.Vector3(.095,.15,.02),.012,0x8a6a48,g);
     treeSingers.push({group:g,elder:s===1});}
   const singerNotes=[];
   for(let i=0;i<2;i++){const noteMaterial=new THREE.MeshStandardMaterial({color:[0xf2c14e,0xd6553f][i],roughness:.7,flatShading:true,transparent:true});const n=mesh(geometry.leaf,noteMaterial,songTree);n.scale.set(.045,.035,.04);n.castShadow=false;singerNotes.push({mesh:n,material:noteMaterial,a:[1,1.6][i]});}
@@ -158,11 +182,31 @@ function buildVillage(){
   islet(langCoast,1.32,1.08,-.69,0xa8a082,outerIsland,.88);
   islet(langCoast,1.47,.18,-.07,0xe9dcb2,outerIsland);
   islet(a=>langCoast(a)*(1+.1*Math.sin(3*a+2.3)+.05*Math.sin(4*a+5)),1.19,.1,.06,0x96bd7a,outerIsland);
-  const languageHouse=building(11,0xeaddbd,0x38928d,.94,.9,.78);
-  box(.54,.18,.05,0,1.03,.57,0xe3b650,languageHouse);
-  for(const x of [-.42,.42])box(.055,.9,.055,x,.65,.67,0x8b6c4b,languageHouse);
-  box(1.12,.1,.32,0,.18,.75,0xc5ab7c,languageHouse);
-  const littleTree=tree(islandX-.7,islandZ-.4,.62,1);littleTree.userData.placeIndex=placeOf(11);buildings.push(littleTree);
+  // 族語挑戰島是露天的戶外訓練場：紅土跑道、跨欄、頒獎台、徽章板、旗竿和照明燈，兩個孩子繞著跑道練跑
+  const trackGroup=new THREE.Group();trackGroup.position.set(-.05,.112,-.2);trackGroup.rotation.y=-.7;outerIsland.add(trackGroup);
+  const trackAt=(u,v)=>new THREE.Vector3(u,0,v).applyAxisAngle(new THREE.Vector3(0,1,0),-.7).add(trackGroup.position);
+  function stadium(r,hole){const half=.62,shape=new THREE.Shape(),path=new THREE.Path();shape.absarc(half,0,r,-Math.PI/2,Math.PI/2,false);shape.absarc(-half,0,r,Math.PI/2,Math.PI*1.5,false);path.absarc(half,0,hole,-Math.PI/2,Math.PI/2,false);path.absarc(-half,0,hole,Math.PI/2,Math.PI*1.5,false);shape.holes.push(path);return shape;}
+  for(const [r,hole,color,y] of [[.68,.52,0xc8664a,.004],[.606,.594,0xf3ead8,.007]]){const lane=mesh(new THREE.ShapeGeometry(stadium(r,hole),24),color,trackGroup);lane.rotation.x=-Math.PI/2;lane.position.y=y;lane.castShadow=false;}
+  box(.018,.006,.16,0,.008,.6,0xf3ead8,trackGroup);
+  const hurdleXs=[-.38,.02,.42];for(const x of hurdleXs){for(const z of [-.67,-.53])box(.012,.1,.012,x,.05,z,0xf3ead8,trackGroup);box(.018,.026,.17,x,.1,-.6,0xd2453a,trackGroup);}
+  const podium=new THREE.Group();podium.rotation.y=1.31;trackGroup.add(podium);
+  for(const [x,h,top] of [[-.13,.07,0xc9d1d6],[0,.11,0xf2c14e],[.13,.05,0xc48a52]]){box(.12,h,.11,x,h/2,0,0xf3ead8,podium);box(.124,.014,.114,x,h+.007,0,top,podium);}
+  const trackChampion=new THREE.Group();trackChampion.position.y=.125;trackChampion.scale.setScalar(.6);podium.add(trackChampion);chibi(trackChampion,{top:0x5cc1d8,bottom:0x3b4a6b,pom:0xf2c14e,sing:true});
+  const badgeBoard=new THREE.Group();badgeBoard.position.copy(trackAt(.25,.95));badgeBoard.rotation.y=.61;outerIsland.add(badgeBoard);
+  for(const x of [-.2,.2])cylinder(.018,.5,x,.25,0,0x8a6a48,badgeBoard,6);
+  box(.52,.3,.03,0,.42,0,0x2f6f73,badgeBoard);box(.52,.06,.036,0,.6,0,0xe3b650,badgeBoard);
+  for(const [x,color] of [[-.15,0xf2c14e],[0,0xd6553f],[.15,0x5cc1d8]]){const badge=cylinder(.055,.02,x,.41,.022,color,badgeBoard,16);badge.rotation.x=Math.PI/2;}
+  const flagAt=trackAt(-1.36,.22),lampAt=trackAt(-1.36,-.22);
+  cylinder(.014,.95,flagAt.x,flagAt.y+.475,flagAt.z,0xe9e4da,outerIsland,6);
+  const trainingFlag=new THREE.Group();trainingFlag.position.set(flagAt.x,flagAt.y+.86,flagAt.z);outerIsland.add(trainingFlag);box(.3,.17,.012,.15,0,0,0x2f9c95,trainingFlag);box(.3,.04,.014,.15,0,0,0xf2c14e,trainingFlag);
+  cylinder(.016,.9,lampAt.x,lampAt.y+.45,lampAt.z,0x4a5558,outerIsland,6);
+  const lampHead=new THREE.Group();lampHead.position.set(lampAt.x,lampAt.y+.92,lampAt.z);lampHead.rotation.y=Math.atan2(trackGroup.position.x-lampAt.x,trackGroup.position.z-lampAt.z);outerIsland.add(lampHead);box(.17,.08,.05,0,0,0,0x4a5558,lampHead);const lampGlow=new THREE.MeshStandardMaterial({color:0xfff1c0,emissive:0xffcf7a,emissiveIntensity:0,roughness:.6});box(.14,.055,.01,0,0,.027,lampGlow,lampHead).castShadow=false;
+  const fieldLight=new THREE.PointLight(0xffd79a,0,3.2);fieldLight.position.set(lampAt.x,lampAt.y+.85,lampAt.z);outerIsland.add(fieldLight);lights.push(fieldLight);
+  const runners=[[.56,0xffd166,0,.42],[.645,0x7ad86f,2.6,.36]].map(([lane,shirt,phase,speed])=>{const group=new THREE.Group();group.scale.setScalar(.58);trackGroup.add(group);chibi(group,{top:shirt,bottom:0x3b4a6b,pom:shirt});return {group,lane,phase,speed};});
+  // 跑道上的位置：先跑下方直道（跨欄在這裡），再繞右彎、上方直道、左彎
+  function lanePoint(s,r){const half=.62,arc=Math.PI*r,total=4*half+2*arc;s=(s%total+total)%total;if(s<2*half)return [s-half,-r];s-=2*half;if(s<arc){const a=s/r-Math.PI/2;return [half+Math.cos(a)*r,Math.sin(a)*r];}s-=arc;if(s<2*half)return [half-s,r];s-=2*half;const a=s/r+Math.PI/2;return [Math.cos(a)*r-half,Math.sin(a)*r];}
+  function animateTrack(elapsed){runners.forEach(p=>{const s=p.phase+elapsed*p.speed,[x,z]=lanePoint(s,p.lane),[nx,nz]=lanePoint(s+.02,p.lane),hop=z<0&&Math.abs(x)<.62?Math.max(0,...hurdleXs.map(h=>1-Math.abs(x-h)/.1)):0;p.group.position.set(x,.006+Math.abs(Math.sin(elapsed*11+p.phase))*.012+Math.sin(hop*Math.PI/2)*.07,z);p.group.rotation.y=Math.atan2(nx-x,nz-z);});trainingFlag.rotation.y=Math.sin(elapsed*1.7)*.28;}
+  animateTrack(0);
   for(const [a,size] of [[.35,.12],[1.2,.09],[1.75,.13],[2.6,.1],[3.4,.14],[4.15,.08],[4.85,.12],[5.65,.1]]){const r=1.39*langCoast(a);rock(size,islandX+Math.cos(a)*r,-.17,islandZ+Math.sin(a)*r,0x9baca0);}
   const wakeRing=new THREE.RingGeometry(1.6,1.64,48),wakeEdge=wakeRing.attributes.position;for(let i=0;i<wakeEdge.count;i++){const k=langCoast(Math.atan2(-wakeEdge.getY(i),wakeEdge.getX(i)));wakeEdge.setXY(i,wakeEdge.getX(i)*k,wakeEdge.getY(i)*k);}
   const islandWake=mesh(wakeRing,new THREE.MeshBasicMaterial({color:0xe5fffb,transparent:true,opacity:.46,side:THREE.DoubleSide}));islandWake.rotation.x=-Math.PI/2;islandWake.position.set(islandX,-1.24,islandZ);islandWake.castShadow=false;
@@ -182,15 +226,9 @@ function buildVillage(){
   const fireLight=new THREE.PointLight(0xff9a4a,0,3.2);fireLight.position.set(0,.45,0);fire.add(fireLight);lights.push(fireLight);
   const dance=new THREE.Group();dance.position.set(.12,.15,.1);songIsland.add(dance);const dancers=[];
   for(let i=0;i<6;i++){const a=i/6*Math.PI*2;const woman=new THREE.Group();woman.position.set(Math.cos(a)*.46,0,Math.sin(a)*.46);woman.rotation.y=-a+Math.PI/2;dance.add(woman);
-    const skirt=mesh(geometry.cone,0x2f2d36,woman);skirt.scale.set(.075,.17,.075);skirt.position.y=.085;skirt.rotation.x=Math.PI;
-    cylinder(.077,.025,0,.045,0,0xd2453a,woman,7);
-    cylinder(.05,.12,0,.22,0,0xd2453a,woman,6);
-    const head=mesh(geometry.leaf,0xdcb391,woman);head.scale.set(.05,.058,.05);head.position.y=.33;
-    const hair=mesh(geometry.leaf,0x2b2422,woman);hair.scale.set(.052,.04,.052);hair.position.set(0,.36,-.008);
-    cylinder(.056,.018,0,.355,0,0xf3ead8,woman,8);
-    const pom=mesh(geometry.leaf,[0xffd166,0x7ad86f,0x5cc1d8][i%3],woman);pom.scale.setScalar(.022);pom.position.set(0,.375,.05);
+    chibi(woman,{pom:[0xffd166,0x7ad86f,0x5cc1d8][i%3],sing:true});
     dancers.push(woman);}
-  const hands=mesh(new THREE.TorusGeometry(.46,.011,5,36),0xf3ead8,dance);hands.rotation.x=Math.PI/2;hands.position.y=.24;
+  const hands=mesh(new THREE.TorusGeometry(.46,.011,5,36),0xf3ead8,dance);hands.rotation.x=Math.PI/2;hands.position.y=.13;
   const palm=new THREE.Group();palm.position.set(-.82,.1,-.55);songIsland.add(palm);
   beam(new THREE.Vector3(0,0,0),new THREE.Vector3(-.12,1.15,-.1),.04,0x8a6a48,palm);
   for(let i=0;i<6;i++){const leaf=box(.5,.025,.11,0,0,0,i%2?0x5f9f55:0x76b862,palm);const a=i/6*Math.PI*2;leaf.position.set(-.12+Math.cos(a)*.22,1.13,-.1+Math.sin(a)*.22);leaf.rotation.set(0,-a,-.42);}
@@ -228,7 +266,7 @@ function buildVillage(){
   const selectionRing=mesh(new THREE.RingGeometry(1.05,1.17,40),new THREE.MeshBasicMaterial({color:0x1fd16c,transparent:true,opacity:.7,side:THREE.DoubleSide}));selectionRing.rotation.x=-Math.PI/2;selectionRing.position.y=.13;selectionRing.visible=false;selectionRing.castShadow=false;
 
   for(const [x,z] of [[-.2,2.1],[-3.1,2.9],[3.6,-.3],[.6,-1.7]]){cylinder(.055,.86,x,.49,z,0x786653);box(.2,.2,.2,x,1,z,0xe7d7ae);const lamp=new THREE.PointLight(0xffc36a,0,3);lamp.position.set(x,1.07,z);scene.add(lamp);lights.push(lamp);}
-  const people=[];for(let i=0;i<6;i++){const person=new THREE.Group();scene.add(person);cylinder(.065,.17,0,.23,0,[0x659ac5,0xcc8c5e,0x6a9b78,0xe4c272,0xb88495,0x77afa6][i],person,6);const head=mesh(geometry.leaf,0xdcb391,person);head.scale.set(.065,.075,.065);head.position.y=.36;for(const x of [-.033,.033])box(.035,.12,.04,x,.085,0,0x47565b,person);people.push({group:person,phase:i*Math.PI/3,speed:.035+i*.005});}
+  const people=[];for(let i=0;i<6;i++){const person=new THREE.Group();scene.add(person);chibi(person,{top:[0x659ac5,0xcc8c5e,0x6a9b78,0xe4c272,0xb88495,0x77afa6][i],bottom:0x47565b,hair:[0x2b2422,0x4a3428][i%2],band:false}).scale.setScalar(1.15);people.push({group:person,phase:i*Math.PI/3,speed:.035+i*.005});}
 
   const clouds=[];for(let i=0;i<6;i++){const cloud=new THREE.Group();scene.add(cloud);const x=(i-2.5)*4,z=-5+(i%3)*5,y=4.3+(i%2)*.65;cloud.position.set(x,y,z);for(let j=0;j<4;j++){const puff=mesh(geometry.rock,0xf4f5eb,cloud);puff.position.set((j-1.5)*.47,Math.sin(j)*.16,0);puff.scale.set(.58,.42,.45);puff.castShadow=false;}clouds.push({group:cloud,x,y});}
   const nightMoon=mesh(new THREE.SphereGeometry(.48,12,8),new THREE.MeshBasicMaterial({color:0xffefd0}));nightMoon.position.set(-8,7,-6);nightMoon.castShadow=false;nightMoon.visible=false;
@@ -236,26 +274,29 @@ function buildVillage(){
 
   const boat=new THREE.Group();boat.position.set(7,-.93,4.2);const hull=mesh(new THREE.CylinderGeometry(.3,.17,1.1,5),0xbf7850,boat);hull.rotation.z=Math.PI/2;box(.55,.05,.25,0,.04,0,0xd9ba85,boat);beam(new THREE.Vector3(0,.06,0),new THREE.Vector3(0,1.08,0),.018,0x8d7751,boat);const sailGeo=new THREE.BufferGeometry();sailGeo.setAttribute('position',new THREE.Float32BufferAttribute([.03,.2,0,.03,1.04,0,.54,.2,0],3));sailGeo.computeVertexNormals();mesh(sailGeo,new THREE.MeshStandardMaterial({color:0xf0e8d2,roughness:1,side:THREE.DoubleSide}),boat);
   const secondBoat=boat.clone();secondBoat.scale.setScalar(.62);secondBoat.position.set(-5.8,-.92,7.15);secondBoat.rotation.y=-.65;scene.add(secondBoat);
-  // 竹筏 dadangoyan：取代原本的帆船。七根竹子並排、兩道橫木用黃藤綁住，船頭微微翹起，船上有人拿槳；點了打開竹筏卡（紀錄片、科展、教案）
-  const raft=new THREE.Group();raft.position.set(8.75,-.93,1.6);raft.rotation.y=.35;raft.scale.setScalar(1.35);raft.userData.raft=true;scene.add(raft);
+  // 竹筏 dadangoyan：取代原本的帆船。七根竹子並排、兩道橫木用黃藤綁住，船頭微微翹起，船上有人拿槳，竹子一半泡在水裡；點了打開竹筏卡（紀錄片、科展、教案、VR 作品），點海面會划過去
+  const RAFT_Y=-1.37,raft=new THREE.Group();raft.position.set(8.75,RAFT_Y,1.6);raft.rotation.y=.35;raft.scale.setScalar(1.35);raft.userData.raft=true;scene.add(raft);
   for(let i=0;i<7;i++){const z=(i-3)*.105,bamboo=mesh(new THREE.CylinderGeometry(.05,.05,1.45,7),i%2?0xcdb86c:0xbfa95c,raft);bamboo.rotation.z=Math.PI/2;bamboo.position.set(0,.05,z);
     const tip=mesh(new THREE.CylinderGeometry(.045,.05,.32,7),i%2?0xcdb86c:0xbfa95c,raft);tip.position.set(.84,.11,z);tip.rotation.z=Math.PI/2+.38;}
   for(const x of [-.45,.35]){box(.07,.05,.8,x,.11,0,0x8a6a48,raft);for(const z of [-.32,0,.32])cylinder(.062,.035,x,.1,z,0x5a3b24,raft,6);}
   const rower=new THREE.Group();rower.position.set(-.2,.13,.05);rower.rotation.y=Math.PI/2;raft.add(rower);
-  const rowerLegs=mesh(geometry.cone,0x2f2d36,rower);rowerLegs.scale.set(.075,.17,.075);rowerLegs.position.y=.085;rowerLegs.rotation.x=Math.PI;
-  cylinder(.05,.12,0,.22,0,0xd2453a,rower,6);const rowerHead=mesh(geometry.leaf,0xb98a68,rower);rowerHead.scale.set(.05,.058,.05);rowerHead.position.y=.33;const rowerHair=mesh(geometry.leaf,0x2b2422,rower);rowerHair.scale.set(.052,.04,.052);rowerHair.position.set(0,.36,-.008);
+  chibi(rower,{top:0xd2453a,skin:0xc99a74,band:false});
   const paddle=new THREE.Group();paddle.position.set(-.2,.33,.17);raft.add(paddle);beam(new THREE.Vector3(0,0,0),new THREE.Vector3(.05,-.5,.12),.014,0x8d7751,paddle);const blade=box(.07,.16,.02,.05,-.52,.12,0x8d7751,paddle);
   const raftNet=mesh(new THREE.CylinderGeometry(.09,.06,.12,8),0x9b7b4c,raft);raftNet.position.set(.3,.16,-.18);
+  // 點海面時，目標處亮一圈；划的時候船尾留下水波
+  const seaGlow=color=>new THREE.MeshBasicMaterial({color,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false});
+  const raftTarget=mesh(new THREE.RingGeometry(.2,.28,28),seaGlow(0xfff3c4));raftTarget.rotation.x=-Math.PI/2;raftTarget.position.y=-1.25;raftTarget.castShadow=raftTarget.receiveShadow=false;
+  const wakes=[];for(let i=0;i<6;i++){const ring=mesh(new THREE.RingGeometry(.16,.21,22),seaGlow(0xeafffb));ring.rotation.x=-Math.PI/2;ring.position.y=-1.26;ring.castShadow=ring.receiveShadow=false;wakes.push({ring,born:-9});}
   const birdsGeo=new THREE.BufferGeometry();birdsGeo.setAttribute('position',new THREE.Float32BufferAttribute([-.15,0,0,0,.05,0,0,.05,0,.15,0,0],3));const birdMaterial=new THREE.LineBasicMaterial({color:0x678b8e});const birds=[];for(let i=0;i<4;i++){const bird=new THREE.LineSegments(birdsGeo,birdMaterial);scene.add(bird);birds.push(bird);}
 
-  let night=false;function setTheme(theme){night=theme==='night';hemi.intensity=night?.7:2.3;hemi.color.set(night?0x9bb7eb:0xeafaff);sun.intensity=night?.5:3.2;sun.color.set(night?0xb0c4ed:0xfff1d2);fill.intensity=night?.25:.65;renderer.toneMappingExposure=night?.88:1.18;seaMaterial.color.set(night?0x173f59:0x73bfc0);stars.visible=night;nightMoon.visible=night;clouds.forEach(c=>c.group.visible=!night);lights.forEach(light=>light.intensity=night?2.2:0);scene.fog=new THREE.Fog(night?0x102d45:0xb5ddd9,35,110);}
+  let night=false;function setTheme(theme){night=theme==='night';hemi.intensity=night?.7:2.3;hemi.color.set(night?0x9bb7eb:0xeafaff);sun.intensity=night?.5:3.2;sun.color.set(night?0xb0c4ed:0xfff1d2);fill.intensity=night?.25:.65;renderer.toneMappingExposure=night?.88:1.18;seaMaterial.color.set(night?0x173f59:0x73bfc0);stars.visible=night;nightMoon.visible=night;clouds.forEach(c=>c.group.visible=!night);lights.forEach(light=>light.intensity=night?2.2:0);lampGlow.emissiveIntensity=night?1.4:0;scene.fog=new THREE.Fog(night?0x102d45:0xb5ddd9,35,110);}
   setTheme(document.documentElement.dataset.theme);window.addEventListener('salimpo:theme',event=>setTheme(event.detail));
   let selected=-1;const focus=new THREE.Vector3(0,0,0),targetFocus=new THREE.Vector3(0,0,0),pan=new THREE.Vector3(),targetPan=new THREE.Vector3();
   const VIEW={yaw:.61,pitch:Math.atan2(17,24)},RADIUS=Math.hypot(17,24),ZOOM=[.8,2.6],PITCH=[.32,1.25];
   let yaw=VIEW.yaw,targetYaw=VIEW.yaw,pitch=VIEW.pitch,targetPitch=VIEW.pitch,zoom=1,targetZoom=1,width=1,height=1;
   // 選到地點時鏡頭靠過去；放得越大，越把那一站擺到畫面中間
   function aimFocus(){if(selected<0){targetFocus.set(0,0,0);return;}const [x,z]=positions[spots[selected]],base=Math.hypot(x,z)>7?.55:.1,pull=base+(1-base)*THREE.MathUtils.clamp((targetZoom-1)/.8,0,1);targetFocus.set(x*pull,0,z*pull);}
-  window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.scale.setScalar(spots[selected]===14?.72:1);selectionRing.position.set(positions[spots[selected]][0],.135,positions[spots[selected]][1]);targetPan.set(0,0,0);}aimFocus();});
+  window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.scale.setScalar(spots[selected]===14?.72:spots[selected]===11?1.3:1);selectionRing.position.set(positions[spots[selected]][0],.135,positions[spots[selected]][1]);targetPan.set(0,0,0);}aimFocus();});
   function project(){const aspect=width/height;/* 左右兩座小外島在任何寬度都要完整入鏡 */const half=width<600?13/aspect:Math.max(9.65,13/aspect);camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
   function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);project();}
   new ResizeObserver(resize).observe(canvas);resize();
@@ -272,7 +313,30 @@ function buildVillage(){
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
   function placeAt(x,y){const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);for(const hit of raycaster.intersectObjects(buildings,true)){let item=hit.object;while(item&&item.userData.placeIndex===undefined)item=item.parent;if(item)return item.userData.placeIndex;}return -1;}
   function raftAt(x,y){const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);return raycaster.intersectObject(raft,true).length>0;}
-  function pick(x,y){const index=placeAt(x,y);if(index>=0)window.SALIMPO_VILLAGE?.select(index);else if(raftAt(x,y))window.SALIMPO_VILLAGE?.raft();reveal();}
+  function pick(x,y){const index=placeAt(x,y);if(index>=0)window.SALIMPO_VILLAGE?.select(index);else if(raftAt(x,y))window.SALIMPO_VILLAGE?.raft();else seaAt(x,y);reveal();}
+  window.addEventListener('salimpo:raft',()=>showHint('raft','點一下海面，竹筏就會划過去',true));
+  // 點到海面：竹筏划過去。終點留在主島、兩座小外島和小帆船外面，最遠到半徑 14
+  let raftGoal=null,raftClock=0,wakeAt=0;
+  const raftObstacles=[[...positions[11],2.6],[...positions[12],2.65],[secondBoat.position.x,secondBoat.position.z,1.25]];
+  const shown=o=>{for(;o;o=o.parent)if(!o.visible)return false;return true;};
+  function seaAt(x,y){const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);
+    const hit=raycaster.intersectObjects(scene.children,true).find(h=>h.object.isMesh&&!h.object.material.transparent&&shown(h.object));if(hit?.object!==water)return;
+    // 取同一條視線在竹子高度的點，竹筏停下來時剛好在指尖下
+    const ray=raycaster.ray,goal=ray.origin.clone().addScaledVector(ray.direction,(RAFT_Y+.07-ray.origin.y)/ray.direction.y);
+    for(let k=0;k<4;k++){const r=Math.hypot(goal.x,goal.z),limit=THREE.MathUtils.clamp(r,9.2,14);goal.x*=limit/r;goal.z*=limit/r;for(const [ox,oz,clear] of raftObstacles){const dx=goal.x-ox,dz=goal.z-oz,d=Math.hypot(dx,dz)||1;if(d<clear+.3){goal.x=ox+dx/d*(clear+.3);goal.z=oz+dz/d*(clear+.3);}}}
+    if(Math.hypot(goal.x,goal.z)<9.1||raftObstacles.some(([ox,oz,clear])=>Math.hypot(goal.x-ox,goal.z-oz)<clear+.2))return;
+    raftGoal={x:goal.x,z:goal.z,a:Math.atan2(goal.z,goal.x),r:Math.hypot(goal.x,goal.z)};raftTarget.position.set(goal.x,-1.25,goal.z);
+    showHint('mikadot','竹筏划過去囉（mikadot 操槳行船）');}
+  // 繞著主島划：角度一點一點轉、半徑往終點靠；經過小外島或小帆船時往外繞
+  function clearRadius(a){let need=9.1;for(const [ox,oz,clear] of raftObstacles){const d=Math.hypot(ox,oz),off=Math.atan2(Math.sin(a-Math.atan2(oz,ox)),Math.cos(a-Math.atan2(oz,ox))),side=d*Math.sin(off);if(Math.cos(off)>0&&Math.abs(side)<clear)need=Math.max(need,d*Math.cos(off)+Math.sqrt(clear*clear-side*side));}return need;}
+  function moveRaft(dt){const x=raft.position.x,z=raft.position.z,left=Math.hypot(raftGoal.x-x,raftGoal.z-z);if(left<.04){raftGoal=null;return;}
+    const step=Math.min(left,(.5+Math.min(left,1.6))*1.3*dt),r0=Math.hypot(x,z),a0=Math.atan2(z,x),turn=Math.atan2(Math.sin(raftGoal.a-a0),Math.cos(raftGoal.a-a0));let nx,nz;
+    if(left<1.2||Math.abs(turn)*r0<step){nx=x+(raftGoal.x-x)/left*step;nz=z+(raftGoal.z-z)/left*step;}
+    else{const da=Math.sign(turn)*Math.min(Math.abs(turn),step/r0),a=a0+da,r=Math.max(r0+(raftGoal.r-r0)*da/turn,clearRadius(a));nx=Math.cos(a)*r;nz=Math.sin(a)*r;const mx=nx-x,mz=nz-z,m=Math.hypot(mx,mz);if(m>step){nx=x+mx/m*step;nz=z+mz/m*step;}}
+    if(Math.hypot(nx-x,nz-z)>1e-4){const heading=Math.atan2(z-nz,nx-x);raft.rotation.y+=Math.atan2(Math.sin(heading-raft.rotation.y),Math.cos(heading-raft.rotation.y))*Math.min(1,dt*5);}
+    raft.position.x=nx;raft.position.z=nz;}
+  function wakeStep(elapsed,moving){if(moving&&elapsed-wakeAt>.3){wakeAt=elapsed;const wake=wakes.reduce((a,b)=>a.born<b.born?a:b),bow=raft.rotation.y;wake.ring.position.set(raft.position.x-Math.cos(bow)*.95,-1.26,raft.position.z+Math.sin(bow)*.95);wake.born=elapsed;}
+    wakes.forEach(wake=>{const k=Math.min(1,(elapsed-wake.born)/1.6);wake.ring.material.opacity=.5*(1-k);wake.ring.scale.setScalar(1+k*1.8);});}
   const dragging=on=>canvas.classList.toggle('is-dragging',on);
   // 滑鼠：左鍵拖曳轉動與俯仰，右鍵或 Shift 拖曳平移，Ctrl／⌘＋滾輪（含觸控板雙指）縮放
   let down=null;
@@ -309,7 +373,8 @@ function buildVillage(){
     yaw=THREE.MathUtils.lerp(yaw,targetYaw,.12);pitch=THREE.MathUtils.lerp(pitch,targetPitch,.12);if(Math.abs(zoom-targetZoom)>.0005){zoom=THREE.MathUtils.lerp(zoom,targetZoom,.18);project();}focus.lerp(targetFocus,.12);pan.lerp(targetPan,.18);
     const lookX=focus.x+pan.x,lookZ=focus.z+pan.z,flat=Math.cos(pitch)*RADIUS;camera.position.set(lookX+Math.sin(yaw)*flat,Math.sin(pitch)*RADIUS,lookZ+Math.cos(yaw)*flat);camera.lookAt(lookX,.05,lookZ);
     if(hoverAt&&!down){const index=placeAt(...hoverAt);setHover(index);if(index<0&&raftAt(...hoverAt))canvas.classList.add('is-pointing');hoverAt=null;}
-    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});raft.position.y=-.95+Math.sin(elapsed*1.4)*.045;raft.rotation.z=Math.sin(elapsed*.9)*.03;paddle.rotation.z=Math.sin(elapsed*1.6)*.35;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);}
+    const moving=!!raftGoal;if(moving)moveRaft(Math.min(.1,(now-raftClock)/1000));raftClock=now;raftTarget.material.opacity=moving?(reduced?.7:.45+Math.sin(elapsed*5)*.25):Math.max(0,raftTarget.material.opacity-.06);
+    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});raft.position.y=RAFT_Y+Math.sin(elapsed*1.4)*.03;raft.rotation.z=Math.sin(elapsed*.9)*.03;paddle.rotation.z=raftGoal?Math.sin(elapsed*6)*.6:Math.sin(elapsed*1.6)*.35;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);animateTrack(elapsed);wakeStep(elapsed,moving);}
     labels();renderer.render(scene,camera);
   }
   frame(performance.now());requestAnimationFrame(()=>requestAnimationFrame(()=>{/* 超過 15 秒才載好時，從備用清單切回 3D 版面 */world.classList.remove('scene-unavailable');world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;}));

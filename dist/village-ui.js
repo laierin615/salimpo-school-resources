@@ -40,7 +40,7 @@
   });
   // 竹筏不算編號的一站：用自己的卡片，打開時先收起地點卡
   const raftCard=document.getElementById('raft-card');
-  function showRaft(){select(-1);if(!raftCard)return;welcome.hidden=true;raftCard.hidden=false;raftPin.setAttribute('aria-pressed','true');raftQuick.setAttribute('aria-pressed','true');}
+  function showRaft(){select(-1);if(!raftCard)return;welcome.hidden=true;raftCard.hidden=false;raftPin.setAttribute('aria-pressed','true');raftQuick.setAttribute('aria-pressed','true');window.dispatchEvent(new CustomEvent('salimpo:raft'));}
   const raftPin=document.createElement('button');raftPin.type='button';raftPin.className='place-pin raft-pin';raftPin.setAttribute('aria-label','竹筏 Dadangoyan');raftPin.setAttribute('aria-pressed','false');raftPin.innerHTML='<b>筏</b><span class="pin-name">竹筏</span>';raftPin.addEventListener('click',showRaft);labelRoot.append(raftPin);
   const raftQuick=document.createElement('button');raftQuick.type='button';raftQuick.textContent='筏 竹筏';raftQuick.setAttribute('aria-pressed','false');raftQuick.addEventListener('click',showRaft);picker.append(raftQuick);
   document.getElementById('raft-close')?.addEventListener('click',()=>select(-1));
