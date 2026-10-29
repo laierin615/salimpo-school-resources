@@ -22,7 +22,7 @@ for(const resource of data.resources){
   for(const id of resource.related)assert.ok(ids.has(id),'Unknown related resource '+id);
 }
 for(const indicator of data.indicators){for(const id of indicator.related)assert.ok(ids.has(id));}
-const pageNames=['index','about','learning','stories','reviews','resources','resource','reader','lessons','library','partnerships','journeys','museum','visits','reception','office','stars'];
+const pageNames=['index','about','learning','stories','reviews','resources','resource','reader','lessons','library','partnerships','journeys','museum','visits','reception','office','stars','training'];
 for(const name of pageNames){
   const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');
   assert.ok(html.includes('lang="zh-Hant"'));
@@ -38,14 +38,14 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
   const content=fs.readFileSync(path.join(dist,filename),'utf8');
   for(const pattern of ['/Users/','source_repository_credential','relative_path','private_token'])assert.ok(!content.includes(pattern),'Private field in '+filename);
 }
-for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','library.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js','office.js','office-data.js','stars.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
+for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','library.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js','office.js','office-data.js','stars.js','training.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
-assert.equal([...home.matchAll(/data-place="/g)].length,12);
+assert.equal([...home.matchAll(/data-place="/g)].length,13);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
 for(const a of Object.values(data.assets)){assert.ok(fs.existsSync(path.join(dist,a.src)));assert.ok(fs.existsSync(path.join(dist,a.thumb)));}
 let pageImages=0;
 for(const id of Object.keys(data.books)){const b=JSON.parse(fs.readFileSync(path.join(dist,'books',id+'.json'),'utf8'));if(b.format==='pages'){assert.equal(b.pages.length,b.count);for(const p of b.pages)assert.ok(fs.existsSync(path.join(dist,p.src)));pageImages+=b.count;}else{const check=blocks=>{for(const b of blocks){for(const img of b.images||[])assert.ok(data.assets[img]);if(b.kind==='table')for(const row of b.rows)for(const cell of row)check(cell);}};for(const c of b.chapters)check(c.blocks);}}
-assert.equal(pageImages,1298);
+assert.equal(pageImages,1304);
 assert.equal(data.lessons.length,31);
 assert.equal(new Set(data.lessons.map(l=>l.id)).size,31);
 for(const l of data.lessons){const b=JSON.parse(fs.readFileSync(path.join(dist,'books',l.book+'.json'),'utf8'));assert.ok(l.start>=1&&l.end<=b.count&&l.start<=l.end);assert.ok(l.band&&l.topic&&l.title);if(l.cover)assert.ok(data.assets[l.cover]);}
@@ -81,7 +81,7 @@ assert.equal(data.historyMuseum.topics.length,15);
 assert.equal(history.chapters.length,7);
 for(const t of data.historyMuseum.topics){if(t.hasContent){assert.ok(history.chapters[t.chapter-1]);assert.ok(ids.has(t.resourceId));for(const s of t.sections)assert.ok(s.paragraph<history.chapters[t.chapter-1].blocks.length);}}
 assert.equal(data.historyMuseum.topics.find(t=>t.id==='short-stories').sections.length,8);
-assert.equal(Object.keys(data.books).length,25);
+assert.equal(Object.keys(data.books).length,26);
 assert.equal(Object.keys(data.assets).length,532);
 console.log('Museum index verified: 15 topics, 7 full articles; withdrawn plan absent.');
 
@@ -151,13 +151,13 @@ for(const [id,code] of Object.entries(lessonDirections)){assert.ok(lessonIds.has
 for(const name of ['reception','visits','reviews']){const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');assert.ok(html.includes('room.js?v=')&&html.includes('room.css?v='),'Room assets missing on '+name);}
 console.log(`Room verified: ${visitItems.length} visit items and ${data.indicators.length} indicators, ${evidenceCount} evidence links resolve; 31 lessons mapped to directions.`);
 
-// 主選單用聚落站名；聚落 11 站中前 10 站有族語詞（村辦公室的詞待族語老師建議），若本機有 tatokem 詞庫，就核對全部（連同各頁大標題上的詞與星空的 fo'is）是已驗證的詞
+// 主選單用聚落站名；聚落 13 站中 12 站有族語詞（村辦公室的詞待族語老師建議），若本機有 tatokem 詞庫，就核對全部（連同各頁大標題上的詞與星空的 fo'is）是已驗證的詞
 const navLine='<a href="about.html">學校與部落</a><a href="lessons.html">山海探索站</a><a href="library.html">教材書屋</a><a href="stories.html">成果廣場</a><a href="resources.html">資料服務站</a><a href="reception.html">會客室</a>';
 const subpages=pageNames.filter(name=>name!=='index');
 for(const name of subpages)assert.ok(fs.readFileSync(path.join(dist,name+'.html'),'utf8').includes(navLine),'Main nav on '+name);
 for(const name of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,name+'.html'),'utf8').includes('lang="ami">Aray!</i>'),'Footer word on '+name);
 const amiWords=[...home.matchAll(/data-ami="([^"]+)" data-ami-zh="([^"]+)"/g)].map(m=>m[1].replace(/&#x27;/g,"'"));
-assert.equal(amiWords.length,11);
+assert.equal(amiWords.length,12);
 for(const control of ['data-zoom="in"','data-zoom="out"','data-zoom="reset"','id="village-hint"','id="place-ami"',"lang=\"ami\">Nga'ay ho!</i>"])assert.ok(home.includes(control),'Home missing '+control);
 const appSource=fs.readFileSync(path.join(dist,'app.js'),'utf8'),stationWords=Function('return '+appSource.match(/const stationWords = (\{.*?\});/)[1])();
 for(const [page,[word]] of Object.entries(stationWords))if(!['museum','reviews'].includes(page))assert.ok(amiWords.includes(word),'Station word not on the home stations: '+word);
@@ -165,7 +165,7 @@ const lexiconFile=path.join(os.homedir(),'.claude/mcp_servers/tatokem/lexicon/ve
 if(fs.existsSync(lexiconFile)){
   const verified=new Set(Object.values(JSON.parse(fs.readFileSync(lexiconFile,'utf8')).categories).flatMap(c=>Object.keys(c)).map(w=>w.toLowerCase()));
   for(const word of [...amiWords,...Object.values(stationWords).map(([word])=>word),'Aray',"Nga'ay ho","fo'is"])assert.ok(verified.has(word.replace(/!$/,'').toLowerCase()),'Unverified Amis word '+word);
-  console.log('Amis words verified against the tatokem lexicon: 11 stations, page headings, greeting, footer and the star map.');
+  console.log('Amis words verified against the tatokem lexicon: 12 stations, page headings, greeting, footer and the star map.');
 }
 
 
@@ -187,14 +187,14 @@ let videoUrls=0;
 for(const file of ['index.html','data.js','media-links.js',...fs.readdirSync(path.join(dist,'books')).map(f=>'books/'+f)])for(const m of fs.readFileSync(path.join(dist,file),'utf8').matchAll(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^"'\s&\\()<]*)/g)){videoUrls++;assert.ok(/^[\w-]{11}$/.test(m[1]),`Broken YouTube link in ${file}: ${m[0]}`);}
 console.log(`Videos verified: ${videoUrls} YouTube links with full video ids, played in the site player with a link out to YouTube.`);
 
-// 山海探索站依主題整合：還沒填的「115上學期各科學習成果評量單」先不呈現（資料存在 archive/），會客室佐證也不列；教材工坊、教案書屋併進山海探索站，原本的房子留成空房子
+// 山海探索站依主題整合：還沒填的「115上學期各科學習成果評量單」先不呈現（資料存在 archive/），會客室佐證也不列；教材工坊、教案書屋併進山海探索站，原本的房子留成空房子（教材工坊那間後來改成修煉場）
 assert.ok(!ids.has('PLAN-015')&&!data.books.assessment,'Blank assessment sheets must stay hidden');
 for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js)$/.test(f)))assert.ok(!/PLAN-015|book=assessment|B:assessment|type=學習單/.test(fs.readFileSync(path.join(dist,file),'utf8')),'Hidden assessment sheets linked from '+file);
 for(const old of ['material','lesson','history','visit','archive'])assert.ok(!home.includes(`data-place="${old}"`),'Merged station still on the home village: '+old);
 for(const [place,href] of [['course','resource.html?id=PLAN-002'],['library','library.html'],['farm','lessons.html?topic=農耕與食農'],['ocean','lessons.html'],['reception','reception.html']])assert.ok(new RegExp(`data-place="${place}"[^>]*href="${href.replace(/[?.]/g,'\\$&')}"`).test(home),'Home station link '+place);
 for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js)$/.test(f)&&f!=='lessons.js'))assert.ok(!fs.readFileSync(path.join(dist,file),'utf8').includes('view=materials'),'Old materials workshop linked from '+file);
 const placeOrder=[...home.matchAll(/data-place="([^"]+)"/g)].map(m=>m[1]),villageJs=fs.readFileSync(path.join(dist,'village.js'),'utf8'),spots=JSON.parse(villageJs.match(/const spots=(\[[^\]]*\])/)[1]);
-assert.equal(spots.length,[...home.matchAll(/data-place="/g)].length,'Every home station needs a house spot');assert.ok(villageJs.includes('function seaAt(')&&villageJs.includes('function moveRaft(')&&villageJs.includes('courseGroup'),'Raft paddles where the sea is clicked; language island is an outdoor training ground');assert.ok([3,9,10].every(n=>!spots.includes(n)),'Spots 3, 9 and 10 stay empty houses');assert.ok(!fs.readFileSync(path.join(dist,'village-ui.js'),'utf8').includes('padStart(2')&&!/directory-number|place-number|directory-group-title"><b>/.test(home),'Stations show names only, no number codes');assert.equal(spots[placeOrder.indexOf('song-tree')],14,'Song tree lives on the west shore at spot 14');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierin615music/"'),'Song tree second link to 古調的現代新衣');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierindateng/"'),'Farm second link to Dateng 野菜探險家');
+assert.equal(spots.length,[...home.matchAll(/data-place="/g)].length,'Every home station needs a house spot');assert.ok(villageJs.includes('function seaAt(')&&villageJs.includes('function moveRaft(')&&villageJs.includes('courseGroup'),'Raft paddles where the sea is clicked; language island is an outdoor training ground');assert.ok([9,10].every(n=>!spots.includes(n)),'Spots 9 and 10 stay empty houses');assert.equal(spots[placeOrder.indexOf('training')],3,'修煉場 lives in the old workshop at spot 3');assert.ok(!fs.readFileSync(path.join(dist,'village-ui.js'),'utf8').includes('padStart(2')&&!/directory-number|place-number|directory-group-title"><b>/.test(home),'Stations show names only, no number codes');assert.equal(spots[placeOrder.indexOf('song-tree')],14,'Song tree lives on the west shore at spot 14');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierin615music/"'),'Song tree second link to 古調的現代新衣');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierindateng/"'),'Farm second link to Dateng 野菜探險家');
 // 海怪：首頁海上的傳說故事卡，四個連結都要找得到；海怪點得到、潛水換到看得到的地方（village.js），名字和快速選單接好（village-ui.js），文史文章能直接跳到第 5 段（museum.js）
 const monsterCard=home.match(/<article class="place-card raft-card monster-card" id="monster-card"[\s\S]*?<\/article>/)?.[0]||'';
 assert.ok(monsterCard.includes('<h2>海怪</h2>')&&monsterCard.includes('lang="ami">kimad</i>'),'Sea monster legend card missing on the home page');
@@ -213,6 +213,26 @@ assert.ok(/<button id="theme-toggle"[^>]*aria-label="切換白天與夜晚"[^>]*
 assert.ok(home.includes('singsi.js?v=')&&home.includes('id="singsi-card"')&&home.includes('id="singsi-rows"')&&villageJs.includes('function singsiAt('),'Singsi wired into the home village');
 assert.equal((villageJs.match(/const SINGSI=\[([\s\S]*?)\n  \];/)?.[1].match(/at:\[/g)||[]).length,singsiList.length,'Every singsi stands somewhere in the village');
 console.log(`Singsi verified: ${singsiList.length} teachers in the village, each with 3 tips, a quiz and lesson links.`);
+
+// 修煉場 pipananaman：113、114 學年度教師文化研習，一場一張卡片；照片點得開、教案與成果連結都找得到；首頁住進原本的教材工坊，會客室 3-3 與訪視專區連過來
+{
+  const trainingData={...data,assets:{...data.assets}},main={innerHTML:''};
+  vm.runInNewContext(fs.readFileSync(path.join(dist,'training.js'),'utf8'),{window:{SCHOOL_DATA:trainingData},document:{getElementById:id=>id==='main'?main:null},location:{hash:''},requestAnimationFrame:()=>{}});
+  const html=main.innerHTML,cards=[...html.matchAll(/<li class="training-card" id="([^"]+)">/g)].map(m=>m[1]);
+  assert.equal(cards.length,21,'Training cards: 12 for 113 and 9 for 114');assert.equal(new Set(cards).size,cards.length,'Training card ids unique');
+  assert.ok(html.includes('id="y113"')&&html.includes('id="y114"')&&html.includes('lang="ami">pipananaman</i>'),'Training years and station word');
+  for(const [,id] of html.matchAll(/data-photo="([^"]+)"/g)){const a=trainingData.assets[id];assert.ok(a&&fs.existsSync(path.join(dist,a.src))&&fs.existsSync(path.join(dist,a.thumb)),'Training photo '+id);}
+  const src=fs.readFileSync(path.join(dist,'training.js'),'utf8'),calls=fn=>[...src.matchAll(new RegExp(fn+"\\('([^']+)'\\)",'g'))].map(m=>m[1]);
+  for(const id of calls('lesson'))assert.ok(data.lessons.some(l=>l.id===id),'Training lesson '+id);
+  for(const id of calls('record'))assert.ok(ids.has(id),'Training record '+id);
+  for(const id of calls('steps'))assert.ok(data.journeys.some(j=>j.id===id),'Training steps '+id);
+  for(const t of calls('topic'))assert.ok(data.lessonTopics.includes(t),'Training topic '+t);
+  for(const [,href] of html.matchAll(/href="([^"]+)"/g)){if(/^https?:|^#/.test(href))continue;const url=href.replace(/&amp;/g,'&'),[file,query='']=url.split('#')[0].split('?');assert.ok(fs.existsSync(path.join(dist,file)),'Training link '+href);const book=new URLSearchParams(query).get('book');if(book)assert.ok(data.books[book],'Training book '+href);}
+  assert.ok(/data-place="training"[^>]*href="training\.html"/.test(home)&&data.indicators.find(i=>i.code==='3-3').evidence.plan.some(e=>e.startsWith('P:training.html|'))&&fs.readFileSync(path.join(dist,'visits.js'),'utf8').includes('href="training.html"'),'修煉場 reachable from the village, indicator 3-3 and the visit page');
+  console.log(`Training verified: ${cards.length} culture sessions, every photo and link resolves.`);
+}
+// 學生學習評量作業要點（115.9.1 修訂，掃描檔三個章保留）：放在閱覽室，會客室 3-2 和山海探索站連過來
+assert.ok(data.books.rubric115&&data.indicators.find(i=>i.code==='3-2').evidence.plan.some(e=>e.startsWith('B:rubric115:'))&&fs.readFileSync(path.join(dist,'lessons.js'),'utf8').includes('reader.html?book=rubric115'),'Rubric scan linked from indicator 3-2 and the lessons page');
 // 主題頁與一課的頁面都依序是：影音資料、課程架構、教材、學生作品、教案
 const lessonsJs=fs.readFileSync(path.join(dist,'lessons.js'),'utf8'),units=data.resources.filter(r=>r.type==='課程單元');
 assert.ok(lessonsJs.includes("${mediaSection(k,'theme',true)}${structure(t,k,'theme')}${materials(k.units,'theme')}${worksSection(k,'theme')}${plans}"),'Theme page section order');
@@ -266,8 +286,8 @@ for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js|css|json)$/.test(f)
   for(const [token] of text.matchAll(/[\w-]{44,}/g))for(let i=0;i+44<=token.length;i++)assert.ok(!officeDocHashes.has(sha256(token.slice(i,i+44))),`Office document address leaked into ${file}`);
 }
 for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('href="office.html">村辦公室</a>'),'Office entrance missing on '+page);
-assert.ok(home.includes('data-place="office"')&&home.includes('12 個地點'),'Office station missing on the home village');
-console.log('Office verified: links encrypted, no document addresses in the site, entrance on every page and a 12th village station.');
+assert.ok(home.includes('data-place="office"')&&home.includes('13 個地點'),'Office station missing on the home village');
+console.log('Office verified: links encrypted, no document addresses in the site, entrance on every page and a station in the 13-place village.');
 
 // 星空 fo'is：星星與連線都由 data.js 算出；每顆星至少一條連線、連到存在的頁面與資料，每頁頁尾和首頁都有入口
 const starContext={window:{SCHOOL_DATA:data}};vm.runInNewContext(fs.readFileSync(path.join(dist,'stars.js'),'utf8'),starContext);

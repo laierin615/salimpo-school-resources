@@ -4,8 +4,8 @@ const canvas=document.getElementById('village-canvas');
 const world=document.getElementById('village-world');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3],[3.8,2.75],[-5.9,3.4]];
-// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）、9（原文史資料館）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去；位置 14 是左岸望向女人島的古謠樹
-const spots=[0,1,2,4,5,6,14,7,8,11,12,13],placeOf=spot=>spots.indexOf(spot);
+// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）改成老師的修煉場；9（原文史資料館）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去；位置 14 是左岸望向女人島的古謠樹
+const spots=[0,1,2,4,5,6,14,7,8,11,12,3,13],placeOf=spot=>spots.indexOf(spot);
 let renderer;
 try{
   renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
@@ -94,7 +94,13 @@ function buildVillage(){
   const school=building(0,0xf0eadb,0x377b8e,1.65,1.3,1.04);box(1.35,.09,.5,0,.18,.96,0xb99866,school);box(.8,.15,.04,0,1.18,.72,0x31886b,school);for(let i=0;i<3;i++){const pole=beam(new THREE.Vector3(.9,.1,.8),new THREE.Vector3(.9,1.8,.8),.025,0xe8ede3,school);if(i===0)box(.31,.2,.02,1.05,1.6,.8,0x50b875,school);}
   const course=building(1,0xbf9271,0x9e634b,1.25,1.25,.9);box(1.6,.13,.52,0,.17,.91,0xc69c70,course);for(const x of [-.62,.62])beam(new THREE.Vector3(x,.2,.77),new THREE.Vector3(x,1.28,.77),.035,0x735536,course);
   const library=building(2,0xf0dec1,0x599579,1.5,1.25,1.15);for(let i=0;i<4;i++)box(.13,.4,.09,-.5+i*.16,.45,.76,[0xd88467,0x5c9aba,0xc9b66c,0x81a76f][i],library);box(1.35,.08,.24,0,.22,.78,0x8b694b,library);
-  const workshop=building(3,0xc6a080,0xc77656,1.2,1.1,.85);const workbench=box(.7,.11,.36,.8,.43,.65,0x9b7952,workshop);for(const x of [.5,1.1])box(.05,.4,.29,x,.24,.65,0x71523d,workshop);rock(.14,.75,.65,.65,0xe1bd79,workshop);
+  // 修煉場：門上掛綠色招牌，右邊牆上掛一塊寫了字的小黑板（研習講座），牆邊工作台上攤著編到一半的月桃葉蓆和一疊葉子，前面兩張小板凳
+  const workshop=building(3,0xc6a080,0xc77656,1.2,1.1,.85);const workbench=box(.7,.11,.36,.8,.43,.65,0x9b7952,workshop);for(const x of [.5,1.1])box(.05,.4,.29,x,.24,.65,0x71523d,workshop);
+  box(.44,.13,.04,0,.89,.575,0x2f7a5e,workshop);box(.3,.022,.01,0,.89,.6,0xf3e2a6,workshop);
+  box(.36,.016,.26,.72,.493,.65,0xd2bf78,workshop);for(let k=0;k<4;k++){box(.36,.02,.03,.72,.496,.55+k*.066,0xa48a4c,workshop);box(.03,.022,.26,.6+k*.08,.498,.65,0xbfa65e,workshop);}
+  for(const [k,r] of [[0,.2],[1,-.15],[2,.45]])box(.2,.012,.055,1.0,.5+k*.012,.62+k*.03,0x6f9e4f,workshop).rotation.y=r;
+  for(const x of [.6,.98])cylinder(.07,.2,x,.1,1.02,0x8b6a47,workshop,10);
+  box(.035,.32,.46,.615,.66,-.12,0x7a5c41,workshop);box(.03,.27,.41,.625,.66,-.12,0x2f4f3f,workshop);for(const [y,z,w] of [[.72,-.15,.3],[.66,-.17,.24],[.6,-.13,.28]])box(.006,.016,w,.642,y,z,0xf1efe3,workshop);
   const farm=building(4,0xddbe88,0x829468,.85,.85,.65);for(let row=0;row<3;row++){box(1.5,.09,.24,-.55,.12,.95+row*.38,0x806647,farm);for(let j=0;j<5;j++){const x=-1.1+j*.29;const stem=cylinder(.018,.22,x,.26,.95+row*.38,0x4e8b45,farm,5);const leaf=mesh(geometry.leaf,0x4f9c55,farm);leaf.scale.set(.11,.12,.11);leaf.position.set(x,.38,.95+row*.38);if(row===1)rock(.045,x+.055,.36,1.34,0xd6654c,farm);}}
   for(let j=0;j<5;j++){box(.045,.3,.045,-1.35+j*.62,.29,2.03,0xccb68b,farm);}box(2.5,.045,.045,-.12,.37,2.03,0xccb68b,farm);
   const ocean=building(5,0xe4e8dc,0x638fa3,.86,.86,.72);for(let j=0;j<8;j++)box(1.1,.055,.19,0,.11,1+j*.2,0xb9956e,ocean);for(const x of [-.5,.5])for(let j=0;j<3;j++)cylinder(.055,.75,x,-.15,1.05+j*.6,0x8b7257,ocean);
@@ -378,14 +384,14 @@ function buildVillage(){
     {at:[2.25,-1.65],turn:.35,top:0x3b6ea5,band:true,prop:'book'},
     {at:[-.1,6.6],turn:.85,top:0x2f8f9d,prop:'spear'},
     {at:[-5.5,4.35],turn:.95,top:0xd2453a,band:true,prop:'tube'},
-    {at:[.45,-2.55],turn:.4,top:0x8e6bb8,prop:'notebook'},
-    {at:[-3.85,-.55],turn:.75,top:0xe0a43a,prop:'wave'},
+    {at:[4.15,3.72],turn:.5,top:0x8e6bb8,prop:'notebook'},
+    {at:[-1.2,1.5],turn:.61,top:0xe0a43a,prop:'wave'},
     {at:[-4.13,1.74],y:.4,turn:.55,top:0x5f9e6e,prop:'easel'},
     {at:[6.6,1.95],turn:.45,top:0xb76e4a,prop:'rattan'},
     {at:[1.1,1.25],turn:.5,top:0x4a7f6a,prop:'map'},
     {at:[-3.5,6.6],turn:.9,top:0x6aa0c8,prop:'leaf'},
     {at:[-2.6,-2.6],turn:.5,top:0xc75f86,prop:'lens'},
-    {at:[3.15,4.55],turn:.4,top:0xd9774a,prop:'basket'}
+    {at:[.85,5.05],turn:.85,top:0xd9774a,prop:'basket'}
   ];
   const singsiFigures=[],singsiBubbles=[];let talkingTo=-1,singsiHover=-1,waveArm=null,tapTube=null;
   {
@@ -419,7 +425,7 @@ function buildVillage(){
       if(p==='lens'){/* 放大鏡：拿在胸前看 */const lens=new THREE.Group();lens.position.set(.1,.19,.08);lens.rotation.set(0,-.3,-.4);g.add(lens);mesh(new THREE.TorusGeometry(.036,.008,6,18),0x3d4448,lens);const disc=mesh(new THREE.CylinderGeometry(.034,.034,.004,16),glass(0xcdeef7),lens);disc.rotation.x=Math.PI/2;beam(V(0,-.04,0),V(0,-.09,0),.008,0x6e4b32,lens);}
       if(p==='basket'){/* 一籃野番茄 */const basket=mesh(new THREE.CylinderGeometry(.07,.055,.06,12),0xa0784a,g);basket.position.set(0,.11,.09);const berry=new THREE.SphereGeometry(.02,8,6);for(const [x,z] of [[-.03,.075],[.02,.085],[.035,.105],[-.01,.11],[0,.09]])mesh(berry,0xd6453a,g).position.set(x,.15,z);}
     });
-    // 淑樺 singsi 的家屋工地在空房子右前方（避開低空的雲和散步的路線）：木頭骨架先立好、屋頂一半鋪了茅草，地上堆著木頭和黃藤
+    // 淑樺 singsi 的家屋工地在修煉場右前方（避開低空的雲和散步的路線）：木頭骨架先立好、屋頂一半鋪了茅草，地上堆著木頭和黃藤
     const site=new THREE.Group();site.position.set(6.95,.13,1.15);site.rotation.y=.61;scene.add(site);
     for(const x of [-.42,.42])for(const z of [-.3,.3])box(.06,.62,.06,x,.31,z,0x8a6a48,site);
     for(const z of [-.3,.3])box(.92,.05,.05,0,.6,z,0x8a6a48,site);for(const x of [-.42,.42])box(.05,.05,.66,x,.6,0,0x8a6a48,site);
