@@ -182,31 +182,55 @@ function buildVillage(){
   islet(langCoast,1.32,1.08,-.69,0xa8a082,outerIsland,.88);
   islet(langCoast,1.47,.18,-.07,0xe9dcb2,outerIsland);
   islet(a=>langCoast(a)*(1+.1*Math.sin(3*a+2.3)+.05*Math.sin(4*a+5)),1.19,.1,.06,0x96bd7a,outerIsland);
-  // 族語挑戰島是露天的戶外訓練場：紅土跑道、跨欄、頒獎台、徽章板、旗竿和照明燈，兩個孩子繞著跑道練跑
-  const trackGroup=new THREE.Group();trackGroup.position.set(-.05,.112,-.2);trackGroup.rotation.y=-.7;outerIsland.add(trackGroup);
-  const trackAt=(u,v)=>new THREE.Vector3(u,0,v).applyAxisAngle(new THREE.Vector3(0,1,0),-.7).add(trackGroup.position);
-  function stadium(r,hole){const half=.62,shape=new THREE.Shape(),path=new THREE.Path();shape.absarc(half,0,r,-Math.PI/2,Math.PI/2,false);shape.absarc(-half,0,r,Math.PI/2,Math.PI*1.5,false);path.absarc(half,0,hole,-Math.PI/2,Math.PI/2,false);path.absarc(-half,0,hole,Math.PI/2,Math.PI*1.5,false);shape.holes.push(path);return shape;}
-  for(const [r,hole,color,y] of [[.68,.52,0xc8664a,.004],[.606,.594,0xf3ead8,.007]]){const lane=mesh(new THREE.ShapeGeometry(stadium(r,hole),24),color,trackGroup);lane.rotation.x=-Math.PI/2;lane.position.y=y;lane.castShadow=false;}
-  box(.018,.006,.16,0,.008,.6,0xf3ead8,trackGroup);
-  const hurdleXs=[-.38,.02,.42];for(const x of hurdleXs){for(const z of [-.67,-.53])box(.012,.1,.012,x,.05,z,0xf3ead8,trackGroup);box(.018,.026,.17,x,.1,-.6,0xd2453a,trackGroup);}
-  const podium=new THREE.Group();podium.rotation.y=1.31;trackGroup.add(podium);
-  for(const [x,h,top] of [[-.13,.07,0xc9d1d6],[0,.11,0xf2c14e],[.13,.05,0xc48a52]]){box(.12,h,.11,x,h/2,0,0xf3ead8,podium);box(.124,.014,.114,x,h+.007,0,top,podium);}
-  const trackChampion=new THREE.Group();trackChampion.position.y=.125;trackChampion.scale.setScalar(.6);podium.add(trackChampion);chibi(trackChampion,{top:0x5cc1d8,bottom:0x3b4a6b,pom:0xf2c14e,sing:true});
-  const badgeBoard=new THREE.Group();badgeBoard.position.copy(trackAt(.25,.95));badgeBoard.rotation.y=.61;outerIsland.add(badgeBoard);
+  // 族語挑戰島是木頭搭的障礙訓練場：終點瞭望台掛著鐘、繩網、攀爬牆、平衡木和跳木樁，孩子一關一關闖，最後上台敲鐘
+  const courseGroup=new THREE.Group();courseGroup.position.set(-.05,.112,-.2);courseGroup.rotation.y=-.7;outerIsland.add(courseGroup);
+  const courseAt=(u,v)=>new THREE.Vector3(u,0,v).applyAxisAngle(new THREE.Vector3(0,1,0),-.7).add(courseGroup.position);
+  const LOG=0x8a6a48,PLANK=0xb58a5a,ROPE=0xe2cf9f,v3=(x,y,z)=>new THREE.Vector3(x,y,z);
+  // 終點瞭望台在最後面：四根柱子撐起平台，前面一把梯子，台上掛鐘、插旗，柱頭的燈籠晚上會亮
+  const tower=new THREE.Group();tower.position.set(-.85,0,.05);courseGroup.add(tower);
+  for(const x of [-.15,.15])for(const z of [-.15,.15]){box(.04,.46,.04,x,.23,z,LOG,tower);box(.025,.14,.025,x,.53,z,LOG,tower);}
+  box(.38,.04,.38,0,.44,0,PLANK,tower);for(const [x,z,w,d] of [[-.15,0,.024,.3],[0,-.15,.3,.024],[0,.15,.3,.024]])box(w,.022,d,x,.58,z,LOG,tower);
+  for(const z of [-.08,.08])beam(v3(.34,0,z),v3(.17,.46,z),.012,LOG,tower);for(let k=1;k<=5;k++){const f=k/6;box(.016,.016,.16,.34-.17*f,.46*f,0,PLANK,tower);}
+  for(const x of [-.13,.01])box(.018,.2,.018,x,.56,-.1,LOG,tower);box(.16,.02,.02,-.06,.66,-.1,LOG,tower);
+  const bell=new THREE.Group();bell.position.set(-.06,.65,-.1);tower.add(bell);mesh(new THREE.CylinderGeometry(.022,.042,.06,12),0xe0b040,bell).position.y=-.04;
+  cylinder(.012,.52,-.15,.72,.15,0xe9e4da,tower,6);
+  const trainingFlag=new THREE.Group();trainingFlag.position.set(-.15,.9,.15);trainingFlag.rotation.y=Math.PI/2;tower.add(trainingFlag);box(.3,.17,.012,.15,0,0,0x2f9c95,trainingFlag);box(.3,.04,.014,.15,0,0,0xf2c14e,trainingFlag);
+  const lampGlow=new THREE.MeshStandardMaterial({color:0xfff1c0,emissive:0xffcf7a,emissiveIntensity:0,roughness:.6});
+  box(.066,.014,.066,.15,.607,-.15,LOG,tower);box(.05,.055,.05,.15,.641,-.15,lampGlow,tower).castShadow=false;box(.066,.014,.066,.15,.675,-.15,LOG,tower);
+  const fieldLight=new THREE.PointLight(0xffd79a,0,3.2);fieldLight.position.set(.15,.66,-.15);tower.add(fieldLight);lights.push(fieldLight);
+  // 右後方的繩網：從橫木斜斜拉到地上，孩子往上爬
+  const net=new THREE.Group();net.position.set(-.5,0,-.48);courseGroup.add(net);
+  for(const z of [-.2,.2])box(.04,.54,.04,0,.27,z,LOG,net);beam(v3(0,.5,-.24),v3(0,.5,.24),.02,LOG,net);beam(v3(.3,.02,-.2),v3(.3,.02,.2),.014,LOG,net);
+  for(let k=-2;k<=2;k++)beam(v3(0,.5,k*.09),v3(.3,.02,k*.09),.006,ROPE,net);
+  for(let k=1;k<=4;k++){const f=k/5;beam(v3(.3*f,.5-.48*f,-.19),v3(.3*f,.5-.48*f,.19),.006,ROPE,net);}
+  // 左後方的 A 字攀爬牆，正面釘著彩色抓點
+  const wall=new THREE.Group();wall.position.set(-.45,0,.5);courseGroup.add(wall);
+  const slope=Math.atan2(.34,.2),side=Math.hypot(.34,.2);for(const s of [1,-1]){const panel=box(side,.025,.36,s*.1,.17,0,PLANK,wall);panel.rotation.z=-s*slope;}
+  const holdGeo=new THREE.SphereGeometry(.018,6,5);
+  for(const [f,z,color] of [[.2,-.08,0xd6553f],[.35,.09,0xf2c14e],[.45,-.13,0xd6553f],[.5,-.02,0x5cc1d8],[.65,.11,0x7ad86f],[.8,-.09,0xf2c14e]]){const hold=mesh(holdGeo,color,wall);hold.position.set(.2*f+.014,.34-.34*f+.008,z);}
+  // 前面右邊是平衡木，中間兩道跨越木欄，左邊是高低不一的跳木樁
+  for(const x of [.3,.58,.86])box(.03,.085,.06,x,.043,-.5,LOG,courseGroup);beam(v3(.24,.1,-.5),v3(.92,.1,-.5),.028,0xa47a52,courseGroup);
+  const hurdles=[.3,.6];for(const x of hurdles){for(const z of [-.17,.11])box(.022,.1,.022,x,.05,z,LOG,courseGroup);beam(v3(x,.09,-.2),v3(x,.09,.14),.016,0xa47a52,courseGroup);}
+  const stumps=[[.22,.42,.06],[.38,.58,.1],[.54,.42,.08],[.7,.58,.12],[.86,.44,.07]];
+  for(const [x,z,h] of stumps){cylinder(.052,h,x,h/2,z,LOG,courseGroup);cylinder(.046,.006,x,h+.003,z,0xd9b98a,courseGroup);}
+  const badgeBoard=new THREE.Group();badgeBoard.position.copy(courseAt(.25,.95));badgeBoard.rotation.y=.61;outerIsland.add(badgeBoard);
   for(const x of [-.2,.2])cylinder(.018,.5,x,.25,0,0x8a6a48,badgeBoard,6);
   box(.52,.3,.03,0,.42,0,0x2f6f73,badgeBoard);box(.52,.06,.036,0,.6,0,0xe3b650,badgeBoard);
   for(const [x,color] of [[-.15,0xf2c14e],[0,0xd6553f],[.15,0x5cc1d8]]){const badge=cylinder(.055,.02,x,.41,.022,color,badgeBoard,16);badge.rotation.x=Math.PI/2;}
-  const flagAt=trackAt(-1.36,.22),lampAt=trackAt(-1.36,-.22);
-  cylinder(.014,.95,flagAt.x,flagAt.y+.475,flagAt.z,0xe9e4da,outerIsland,6);
-  const trainingFlag=new THREE.Group();trainingFlag.position.set(flagAt.x,flagAt.y+.86,flagAt.z);outerIsland.add(trainingFlag);box(.3,.17,.012,.15,0,0,0x2f9c95,trainingFlag);box(.3,.04,.014,.15,0,0,0xf2c14e,trainingFlag);
-  cylinder(.016,.9,lampAt.x,lampAt.y+.45,lampAt.z,0x4a5558,outerIsland,6);
-  const lampHead=new THREE.Group();lampHead.position.set(lampAt.x,lampAt.y+.92,lampAt.z);lampHead.rotation.y=Math.atan2(trackGroup.position.x-lampAt.x,trackGroup.position.z-lampAt.z);outerIsland.add(lampHead);box(.17,.08,.05,0,0,0,0x4a5558,lampHead);const lampGlow=new THREE.MeshStandardMaterial({color:0xfff1c0,emissive:0xffcf7a,emissiveIntensity:0,roughness:.6});box(.14,.055,.01,0,0,.027,lampGlow,lampHead).castShadow=false;
-  const fieldLight=new THREE.PointLight(0xffd79a,0,3.2);fieldLight.position.set(lampAt.x,lampAt.y+.85,lampAt.z);outerIsland.add(fieldLight);lights.push(fieldLight);
-  const runners=[[.56,0xffd166,0,.42],[.645,0x7ad86f,2.6,.36]].map(([lane,shirt,phase,speed])=>{const group=new THREE.Group();group.scale.setScalar(.58);trackGroup.add(group);chibi(group,{top:shirt,bottom:0x3b4a6b,pom:shirt});return {group,lane,phase,speed};});
-  // 跑道上的位置：先跑下方直道（跨欄在這裡），再繞右彎、上方直道、左彎
-  function lanePoint(s,r){const half=.62,arc=Math.PI*r,total=4*half+2*arc;s=(s%total+total)%total;if(s<2*half)return [s-half,-r];s-=2*half;if(s<arc){const a=s/r-Math.PI/2;return [half+Math.cos(a)*r,Math.sin(a)*r];}s-=arc;if(s<2*half)return [half-s,r];s-=2*half;const a=s/r+Math.PI/2;return [Math.cos(a)*r-half,Math.sin(a)*r];}
-  function animateTrack(elapsed){runners.forEach(p=>{const s=p.phase+elapsed*p.speed,[x,z]=lanePoint(s,p.lane),[nx,nz]=lanePoint(s+.02,p.lane),hop=z<0&&Math.abs(x)<.62?Math.max(0,...hurdleXs.map(h=>1-Math.abs(x-h)/.1)):0;p.group.position.set(x,.006+Math.abs(Math.sin(elapsed*11+p.phase))*.012+Math.sin(hop*Math.PI/2)*.07,z);p.group.rotation.y=Math.atan2(nx-x,nz-z);});trainingFlag.rotation.y=Math.sin(elapsed*1.7)*.28;}
-  animateTrack(0);
+  // 五個孩子：走平衡木、跨木欄、跳木樁、爬繩網，最後一個在台上敲鐘
+  const kid=(parent,shirt,x,y,z,sing=false)=>{const g=new THREE.Group();g.scale.setScalar(.58);g.position.set(x,y,z);parent.add(g);chibi(g,{top:shirt,bottom:0x3b4a6b,pom:shirt,sing});return g;};
+  const beamKid=kid(courseGroup,0xffd166,.29,.128,-.5),runKid=kid(courseGroup,0xb88495,.1,.006,-.03),stumpKid=kid(courseGroup,0x7ad86f,.22,.06,.42),netKid=kid(net,0xd6553f,.3,.09,0),bellKid=kid(tower,0x5cc1d8,.06,.46,.07,true);
+  netKid.rotation.y=-Math.PI/2;bellKid.rotation.y=Math.PI/2;
+  const pingpong=t=>1-Math.abs(t%2-1);
+  function animateCourse(elapsed){
+    const walk=elapsed*.2;beamKid.position.set(.29+pingpong(walk)*.57,.128+Math.abs(Math.sin(elapsed*7))*.008,-.5);beamKid.rotation.set(0,walk%2<1?Math.PI/2:-Math.PI/2,Math.sin(elapsed*2.6)*.13);
+    const run=elapsed*.3,u=.1+pingpong(run)*.75,hop=Math.max(0,...hurdles.map(h=>1-Math.abs(u-h)/.09));runKid.position.set(u,.006+Math.abs(Math.sin(elapsed*11))*.012+Math.sin(hop*Math.PI/2)*.1,-.03);runKid.rotation.y=run%2<1?Math.PI/2:-Math.PI/2;
+    const q=(elapsed*1.5)%8,i=Math.floor(q),f=q-i,[a,b]=i<4?[stumps[i],stumps[i+1]]:[stumps[8-i],stumps[7-i]];
+    stumpKid.position.set(a[0]+(b[0]-a[0])*f,a[2]+(b[2]-a[2])*f+Math.sin(f*Math.PI)*.09,a[1]+(b[1]-a[1])*f);stumpKid.rotation.y=Math.atan2(b[0]-a[0],b[1]-a[1]);
+    const climb=.85-.6*(.5-.5*Math.cos(elapsed*.5));netKid.position.set(.3*climb+.04,.5-.48*climb+Math.abs(Math.sin(elapsed*5))*.012,Math.sin(elapsed*.8)*.05);
+    bellKid.position.y=.46+Math.abs(Math.sin(elapsed*3))*.03;bell.rotation.x=Math.sin(elapsed*5)*.45;trainingFlag.rotation.y=Math.PI/2+Math.sin(elapsed*1.7)*.28;
+  }
+  animateCourse(0);
   for(const [a,size] of [[.35,.12],[1.2,.09],[1.75,.13],[2.6,.1],[3.4,.14],[4.15,.08],[4.85,.12],[5.65,.1]]){const r=1.39*langCoast(a);rock(size,islandX+Math.cos(a)*r,-.17,islandZ+Math.sin(a)*r,0x9baca0);}
   const wakeRing=new THREE.RingGeometry(1.6,1.64,48),wakeEdge=wakeRing.attributes.position;for(let i=0;i<wakeEdge.count;i++){const k=langCoast(Math.atan2(-wakeEdge.getY(i),wakeEdge.getX(i)));wakeEdge.setXY(i,wakeEdge.getX(i)*k,wakeEdge.getY(i)*k);}
   const islandWake=mesh(wakeRing,new THREE.MeshBasicMaterial({color:0xe5fffb,transparent:true,opacity:.46,side:THREE.DoubleSide}));islandWake.rotation.x=-Math.PI/2;islandWake.position.set(islandX,-1.24,islandZ);islandWake.castShadow=false;
@@ -374,7 +398,7 @@ function buildVillage(){
     const lookX=focus.x+pan.x,lookZ=focus.z+pan.z,flat=Math.cos(pitch)*RADIUS;camera.position.set(lookX+Math.sin(yaw)*flat,Math.sin(pitch)*RADIUS,lookZ+Math.cos(yaw)*flat);camera.lookAt(lookX,.05,lookZ);
     if(hoverAt&&!down){const index=placeAt(...hoverAt);setHover(index);if(index<0&&raftAt(...hoverAt))canvas.classList.add('is-pointing');hoverAt=null;}
     const moving=!!raftGoal;if(moving)moveRaft(Math.min(.1,(now-raftClock)/1000));raftClock=now;raftTarget.material.opacity=moving?(reduced?.7:.45+Math.sin(elapsed*5)*.25):Math.max(0,raftTarget.material.opacity-.06);
-    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});raft.position.y=RAFT_Y+Math.sin(elapsed*1.4)*.03;raft.rotation.z=Math.sin(elapsed*.9)*.03;paddle.rotation.z=raftGoal?Math.sin(elapsed*6)*.6:Math.sin(elapsed*1.6)*.35;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);animateTrack(elapsed);wakeStep(elapsed,moving);}
+    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});raft.position.y=RAFT_Y+Math.sin(elapsed*1.4)*.03;raft.rotation.z=Math.sin(elapsed*.9)*.03;paddle.rotation.z=raftGoal?Math.sin(elapsed*6)*.6:Math.sin(elapsed*1.6)*.35;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);animateCourse(elapsed);wakeStep(elapsed,moving);}
     labels();renderer.render(scene,camera);
   }
   frame(performance.now());requestAnimationFrame(()=>requestAnimationFrame(()=>{/* 超過 15 秒才載好時，從備用清單切回 3D 版面 */world.classList.remove('scene-unavailable');world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;}));
