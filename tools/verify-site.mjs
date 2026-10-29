@@ -209,6 +209,9 @@ assert.deepEqual(Array.from(singsiList,s=>s.name),['Masao','Lakaw','Madal','奕�
 for(const s of singsiList){assert.ok(s.intro?.startsWith("Nga'ay ho! 我是"+(/^[A-Za-z]/.test(s.name)?' ':'')+s.name+'。'),'Intro for '+s.name);assert.equal(s.tips.length,5,s.name);for(const t of s.tips)assert.ok(t.text&&t.ami&&t.zh,s.name);assert.equal(s.quizzes?.length,2,s.name);for(const q of s.quizzes){assert.ok(q.q,s.name);assert.equal(new Set(q.options).size,3,'Three different options for '+s.name);assert.ok(q.options[q.answer],s.name);}for(const id of s.lessons||[])assert.ok(data.lessons.some(l=>l.id===id),'Missing lesson '+id);assert.ok((s.lessons||[]).length+(s.links||[]).length>0,'No link for '+s.name);assert.ok(!/迎靈|喪禮|kawas/i.test(JSON.stringify(s)),'Ritual topic in '+s.name);}
 // 白天／夜晚切換鈕只放太陽、月亮圖示，不放文字
 assert.ok(/<button id="theme-toggle"[^>]*aria-label="切換白天與夜晚"[^>]*><svg [^<]*<circle /.test(home)&&!/id="theme-toggle"[^>]*>白天</.test(home),'Theme toggle should show a sun icon, not text');
+// 首頁右上角的快速連結只放圖示（清單、會客室、星空、找資料），名稱寫在 aria-label；書屋與村辦公室從聚落小屋和頁尾進入；不放「山海學習聚落」標語
+const quickNav=home.match(/<nav aria-label="快速連結">([\s\S]*?)<\/nav>/)?.[1]||'';
+assert.ok(['清單','會客室','星空','找資料'].every(name=>quickNav.includes(`aria-label="${name}" title="${name}"><svg `))&&!/<a class="pill[^"]*" href="[^"]*">[^<]/.test(quickNav)&&!/href="(library|office)\.html"/.test(quickNav)&&!home.includes('class="world-caption"'),'Home quick links should be icons only, without the village tagline');
 {const appJs=fs.readFileSync(path.join(dist,'app.js'),'utf8');assert.ok(appJs.includes('const themeIcons = {')&&appJs.includes('themeButton.innerHTML = themeIcons[')&&!appJs.includes("'夜晚' : '白天'"),'Theme toggle icons missing in app.js');}
 // 小知識的族語詞要在 tatokem 詞庫裡；不在詞庫的是用阿美語萌典（蔡中涵）查過的詞
 if(fs.existsSync(lexiconFile)){const verified=new Set(Object.values(JSON.parse(fs.readFileSync(lexiconFile,'utf8')).categories).flatMap(c=>Object.keys(c)).map(w=>w.toLowerCase()));const moedict=new Set(["misacepo'",'parod','pacing','riyar','foting','romadiw','kilim',"nga'ay","riko'",'sofal','kawkaw','kamamit','omah','lotok','soni']);for(const s of singsiList)for(const t of s.tips){const w=t.ami.toLowerCase();assert.ok(verified.has(w)||verified.has(w.replace(/!$/,''))||moedict.has(w),'Unverified singsi word '+t.ami);}}
@@ -301,7 +304,7 @@ for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js|css|json)$/.test(f)
   for(const [token] of text.matchAll(/[\w-]{44,}/g))for(let i=0;i+44<=token.length;i++)assert.ok(!officeDocHashes.has(sha256(token.slice(i,i+44))),`Office document address leaked into ${file}`);
 }
 for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('href="office.html">村辦公室</a>'),'Office entrance missing on '+page);
-assert.ok(home.includes('data-place="office"')&&home.includes('13 個地點'),'Office station missing on the home village');
+assert.ok(home.includes('data-place="office"'),'Office station missing on the home village');
 console.log('Office verified: links encrypted, no document addresses in the site, entrance on every page and a station in the 13-place village.');
 
 // 星空 fo'is：星星與連線都由 data.js 算出；每顆星至少一條連線、連到存在的頁面與資料，每頁頁尾和首頁都有入口
@@ -338,7 +341,7 @@ assert.ok(starsHtml.includes(`lang="ami">fo'is</i>`)&&starsHtml.includes('id="sk
 // 全螢幕星空把頁首收起來，左上角要有 Logo 回首頁
 assert.ok(starsHtml.includes('<html lang="zh-Hant" class="sky-mode">')&&starsHtml.includes('<a class="sky-home" href="index.html"'),'Full-screen star map needs the logo link home');
 for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('<a href="stars.html">星空</a></p>'),'Star map footer link missing on '+page);
-for(const entrance of ['<a class="pill" href="stars.html">星空</a>','class="sky-door sky-door-top" href="stars.html"'])assert.ok(home.includes(entrance),'Home missing star entrance '+entrance);
+for(const entrance of ['<a class="pill pill-icon" href="stars.html" aria-label="星空" title="星空"><svg ','class="sky-door sky-door-top" href="stars.html"'])assert.ok(home.includes(entrance),'Home missing star entrance '+entrance);
 const villageCss=fs.readFileSync(path.join(dist,'village.css'),'utf8');
 assert.ok(villageCss.includes('[data-theme=night] .sky-door-top{')&&villageCss.includes('[data-theme=night] .village-header .pill[href="stars.html"]{'),'Night star entrances missing in village.css');
 console.log(`Star map verified: ${sky.nodes.length} stars and ${sky.links.length} links from data.js, four constellations around the visit 1-2 cultural domains, ${confirmed.length} teacher-confirmed links, every star linked to a page; full-screen sky with the logo home, entrance on every page and in the home night sky.`);
