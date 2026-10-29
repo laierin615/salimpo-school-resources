@@ -24,8 +24,13 @@
     {name: '生命哲學', color: '#b8a6ff', at: [1, 1]},
     {name: '民族社會', color: '#ffc46e', at: [-1, 1]}
   ];
-  // 老師指定的對應（data.js 沒有寫，但確認過要連）：[星星, 三美]
-  const CONFIRMED = [['eventDomain:美術與創作', '藝術美']];
+  // 老師指定的對應（data.js 沒有寫，但確認過要連）：[星星, 三美或九向]
+  const CONFIRMED = [
+    ['eventDomain:美術與創作', '藝術美'],
+    ['eventDomain:歌謠與樂舞', '樂舞文化'],
+    ['eventDomain:族語與表達', '山海文學'],
+    ['eventDomain:食農與四健', '飲食文化']
+  ];
 
   function buildGraph(d) {
     const nodes = [], links = [], byId = new Map(), pairs = new Set();
@@ -79,8 +84,8 @@
       addResource(id, 'event', '成果', head);
       for (const topic of res.get(id)?.topics || []) link('res:' + id, 'eventDomain:' + topic);
     }
-    const coreByTitle = new Map((c.cores || []).map(core => [core.title, 'core:' + core.code]));
-    for (const [id, title] of CONFIRMED) link(id, coreByTitle.get(title));
+    const cultureByTitle = new Map((c.cores || []).flatMap(core => [[core.title, 'core:' + core.code], ...(core.directions || []).map(dir => [dir.title, 'dir:' + dir.code])]));
+    for (const [id, title] of CONFIRMED) link(id, cultureByTitle.get(title));
     for (const id of d.partnershipIds || []) addResource(id, 'coop', '合作計畫', head);
     const mentioned = [...(d.journeys || []).flatMap(j => j.resources || []), ...(d.partnershipIds || []).flatMap(id => res.get(id)?.related || [])];
     // 課程單元用冒號後的短名；短名和別的星同名（例如教案主題「服飾與工藝」）就用全名
