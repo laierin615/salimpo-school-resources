@@ -104,19 +104,33 @@ function buildVillage(){
   const history=building(9,0xe8cda3,0x82785b,1.3,1.18,.94);for(const x of [-.54,.54])beam(new THREE.Vector3(x,.15,.75),new THREE.Vector3(x,1.3,.75),.035,0x806348,history);box(.82,.19,.045,0,1.18,.67,0x578875,history);for(let i=0;i<4;i++)box(.13,.31,.09,-.26+i*.15,.48,.72,[0xaf7d61,0x5b8290,0xb5a063,0x638367][i],history);
   // 古謠樹（位置 14，左岸望向女人島）：樹根是耆老傳下的古調，捲成金色的音符線；樹冠長出孩子哼的新旋律，音符往上飄
   const songTree=new THREE.Group();songTree.position.set(positions[14][0],.14,positions[14][1]);songTree.scale.setScalar(1.3);songTree.userData.placeIndex=placeOf(14);scene.add(songTree);buildings.push(songTree);
-  cylinder(.95,.1,0,.05,0,0xb9a57a,songTree,20);
+  cylinder(.6,.1,0,.05,0,0xb9a57a,songTree,20);
   beam(new THREE.Vector3(0,.05,0),new THREE.Vector3(.06,1.05,-.02),.13,0x5a3b24,songTree);
-  for(const [a,l] of [[.3,.62],[1.9,.55],[3.4,.66],[4.8,.58]]){const tip=new THREE.Vector3(Math.cos(a)*l,.12,Math.sin(a)*l);beam(new THREE.Vector3(0,.22,0),tip,.045,0x5a3b24,songTree);
+  for(const [a,l] of [[.05,.45],[3.05,.42],[3.9,.48],[5.2,.44]]){const tip=new THREE.Vector3(Math.cos(a)*l,.12,Math.sin(a)*l);beam(new THREE.Vector3(0,.22,0),tip,.045,0x5a3b24,songTree);
     const curl=mesh(new THREE.TorusGeometry(.11,.022,6,14,Math.PI*1.5),0xd49a2a,songTree);curl.position.copy(tip).setY(.16);curl.rotation.set(-Math.PI/2,0,a);curl.castShadow=false;}
   for(const [x,y,z,r,c] of [[0,1.25,0,.55,0x2f6b3a],[-.36,1.05,.18,.36,0x3c7d44],[.38,1.1,-.1,.38,0x35753f],[.05,1.58,.05,.34,0x4a8a4b]]){const crown=mesh(geometry.leaf,c,songTree);crown.scale.setScalar(r);crown.position.set(x,y,z);}
   for(const [x,y,z,c] of [[-.32,1.32,.42,0xd6553f],[.42,1.4,.25,0xf2c14e],[.15,1.05,.5,0xd6553f],[-.48,1.12,-.2,0xf2c14e]]){const fruit=mesh(geometry.leaf,c,songTree);fruit.scale.setScalar(.06);fruit.position.set(x,y,z);}
+  // 樹下唱歌的人：兩位耆老（一位拄拐杖）帶三個孩子，在樹前圍成半圈往外唱
+  const treeSingers=[];
+  for(const [a,r,shirt,hair,s,cane] of [[1.05,.4,0xd2453a,0xe9e4da,1,true],[1.75,.38,0xd2453a,0xe9e4da,1,false],[.75,.47,0x5cc1d8,0x2b2422,.72,false],[1.4,.5,0xffd166,0x2b2422,.7,false],[2.1,.46,0x7ad86f,0x2b2422,.72,false]]){
+    const g=new THREE.Group();g.position.set(Math.cos(a)*r,.1,Math.sin(a)*r);g.rotation.y=Math.atan2(Math.cos(a),Math.sin(a));g.scale.setScalar(s);songTree.add(g);
+    const skirt=mesh(geometry.cone,s<1?0x3b4a6b:0x2f2d36,g);skirt.scale.set(.075,.17,.075);skirt.position.y=.085;skirt.rotation.x=Math.PI;
+    cylinder(.077,.025,0,.045,0,0xd2453a,g,7);cylinder(.05,.12,0,.22,0,shirt,g,6);
+    const head=mesh(geometry.leaf,0xdcb391,g);head.scale.set(.05,.058,.05);head.position.y=.33;
+    const hairCap=mesh(geometry.leaf,hair,g);hairCap.scale.set(.052,.04,.052);hairCap.position.set(0,.36,-.008);
+    cylinder(.056,.018,0,.355,0,0xf3ead8,g,8);
+    const pom=mesh(geometry.leaf,[0xffd166,0x7ad86f,0x5cc1d8][treeSingers.length%3],g);pom.scale.setScalar(.022);pom.position.set(0,.375,.05);
+    if(cane)beam(new THREE.Vector3(.08,0,.04),new THREE.Vector3(.07,.24,.03),.012,0x8a6a48,g);
+    treeSingers.push({group:g,elder:s===1});}
+  const singerNotes=[];
+  for(let i=0;i<2;i++){const noteMaterial=new THREE.MeshStandardMaterial({color:[0xf2c14e,0xd6553f][i],roughness:.7,flatShading:true,transparent:true});const n=mesh(geometry.leaf,noteMaterial,songTree);n.scale.set(.045,.035,.04);n.castShadow=false;singerNotes.push({mesh:n,material:noteMaterial,a:[1,1.6][i]});}
   const treeNotes=[];
   for(let i=0;i<3;i++){const group=new THREE.Group();songTree.add(group);const noteMaterial=new THREE.MeshStandardMaterial({color:[0xd6553f,0xf2c14e,0x7bcdd0][i],emissive:0x5a3a00,emissiveIntensity:.25,roughness:.7,flatShading:true,transparent:true});
     const headNote=mesh(geometry.leaf,noteMaterial,group);headNote.scale.set(.075,.058,.062);headNote.rotation.z=.4;headNote.castShadow=false;
     const stem=box(.016,.24,.016,.062,.125,0,noteMaterial,group);stem.castShadow=false;
     if(i!==1){const flag=box(.1,.028,.016,.105,.23,0,noteMaterial,group);flag.rotation.z=-.6;flag.castShadow=false;}
     treeNotes.push({group,material:noteMaterial});}
-  function animateSongTree(elapsed){treeNotes.forEach((n,i)=>{const t=(elapsed*.13+i/treeNotes.length)%1;n.group.position.set(Math.sin(t*4+i*2.1)*.45,1.55+t*1.3,Math.cos(t*3+i)*.3);n.group.rotation.y=elapsed*.5+i;n.material.opacity=Math.sin(t*Math.PI);});}
+  function animateSongTree(elapsed){treeSingers.forEach((p,i)=>{if(p.elder)p.group.rotation.z=Math.sin(elapsed*1.6+i)*.06;else p.group.position.y=.1+Math.abs(Math.sin(elapsed*3.2+i*.9))*.02;});singerNotes.forEach((n,i)=>{const t=(elapsed*.35+i*.5)%1;n.mesh.position.set(Math.cos(n.a)*.55,.42+t*.3,Math.sin(n.a)*.55);n.material.opacity=Math.sin(t*Math.PI);});treeNotes.forEach((n,i)=>{const t=(elapsed*.13+i/treeNotes.length)%1;n.group.position.set(Math.sin(t*4+i*2.1)*.45,1.55+t*1.3,Math.cos(t*3+i)*.3);n.group.rotation.y=elapsed*.5+i;n.material.opacity=Math.sin(t*Math.PI);});}
   const visitHouse=building(10,0xe6dfc5,0x419080,1.25,1.1,.93);box(.72,.18,.04,0,1.14,.63,0xc3a35f,visitHouse);box(1.4,.1,.38,0,.18,.8,0xc1ae83,visitHouse);
   // 第 14 站村辦公室：山牆上有小時鐘，門口招牌與雨遮，右邊公布欄、左邊紅色信箱
   const office=building(13,0xf3e7cf,0xb4553d,1.15,1,.88);box(.56,.14,.04,0,.95,.53,0x2f7a5e,office);box(.7,.05,.3,0,.8,.64,0xc9b48a,office);
@@ -129,7 +143,7 @@ function buildVillage(){
   for(let i=0;i<12;i++){const t=i/11;transform.position.set(positions[13][0]*(1-t)+.4*t,.13,positions[13][1]*(1-t)+1.5*t);transform.rotation.y=i*1.7;transform.scale.set(1.1,1,1);transform.updateMatrix();officeStones.setMatrixAt(i,transform.matrix);}
   officeStones.receiveShadow=true;scene.add(officeStones);
   const treeStones=new THREE.InstancedMesh(paverGeometry,material(0xe1dfc7),8);
-  for(let i=0;i<8;i++){const t=.18+i/7*.5;transform.position.set(positions[14][0]*(1-t)+.4*t,.13,positions[14][1]*(1-t)+1.5*t);transform.rotation.y=i*1.3;transform.scale.set(1.1,1,1);transform.updateMatrix();treeStones.setMatrixAt(i,transform.matrix);}
+  for(let i=0;i<8;i++){const t=.13+i/7*.55;transform.position.set(positions[14][0]*(1-t)+.4*t,.13,positions[14][1]*(1-t)+1.5*t);transform.rotation.y=i*1.3;transform.scale.set(1.1,1,1);transform.updateMatrix();treeStones.setMatrixAt(i,transform.matrix);}
   treeStones.receiveShadow=true;scene.add(treeStones);
   // 外島不要像圓柱那樣整齊：岩壁、沙灘、草地共用一條起伏的海岸線，岩壁往下收窄、凹凸不一
   function coast(p,q,r){return a=>1+.14*Math.sin(2*a+p)+.08*Math.sin(3*a+q)+.05*Math.sin(5*a+r);}
@@ -231,7 +245,7 @@ function buildVillage(){
   let yaw=VIEW.yaw,targetYaw=VIEW.yaw,pitch=VIEW.pitch,targetPitch=VIEW.pitch,zoom=1,targetZoom=1,width=1,height=1;
   // 選到地點時鏡頭靠過去；放得越大，越把那一站擺到畫面中間
   function aimFocus(){if(selected<0){targetFocus.set(0,0,0);return;}const [x,z]=positions[spots[selected]],base=Math.hypot(x,z)>7?.55:.1,pull=base+(1-base)*THREE.MathUtils.clamp((targetZoom-1)/.8,0,1);targetFocus.set(x*pull,0,z*pull);}
-  window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.position.set(positions[spots[selected]][0],.135,positions[spots[selected]][1]);targetPan.set(0,0,0);}aimFocus();});
+  window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.scale.setScalar(spots[selected]===14?.72:1);selectionRing.position.set(positions[spots[selected]][0],.135,positions[spots[selected]][1]);targetPan.set(0,0,0);}aimFocus();});
   function project(){const aspect=width/height;/* 左右兩座小外島在任何寬度都要完整入鏡 */const half=width<600?13/aspect:Math.max(9.65,13/aspect);camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
   function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);project();}
   new ResizeObserver(resize).observe(canvas);resize();

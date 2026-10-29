@@ -10,4 +10,10 @@
 .briefing-thumbs button{position:relative;flex:0 0 132px;padding:0;border:2px solid transparent;border-radius:10px;overflow:hidden;background:var(--soft);cursor:pointer;scroll-snap-align:start}.briefing-thumbs button[aria-current]{border-color:var(--green-text)}
 .briefing-thumbs img{display:block;width:100%;height:auto}.briefing-thumbs span{position:absolute;left:6px;bottom:6px;padding:1px 7px;border-radius:999px;background:rgba(8,25,25,.65);color:#fff;font-size:.72rem;font-weight:700}
 .briefing-step{display:none}
+.briefing-full-count,.briefing-exit{display:none}
+.briefing-stage:fullscreen{display:flex;align-items:center;justify-content:center;border-radius:0;background:#000}.briefing-stage:fullscreen img{width:100vw;height:100vh;aspect-ratio:auto;cursor:default}
+.briefing-stage:-webkit-full-screen{display:flex;align-items:center;justify-content:center;border-radius:0;background:#000}.briefing-stage:-webkit-full-screen img{width:100vw;height:100vh;aspect-ratio:auto;cursor:default}
+.briefing-stage:fullscreen .briefing-nav,.briefing-stage:-webkit-full-screen .briefing-nav{display:block;opacity:.35}.briefing-stage:fullscreen:hover .briefing-nav{opacity:1}
+.briefing-stage:fullscreen .briefing-full-count,.briefing-stage:fullscreen .briefing-exit,.briefing-stage:-webkit-full-screen .briefing-full-count,.briefing-stage:-webkit-full-screen .briefing-exit{display:block;position:absolute;z-index:2;color:#fff;background:rgba(8,25,25,.55);border-radius:999px}
+.briefing-full-count{left:16px;bottom:14px;padding:3px 12px;font:700 .9rem Outfit,sans-serif}.briefing-exit{top:14px;right:14px;width:40px;height:40px;border:0;font-size:1.1rem;cursor:pointer}
 @media(max-width:760px){.visit-briefing{padding:14px;margin:20px -4px 14px}.briefing-head{flex-direction:column;align-items:start}.briefing-nav{display:none}.briefing-step{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;border:1px solid var(--line);border-radius:50%;background:var(--surface);color:var(--ink);font-size:1.1rem;cursor:pointer}.briefing-bar{flex-wrap:wrap;gap:8px}.briefing-bar p{flex-basis:100%;order:3}.briefing-thumbs button{flex-basis:104px}}
