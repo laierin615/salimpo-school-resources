@@ -31,7 +31,7 @@ for(const name of pageNames){
     if(url.startsWith('data:')||url.startsWith('#')||/^https?:/.test(url))continue;
     const target=url.split('?')[0].split('#')[0];
     assert.ok(fs.existsSync(path.join(dist,target)),`Missing link ${name}: ${url}`);
-    if(url.startsWith('resource.html?'))assert.ok(ids.has(new URLSearchParams(url.split('?')[1]).get('id')));
+    if(url.startsWith('resource.html?'))assert.ok(ids.has(new URLSearchParams(url.split('#')[0].split('?')[1]).get('id')),'Missing resource '+url);/* 網址後面的 #段落 不算在 id 裡 */
   }
 }
 for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.statSync(path.join(dist,name)).isFile()&&/\.(html|js|css|json|txt)$/.test(name))){
@@ -195,6 +195,14 @@ for(const [place,href] of [['course','resource.html?id=PLAN-002'],['library','li
 for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js)$/.test(f)&&f!=='lessons.js'))assert.ok(!fs.readFileSync(path.join(dist,file),'utf8').includes('view=materials'),'Old materials workshop linked from '+file);
 const placeOrder=[...home.matchAll(/data-place="([^"]+)"/g)].map(m=>m[1]),villageJs=fs.readFileSync(path.join(dist,'village.js'),'utf8'),spots=JSON.parse(villageJs.match(/const spots=(\[[^\]]*\])/)[1]);
 assert.equal(spots.length,[...home.matchAll(/data-place="/g)].length,'Every home station needs a house spot');assert.ok(villageJs.includes('function seaAt(')&&villageJs.includes('function moveRaft(')&&villageJs.includes('courseGroup'),'Raft paddles where the sea is clicked; language island is an outdoor training ground');assert.ok([3,9,10].every(n=>!spots.includes(n)),'Spots 3, 9 and 10 stay empty houses');assert.ok(!fs.readFileSync(path.join(dist,'village-ui.js'),'utf8').includes('padStart(2')&&!/directory-number|place-number|directory-group-title"><b>/.test(home),'Stations show names only, no number codes');assert.equal(spots[placeOrder.indexOf('song-tree')],14,'Song tree lives on the west shore at spot 14');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierin615music/"'),'Song tree second link to 古調的現代新衣');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierindateng/"'),'Farm second link to Dateng 野菜探險家');
+// 海怪：首頁海上的傳說故事卡，四個連結都要找得到；海怪點得到、潛水換到看得到的地方（village.js），名字和快速選單接好（village-ui.js），文史文章能直接跳到第 5 段（museum.js）
+const monsterCard=home.match(/<article class="place-card raft-card monster-card" id="monster-card"[\s\S]*?<\/article>/)?.[0]||'';
+assert.ok(monsterCard.includes('<h2>海怪</h2>')&&monsterCard.includes('lang="ami">kimad</i>'),'Sea monster legend card missing on the home page');
+assert.deepEqual([...monsterCard.matchAll(/href="([^"]+)"/g)].map(m=>m[1].replace(/&amp;/g,'&')),['lessons.html?topic=族語與故事','resource.html?id=HISTORY-001#history-section-5','reader.html?book=cathayStories&page=27','resource.html?id=COOP-001'],'Sea monster card links');
+assert.ok(data.lessons.some(l=>l.topic==='族語與故事')&&data.resources.some(r=>r.id==='COOP-001')&&data.resources.find(r=>r.id==='HISTORY-001')?.historyTopic==='sea-festival','Sea monster card targets');
+{const t=data.historyMuseum.topics.find(t=>t.id==='sea-festival'),sections=[...(t.sections[0]?.paragraph>0?[{title:'翻開文史筆記'}]:[]),...t.sections];assert.equal(sections[4]?.title,'海祭傳說與部落記憶','HISTORY-001 section 5 should be the sea legends');}
+assert.equal(JSON.parse(fs.readFileSync(path.join(dist,'books/cathayStories.json'),'utf8')).chapters.find(c=>c.page===27)?.title,'海洋的呼吸｜海祭、漁獵與海事倫理','cathayStories page 27 should open 海洋的呼吸');
+assert.ok(villageJs.includes('function monsterAt(')&&villageJs.includes('function spotView(')&&villageJs.includes("addEventListener('salimpo:monster'")&&fs.readFileSync(path.join(dist,'village-ui.js'),'utf8').includes('monster:showMonster')&&fs.readFileSync(path.join(dist,'museum.js'),'utf8').includes('if(location.hash)document.getElementById(location.hash.slice(1))?.scrollIntoView()'),'Sea monster should dive, resurface and open its card');
 // 村子裡的 singsi：11 位、各 3 則小知識（族語詞＋中文）、一題三選一、連到存在的教案；只寫「X singsi」，不碰祭儀題材
 const singsiCtx={window:{}};vm.runInNewContext(fs.readFileSync(path.join(dist,'singsi.js'),'utf8'),singsiCtx);const singsiList=singsiCtx.window.SALIMPO_SINGSI;
 assert.deepEqual(Array.from(singsiList,s=>s.name),['Masao','Lakaw','Madal','奕芸','秋霞','勤偉','淑樺','振海','育維','宏昌','素卿'].map(n=>n+' singsi'),'Eleven singsi, names only');

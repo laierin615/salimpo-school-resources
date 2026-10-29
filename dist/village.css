@@ -55,6 +55,11 @@
 @media(max-width:600px){.place-go-alt{margin-left:0}}
 
 .raft-pin:before{background:#d8b45a}
+/* 海怪：名字前的圓點用壁畫上的綠；潛在水裡時名字收起來、點不到；傳說故事卡沿用竹筏卡，四個連結排兩欄，手機上也留著「傳說故事 · kimad」 */
+.monster-pin:before{background:#6aa144}
+.village-labels .place-pin.monster-pin.is-under{opacity:0;pointer-events:none}
+.monster-card .raft-links{grid-template-columns:repeat(2,1fr)}
+@media(max-width:600px){.raft-card.monster-card .place-meta span{display:inline}}
 /* 手機上族語詞那一列不換行，min-width:0 才不會把整條下方欄撐出螢幕 */
 .raft-card{min-width:0}
 /* 竹筏卡比一般地點卡寬，連結才排得成三欄；用負邊距置中，不把下方的換頁列一起撐寬 */

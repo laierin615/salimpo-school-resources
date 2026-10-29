@@ -311,6 +311,63 @@ function buildVillage(){
   const seaGlow=color=>new THREE.MeshBasicMaterial({color,transparent:true,opacity:0,side:THREE.DoubleSide,depthWrite:false});
   const raftTarget=mesh(new THREE.RingGeometry(.2,.28,28),seaGlow(0xfff3c4));raftTarget.rotation.x=-Math.PI/2;raftTarget.position.y=-1.25;raftTarget.castShadow=raftTarget.receiveShadow=false;
   const wakes=[];for(let i=0;i<6;i++){const ring=mesh(new THREE.RingGeometry(.16,.21,22),seaGlow(0xeafffb));ring.rotation.x=-Math.PI/2;ring.position.y=-1.26;ring.castShadow=ring.receiveShadow=false;wakes.push({ring,born:-9});}
+  // 海怪：照壁畫做——綠色長毛、頭上兩支樹枝角、黑眼睛粉紅臉頰、橘色大嘴上點著白點，兩手抱著一條藍色大魚
+  // 上半身露出海面、一直面向鏡頭；點了打開傳說故事卡，潛下去再從另一個地方冒出來
+  const WATER_Y=-1.32,monster=new THREE.Group(),beast=new THREE.Group(),ball=new THREE.SphereGeometry(1,12,8),fur=0x6aa144,cy=.42;monster.userData.monster=true;monster.scale.setScalar(1.3);beast.rotation.x=-.18;monster.add(beast);scene.add(monster);
+  // 身體：細分的球面加上固定的起伏，臉那一塊比較平，眼睛和嘴巴才貼得上去
+  const bodyGeo=new THREE.IcosahedronGeometry(1,3),bodyPos=bodyGeo.attributes.position;
+  for(let i=0;i<bodyPos.count;i++){const x=bodyPos.getX(i),y=bodyPos.getY(i),z=bodyPos.getZ(i),face=THREE.MathUtils.clamp((z-.35)/.3,0,1)*THREE.MathUtils.clamp((y+.6)/.25,0,1),r=1+(Math.sin(x*9+y*4)*Math.cos(z*8-y*3)*.07+Math.sin(y*13+z*5)*.03)*(1-.8*face);bodyPos.setXYZ(i,x*r*.62,y*r*.72,z*r*.55);}
+  bodyGeo.computeVertexNormals();mesh(bodyGeo,fur,beast).position.y=cy;
+  // 一圈圈往下垂的毛簇，避開臉和抱魚的地方
+  for(const [h,count,len] of [[.62,9,.26],[.3,12,.3],[0,12,.32],[-.3,12,.3]])for(let k=0;k<count;k++){const a=(k+(count===12&&h!==0?.5:0))/count*Math.PI*2;if(Math.cos(a)>(h<-.1?.8:.55))continue;
+    const s=Math.sqrt(1-h*h),tuft=new THREE.Group();tuft.position.set(Math.sin(a)*.62*s,cy+h*.72,Math.cos(a)*.55*s);tuft.rotation.y=a;beast.add(tuft);
+    const cone=mesh(geometry.cone,k%2?0x5d9439:0x7cb552,tuft);cone.scale.set(.1,len,.1);cone.rotation.x=Math.PI-.4;cone.position.set(0,-Math.cos(.4)*len/2,Math.sin(.4)*len/2);}
+  for(const s of [-1,1]){const at=(x,y,z)=>new THREE.Vector3(s*x,cy+y,z),horn=0x8f3b26;
+    beam(at(.2,.58,-.02),at(.36,1.02,-.06),.05,horn,beast);beam(at(.28,.82,-.04),at(.55,.98,-.02),.035,horn,beast);beam(at(.36,1.02,-.06),at(.3,1.2,-.04),.03,horn,beast);beam(at(.36,1.02,-.06),at(.5,1.13,-.08),.028,horn,beast);}
+  const eyes=[],shines=[],white=new THREE.MeshBasicMaterial({color:0xfff8ec});
+  for(const s of [-1,1]){const eye=mesh(ball,smooth(0x17181c),beast);eye.scale.setScalar(.085);eye.position.set(s*.2,cy+.25,.49);eyes.push(eye);
+    const shine=mesh(ball,white,beast);shine.scale.setScalar(.026);shine.position.set(s*.2+.03,cy+.285,.565);shine.castShadow=false;shines.push(shine);
+    const cheek=mesh(ball,smooth(0xe56b7a),beast);cheek.scale.set(.1,.06,.04);cheek.position.set(s*.37,cy+.08,.43);}
+  mesh(new THREE.CircleGeometry(.27,20,Math.PI,Math.PI),smooth(0xf08a1c),beast).position.set(0,cy+.07,.565);
+  for(const [x,y] of [[-.15,-.05],[0,-.07],[.15,-.05],[-.08,-.16],[.08,-.16],[0,-.22]]){const dot=mesh(new THREE.CircleGeometry(.028,10),white,beast);dot.position.set(x,cy+.07+y,.57);dot.castShadow=false;}
+  // 兩手抱著藍色大魚，魚尾巴一直拍
+  for(const s of [-1,1]){beam(new THREE.Vector3(s*.5,cy-.02,.14),new THREE.Vector3(s*.3,cy-.33,.5),.1,fur,beast);const hand=mesh(geometry.leaf,fur,beast);hand.scale.setScalar(.11);hand.position.set(s*.3,cy-.33,.52);}
+  const fish=new THREE.Group();fish.position.set(.02,cy-.36,.62);fish.rotation.z=-.08;beast.add(fish);mesh(new THREE.SphereGeometry(1,16,10),smooth(0x3f57c8),fish).scale.set(.44,.15,.12);
+  const finBlue=smooth(0x8e9cf0),tailFin=new THREE.Group();tailFin.position.x=.4;fish.add(tailFin);const fishTail=mesh(new THREE.ConeGeometry(.14,.24,4),finBlue,tailFin);fishTail.rotation.z=Math.PI/2;fishTail.position.x=.1;fishTail.scale.z=.35;
+  const dorsal=mesh(new THREE.ConeGeometry(.08,.14,4),finBlue,fish);dorsal.position.set(.04,.15,0);dorsal.scale.z=.35;
+  const fishEye=mesh(ball,white,fish);fishEye.scale.setScalar(.035);fishEye.position.set(-.3,.035,.085);const pupil=mesh(ball,smooth(0x17181c),fish);pupil.scale.setScalar(.018);pupil.position.set(-.31,.035,.115);
+  // 身邊一圈白色水波；潛水和冒出來時各濺起兩圈水花
+  const foam=mesh(new THREE.RingGeometry(.6,.74,32),new THREE.MeshBasicMaterial({color:0xeafffb,transparent:true,opacity:.4,side:THREE.DoubleSide,depthWrite:false}),monster);foam.rotation.x=-Math.PI/2;foam.position.y=.06;foam.castShadow=foam.receiveShadow=false;
+  const splashes=[];for(let i=0;i<4;i++){const ring=mesh(new THREE.RingGeometry(.55,.66,32),seaGlow(0xeafffb));ring.rotation.x=-Math.PI/2;ring.position.y=-1.25;ring.castShadow=ring.receiveShadow=false;splashes.push({ring,born:-9});}
+  function splash(t){for(const delay of [0,.28]){const s=splashes.reduce((a,b)=>a.born<b.born?a:b);s.ring.position.x=monster.position.x;s.ring.position.z=monster.position.z;s.size=monster.scale.x/1.3;s.born=t+delay;}}
+  // 會冒出來的地方：主島外圈的海面，避開兩座小外島、女人島旁的鯨魚、小帆船和竹筏一開始停的地方；第一個是一打開首頁時的位置
+  // 桌機看得到左右兩側，平板看得到島的後方，手機看得到島的前方，潛水時再挑當下畫面看得到的（spotView）
+  const MONSTER_SPOTS=[[110,12.5],[0,11.5],[-10,10.5],[10,12.5],[20,13.5],[-20,12.5],[-50,11.5],[90,12.5],[100,11.5],[120,11.5],[130,13.5],[60,12.5],[80,11.5],[-80,12.5],[-170,11.5],[180,12.5]].map(([deg,r])=>[Math.cos(deg*Math.PI/180)*r,Math.sin(deg*Math.PI/180)*r]);
+  let monsterSpot=0,monsterState='up',monsterSince=0,diveFrom=0,monsterChecked=false;
+  function placeMonster(i){monsterSpot=i;monster.position.set(MONSTER_SPOTS[i][0],WATER_Y,MONSTER_SPOTS[i][1]);}
+  placeMonster(0);
+  const inBeast=o=>{for(;o;o=o.parent)if(o===beast)return true;return false;},probe=new THREE.Vector3(),probeAt=new THREE.Vector2(),covers=['.village-header','.world-caption','.world-whispers','.village-zoom','.sky-door'];
+  // 這個地方在畫面上看不看得到：0 在畫面外、被上方標題蓋住或被島和房子擋住，1 只被下方卡片蓋住（手機上卡片會蓋住大半個海），2 完全看得到
+  function spotView(i){camera.updateMatrixWorld();const [x,z]=MONSTER_SPOTS[i],box=canvas.getBoundingClientRect(),size=monster.scale.x,sideX=Math.cos(yaw)*.65*size,sideZ=-Math.sin(yaw)*.65*size;let l=1e9,t=1e9,r=-1e9,b=-1e9;
+    for(const [s,y] of [[0,0],[0,1.9],[-1,.8],[1,.8]]){probe.set(x+s*sideX,WATER_Y+y*size,z+s*sideZ).project(camera);const px=box.left+(probe.x*.5+.5)*box.width,py=box.top+(.5-probe.y*.5)*box.height;l=Math.min(l,px);r=Math.max(r,px);t=Math.min(t,py);b=Math.max(b,py);}
+    if(l<box.left+8||r>box.right-8||t<box.top+8||b>box.bottom-(width<600?box.height*.22:8))return 0;
+    const hit=selector=>[...document.querySelectorAll(selector)].some(el=>{const u=el.getBoundingClientRect();return u.width>0&&!(u.right<l-6||u.left>r+6||u.bottom<t-34||u.top>b+6);});/* 上面多留一點給名字 */
+    if(covers.some(hit))return 0;
+    for(const y of [.6,1.5]){probe.set(x,WATER_Y+y*size,z);const p=probe.clone().project(camera);probeAt.set(p.x,p.y);raycaster.setFromCamera(probeAt,camera);const far=probe.sub(raycaster.ray.origin).dot(raycaster.ray.direction)-.4;
+      if(raycaster.intersectObjects(scene.children,true).some(h=>h.distance<far&&h.object.isMesh&&!h.object.material.transparent&&shown(h.object)&&!inBeast(h.object)))return 0;}
+    return hit('.village-bottom')?1:2;}
+  // 換一個地方冒出來：不回原地，也不冒在竹筏和竹筏要去的地方旁邊；挑看得最清楚的那幾個地方
+  function nextMonsterSpot(){const near=[[raft.position.x,raft.position.z],...(raftGoal?[[raftGoal.x,raftGoal.z]]:[])],others=MONSTER_SPOTS.map((_,i)=>i).filter(i=>i!==monsterSpot),clear=others.filter(i=>near.every(([x,z])=>Math.hypot(MONSTER_SPOTS[i][0]-x,MONSTER_SPOTS[i][1]-z)>2.5)),pool=clear.length?clear:others;
+    const view=pool.map(spotView),best=Math.max(...view),picks=pool.filter((_,k)=>view[k]===best);return picks[Math.floor(Math.random()*picks.length)];}
+  // 減少動態效果時直接換位置，不做潛水動畫
+  function diveMonster(){if(monsterState!=='up'&&monsterState!=='rise')return;if(reduced){placeMonster(nextMonsterSpot());return;}monsterState='dive';monsterSince=performance.now()/1000;diveFrom=beast.position.y;splash(monsterSince);}
+  function animateMonster(t){const k=t-monsterSince;
+    if(monsterState==='dive'){const p=Math.min(1,k/.6);beast.position.y=diveFrom+(-1.9-diveFrom)*p*p;beast.rotation.z=.3*p;foam.material.opacity=.4*(1-p);if(p>=1){monsterState='under';monsterSince=t;monster.visible=false;placeMonster(nextMonsterSpot());}}
+    else if(monsterState==='under'){if(k>=1.3){monsterState='rise';monsterSince=t;monster.visible=true;beast.rotation.z=0;splash(t);}}
+    else if(monsterState==='rise'){const p=Math.min(1,k/.8),q=p-1;beast.position.y=-1.9*(1-(1+2.70158*q*q*q+1.70158*q*q));foam.material.opacity=.4*p;if(p>=1){monsterState='up';monsterSince=t;}}
+    else{beast.position.y=Math.sin(k*1.3)*.05;beast.rotation.z=Math.sin(k*.8)*.06;}
+    tailFin.rotation.z=Math.sin(t*5)*.25;const blink=t%3.7<.14;eyes.forEach(e=>{e.scale.y=blink?.012:.085;});shines.forEach(s=>{s.visible=!blink;});
+    splashes.forEach(s=>{const q=(t-s.born)/1.3;s.ring.material.opacity=q<0||q>1?0:.55*(1-q);s.ring.scale.setScalar((1+Math.max(0,q)*1.6)*(s.size||1));});}
   const birdsGeo=new THREE.BufferGeometry();birdsGeo.setAttribute('position',new THREE.Float32BufferAttribute([-.15,0,0,0,.05,0,0,.05,0,.15,0,0],3));const birdMaterial=new THREE.LineBasicMaterial({color:0x678b8e});const birds=[];for(let i=0;i<4;i++){const bird=new THREE.LineSegments(birdsGeo,birdMaterial);scene.add(bird);birds.push(bird);}
 
   let night=false;function setTheme(theme){night=theme==='night';hemi.intensity=night?.7:2.3;hemi.color.set(night?0x9bb7eb:0xeafaff);sun.intensity=night?.5:3.2;sun.color.set(night?0xb0c4ed:0xfff1d2);fill.intensity=night?.25:.65;renderer.toneMappingExposure=night?.88:1.18;seaMaterial.color.set(night?0x173f59:0x73bfc0);stars.visible=night;nightMoon.visible=night;clouds.forEach(c=>c.group.visible=!night);lights.forEach(light=>light.intensity=night?2.2:0);lampGlow.emissiveIntensity=night?1.4:0;scene.fog=new THREE.Fog(night?0x102d45:0xb5ddd9,35,110);}
@@ -383,7 +440,8 @@ function buildVillage(){
   window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.scale.setScalar(spots[selected]===14?.72:spots[selected]===11?1.3:1);selectionRing.position.set(positions[spots[selected]][0],.135,positions[spots[selected]][1]);targetPan.set(0,0,0);}aimFocus();});
   window.addEventListener('salimpo:singsi',event=>{talkingTo=event.detail;if(talkingTo>=0){const s=SINGSI[talkingTo];selectionRing.scale.setScalar(.36);selectionRing.position.set(s.at[0],(s.y||.13)+.01,s.at[1]);selectionRing.visible=true;targetPan.set(0,0,0);}else if(selected<0)selectionRing.visible=false;aimFocus();});
   function project(){const aspect=width/height;/* 左右兩座小外島在任何寬度都要完整入鏡 */const half=width<600?13/aspect:Math.max(9.65,13/aspect);camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
-  function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);project();}
+  /* 手機畫面小，海怪放大一點才看得到、點得到 */
+  function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);project();monster.scale.setScalar(width<600?1.6:1.3);}
   new ResizeObserver(resize).observe(canvas);resize();
   // 站名平常收起來：滑過、拖曳、點選或縮放聚落時才浮現，停下來一會兒再淡出
   const labelRoot=document.getElementById('village-labels'),hint=document.getElementById('village-hint'),zoomIn=document.querySelector('[data-zoom=in]'),zoomOut=document.querySelector('[data-zoom=out]');
@@ -399,8 +457,13 @@ function buildVillage(){
   function placeAt(x,y){const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);for(const hit of raycaster.intersectObjects(buildings,true)){let item=hit.object;while(item&&item.userData.placeIndex===undefined)item=item.parent;if(item)return item.userData.placeIndex;}return -1;}
   function raftAt(x,y){const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);return raycaster.intersectObject(raft,true).length>0;}
   function singsiAt(x,y){const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);const hit=raycaster.intersectObjects(singsiFigures,true)[0];if(!hit)return -1;const wall=raycaster.intersectObjects(buildings,true)[0];if(wall&&wall.distance<hit.distance-.05)return -1;let item=hit.object;while(item&&item.userData.singsi===undefined)item=item.parent;return item?item.userData.singsi:-1;}
-  function pick(x,y){const who=singsiAt(x,y);if(who>=0)window.SALIMPO_VILLAGE?.singsi(who);else{const index=placeAt(x,y);if(index>=0)window.SALIMPO_VILLAGE?.select(index);else if(raftAt(x,y))window.SALIMPO_VILLAGE?.raft();else seaAt(x,y);}reveal();}
+  // 海怪在水面上（或正在冒出來）時才點得到；看得到的第一個東西要是海怪，被島或房子擋住就不算
+  function monsterAt(x,y){if(!monster.visible||monsterState==='dive')return false;const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);if(!raycaster.intersectObject(beast,true).length)return false;
+    return inBeast(raycaster.intersectObjects(scene.children,true).find(h=>h.object.isMesh&&!h.object.material.transparent&&shown(h.object))?.object);}
+  function pick(x,y){if(monsterAt(x,y)){window.SALIMPO_VILLAGE?.monster();reveal();return;}const who=singsiAt(x,y);if(who>=0)window.SALIMPO_VILLAGE?.singsi(who);else{const index=placeAt(x,y);if(index>=0)window.SALIMPO_VILLAGE?.select(index);else if(raftAt(x,y))window.SALIMPO_VILLAGE?.raft();else seaAt(x,y);}reveal();}
   window.addEventListener('salimpo:raft',()=>showHint('raft','點一下海面，竹筏就會划過去',true));
+  // 點海怪、牠頭上的名字或快速選單（village-ui.js）都走這裡：潛下去換個地方冒出來
+  window.addEventListener('salimpo:monster',()=>{diveMonster();showHint('monster','海怪潛進海裡，換個地方冒出來',true);});
   // 點到海面：竹筏划過去。終點留在主島、兩座小外島和小帆船外面，最遠到半徑 14
   let raftGoal=null,raftClock=0,wakeAt=0;
   const raftObstacles=[[...positions[11],2.6],[...positions[12],2.65],[secondBoat.position.x,secondBoat.position.z,1.25]];
@@ -454,13 +517,14 @@ function buildVillage(){
     const pins=[...document.querySelectorAll('.place-pin')],talkers=[...document.querySelectorAll('.singsi-pin')];const mobile=width<600;const guard=document.querySelector('.world-whispers');const minY=guard?guard.offsetTop+guard.offsetHeight+(mobile?22:26):(mobile?230:239);
     if(!pinWidths||pinWidths.key!==width||pinWidths.length!==pins.length||singsiSizes.length!==talkers.length){pins.forEach(pin=>pin.classList.remove('is-dot'));pinWidths=pins.map(pin=>pin.offsetWidth);pinWidths.key=width;singsiSizes=talkers.map(pin=>[pin.offsetWidth,pin.offsetHeight]);}
     const screen=(x,y,z)=>{point.set(x,y,z).project(camera);return {x:(point.x*.5+.5)*width,y:Math.max(minY,(-point.y*.5+.5)*height+(mobile?28:0))};};
-    const rank=entry=>pins[entry.i]?.getAttribute('aria-pressed')==='true'?2:pins[entry.i]?.classList.contains('raft-pin')?0:1;
-    /* 小外島的標籤浮高一點，不要蓋住島 */
-    const entries=[...spots.map((spot,i)=>{const [x,z]=positions[spot];return {i,...screen(x,Math.hypot(x,z)>7?3:1.4,z)};}),{i:pins.length-1,...screen(raft.position.x,.9,raft.position.z)}].sort((a,b)=>rank(b)-rank(a)||a.y-b.y);
+    const rank=entry=>pins[entry.i]?.getAttribute('aria-pressed')==='true'?2:pins[entry.i]?.matches('.raft-pin,.monster-pin')?0:1;
+    /* 小外島的標籤浮高一點，不要蓋住島；竹筏和海怪的名字跟著它們在海上走，海怪潛在水裡時收起來、不占位置 */
+    const seaPin=name=>pins.findIndex(pin=>pin.classList.contains(name)),under=monsterState!=='up',size=monster.scale.x,back=-.34*size,horns=screen(monster.position.x+Math.sin(yaw)*back,WATER_Y+1.61*size,monster.position.z+Math.cos(yaw)*back);/* 海怪的名字貼在角尖上方：身體往後仰，角尖也跟著往後 */
+    const entries=[...spots.map((spot,i)=>{const [x,z]=positions[spot];return {i,...screen(x,Math.hypot(x,z)>7?3:1.4,z)};}),{i:seaPin('raft-pin'),...screen(raft.position.x,.9,raft.position.z)},{i:seaPin('monster-pin'),under,...horns,y:Math.max(minY,horns.y-(mobile?19:23))}].sort((a,b)=>rank(b)-rank(a)||a.y-b.y);
     const placed=[],fullH=mobile?26:32,dot=mobile?16:18,free=(x,y,w,h)=>!placed.some(o=>Math.abs(o.x-x)<(o.w+w)/2+3&&Math.abs(o.y-y)<(o.h+h)/2+3);
     /* singsi 的名字標籤跟著頭頂；正在說話的那位先占位，旁邊的站名讓開 */
     talkers.forEach((pin,i)=>{const s=SINGSI[i];if(!s)return;const at=screen(s.at[0],(s.y||.13)+1.1,s.at[1]);pin.style.left=at.x+'px';pin.style.top=at.y+'px';if(i===talkingTo&&singsiSizes[i]){const [w,h]=singsiSizes[i];placed.push({x:at.x,y:at.y-h/2,w,h});}});
-    entries.forEach(entry=>{const pin=pins[entry.i];if(!pin)return;let w=pinWidths[entry.i],h=fullH,y=entry.y,x=THREE.MathUtils.clamp(entry.x,w/2+8,width-w/2-8);
+    entries.forEach(entry=>{const pin=pins[entry.i];if(!pin)return;if('under' in entry){pin.classList.toggle('is-under',entry.under);if(entry.under){pin.style.left=entry.x+'px';pin.style.top=entry.y+'px';return;}}let w=pinWidths[entry.i],h=fullH,y=entry.y,x=THREE.MathUtils.clamp(entry.x,w/2+8,width-w/2-8);
       if(rank(entry)<2&&!free(x,y,w,h)){if(free(x,y+h+4,w,h))y+=h+4;else{w=h=dot;x=THREE.MathUtils.clamp(entry.x,w/2+8,width-w/2-8);for(let k=0;k<6&&!free(x,y,w,h);k++)y+=h+4;}}
       pin.classList.toggle('is-dot',w===dot);placed.push({x,y,w,h});pin.style.left=x+'px';pin.style.top=y+'px';});
   }
@@ -469,9 +533,13 @@ function buildVillage(){
   function frame(now){requestAnimationFrame(frame);if(document.hidden||!visible||now-last<1000/30)return;last=now;const elapsed=(now-start)/1000;
     yaw=THREE.MathUtils.lerp(yaw,targetYaw,.12);pitch=THREE.MathUtils.lerp(pitch,targetPitch,.12);if(Math.abs(zoom-targetZoom)>.0005){zoom=THREE.MathUtils.lerp(zoom,targetZoom,.18);project();}focus.lerp(targetFocus,.12);pan.lerp(targetPan,.18);
     const lookX=focus.x+pan.x,lookZ=focus.z+pan.z,flat=Math.cos(pitch)*RADIUS;camera.position.set(lookX+Math.sin(yaw)*flat,Math.sin(pitch)*RADIUS,lookZ+Math.cos(yaw)*flat);camera.lookAt(lookX,.05,lookZ);
-    if(hoverAt&&!down){const who=singsiAt(...hoverAt);hoverSingsi(who);const index=who>=0?-1:placeAt(...hoverAt);setHover(index);if(who>=0||index<0&&raftAt(...hoverAt))canvas.classList.add('is-pointing');hoverAt=null;}
+    if(hoverAt&&!down){const beastHere=monsterAt(...hoverAt),who=beastHere?-1:singsiAt(...hoverAt);hoverSingsi(who);const index=beastHere||who>=0?-1:placeAt(...hoverAt);setHover(index);canvas.classList.toggle('is-pointing',beastHere||who>=0||index>=0||raftAt(...hoverAt));hoverAt=null;}
     const moving=!!raftGoal;if(moving)moveRaft(Math.min(.1,(now-raftClock)/1000));raftClock=now;raftTarget.material.opacity=moving?(reduced?.7:.45+Math.sin(elapsed*5)*.25):Math.max(0,raftTarget.material.opacity-.06);
-    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});raft.position.y=RAFT_Y+Math.sin(elapsed*1.4)*.03;raft.rotation.z=Math.sin(elapsed*.9)*.03;paddle.rotation.z=raftGoal?Math.sin(elapsed*6)*.6:Math.sin(elapsed*1.6)*.35;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);animateCourse(elapsed);wakeStep(elapsed,moving);animateSingsi(elapsed);}
+    /* 海怪一直面向鏡頭；竹筏划到旁邊時，海怪也潛下去換地方 */
+    monster.rotation.y=yaw;if(moving&&monsterState==='up'&&Math.hypot(raft.position.x-monster.position.x,raft.position.z-monster.position.z)<1.46*monster.scale.x)diveMonster();
+    /* 第一個畫面：一開始的位置看不到（被卡片或標題蓋住）就換到看得到的地方 */
+    if(!monsterChecked){monsterChecked=true;if(spotView(monsterSpot)<2)placeMonster(nextMonsterSpot());}
+    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});raft.position.y=RAFT_Y+Math.sin(elapsed*1.4)*.03;raft.rotation.z=Math.sin(elapsed*.9)*.03;paddle.rotation.z=raftGoal?Math.sin(elapsed*6)*.6:Math.sin(elapsed*1.6)*.35;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);animateCourse(elapsed);wakeStep(elapsed,moving);animateSingsi(elapsed);animateMonster(now/1000);}
     labels();renderer.render(scene,camera);
   }
   frame(performance.now());requestAnimationFrame(()=>requestAnimationFrame(()=>{/* 超過 15 秒才載好時，從備用清單切回 3D 版面 */world.classList.remove('scene-unavailable');world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;}));
