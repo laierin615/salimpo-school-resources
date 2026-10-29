@@ -40,4 +40,19 @@
   const door=(href,icon,eyebrow,title,sub,text,go,links)=>`<article class="reception-door"><a class="reception-door-main" href="${href}"><svg class="reception-icon" aria-hidden="true"><use href="media/icons.svg#${icon}"></use></svg><p class="eyebrow">${e(eyebrow)}</p><h2>${e(title)}</h2><p class="reception-sub">${e(sub)}</p><p>${e(text)}</p><span class="text-link">${e(go)} →</span></a><nav class="reception-quick" aria-label="${e(title)}：直接前往"><span>直接前往</span>${links.map(([to,label])=>`<a href="${e(to)}">${e(label)}</a>`).join('')}</nav></article>`;
   document.getElementById('main').insertAdjacentHTML('beforeend',`<div class="page-body reception-doors">${door('visits.html','st-visit','115年原住民族實驗教育訪視','原民會訪視',`${v.dateLabel} · ${v.groups.length}大面向${items}項`,'從課程地圖到孩子的作品與部落的陪伴，沿著四大面向走進寧埔的山海教育。','走進原民會訪視',[['visits.html#flow','訪視流程'],...(v.briefing?[['visits.html#briefing','學校簡報']]:[]),...v.groups.map(g=>[`visits.html#${g.id}`,g.title])])}${door('reviews.html','st-archive','115學年度 · 學校型態實驗教育','實驗教育評鑑',`${d.groups.length}大面向${d.indicators.length}項指標`,'從評鑑指標出發，一步步看見課程、學習成果與評鑑資料的關聯。','走進實驗教育評鑑',d.groups.map((name,i)=>[`reviews.html?group=${i+1}`,name]))}</div>`);
  }
+ // 三頁的標題區右側放 QR code：手機一掃直接打開原民會訪視；點一下放大，投影或視訊時大家比較好掃（窄螢幕不顯示，見 room.css）
+ const qrImg='media/qr/visits.svg',qrText='手機掃描，進入原民會訪視';
+ function qr(){
+  const h=document.querySelector('#main .page-heading');if(!h||h.querySelector('.room-qr'))return;
+  h.classList.add('has-room-qr');
+  h.insertAdjacentHTML('afterbegin',`<button type="button" class="room-qr" aria-label="放大 QR code：${qrText}"><img src="${qrImg}" alt="" width="112" height="112"><span>手機掃描<br>進入原民會訪視</span></button>`);
+ }
+ document.addEventListener('click',event=>{
+  if(!event.target.closest('.room-qr'))return;
+  let box=document.querySelector('.room-qr-dialog');
+  if(!box){box=document.createElement('dialog');box.className='room-qr-dialog';box.innerHTML=`<img src="${qrImg}" alt="原民會訪視網頁的 QR code" width="480" height="480"><p>${qrText}</p><form method="dialog"><button type="submit">關閉</button></form>`;box.addEventListener('click',e=>{if(e.target===box)box.close();});document.body.append(box);}
+  box.showModal();
+ });
+ const main=document.getElementById('main');
+ if(main){qr();new MutationObserver(qr).observe(main,{childList:true,subtree:true});}
 })();
