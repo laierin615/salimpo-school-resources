@@ -259,10 +259,16 @@ for(const n of sky.nodes){
   if(page==='journeys.html')assert.ok(journeyIds.has(value),'Star links to an unknown journey '+n.id);
   if(page==='museum.html'&&rest)assert.ok(historyIds.has(value),'Star links to an unknown history topic '+n.id);
 }
+// 四個星座的軸心就是原民會訪視指標 1-2 的四大文化領域，九向都歸到其中一個星座；老師指定美術與創作連到藝術美
+const axisNames=starContext.window.SALIMPO_STARS.AXES.map(a=>a.name),domainItem=visit.groups.flatMap(g=>g.items).find(i=>i.code==='1-2'),axisStars=sky.nodes.filter(n=>n.kind==='四大文化領域');
+assert.ok(domainItem&&axisNames.length===4&&axisNames.every(name=>domainItem.title.includes(name)),'Star axes differ from visit indicator 1-2');
+assert.ok(axisStars.length===4&&axisStars.every(n=>n.label===n.axis)&&axisNames.every(name=>axisStars.some(n=>n.axis===name)),'Every cultural domain must be a star axis');
+for(const n of sky.nodes.filter(n=>n.kind==='九向'))assert.ok(axisNames.includes(n.axis),'Direction without a constellation '+n.id);
+assert.ok(sky.links.some(l=>[l.source,l.target].sort().join('|')==='core:B|eventDomain:美術與創作'),'美術與創作 must link to 藝術美');
 const starsHtml=fs.readFileSync(path.join(dist,'stars.html'),'utf8');
 assert.ok(starsHtml.includes(`lang="ami">fo'is</i>`)&&starsHtml.includes('id="sky-canvas"')&&starsHtml.includes('id="sky-list-groups"'),'Star map page incomplete');
 for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('<a href="stars.html">星空</a></p>'),'Star map footer link missing on '+page);
 for(const entrance of ['<a class="pill" href="stars.html">星空</a>','class="sky-door sky-door-top" href="stars.html"'])assert.ok(home.includes(entrance),'Home missing star entrance '+entrance);
 const villageCss=fs.readFileSync(path.join(dist,'village.css'),'utf8');
 assert.ok(villageCss.includes('[data-theme=night] .sky-door-top{')&&villageCss.includes('[data-theme=night] .village-header .pill[href="stars.html"]{'),'Night star entrances missing in village.css');
-console.log(`Star map verified: ${sky.nodes.length} stars and ${sky.links.length} links from data.js, every star linked to a page; entrance on every page and in the home night sky.`);
+console.log(`Star map verified: ${sky.nodes.length} stars and ${sky.links.length} links from data.js, four constellations around the visit 1-2 cultural domains, every star linked to a page; entrance on every page and in the home night sky.`);

@@ -1,6 +1,7 @@
 // 星空 fo'is：把網站裡的課程、文化、成果與文史畫成一片可以互動的星空，像 Obsidian 的關聯圖。
 // 連線只用 data.js 已有的對應：課→九向／主題／課程、九向→三美／四大文化領域、步驟卡→課與相關資料、
-// 成果→成果主題、合作計畫與課程單元→相關資料、文史→相同標籤；不自己推測關係。沒有任何連線的星，接到它所在的館。
+// 成果→成果主題、合作計畫與課程單元→相關資料、文史→相同標籤，再加上老師指定的對應（CONFIRMED）；不自己推測關係。
+// 沒有任何連線的星，接到它所在的館。原民會的四大文化領域是四個星座的軸心：每顆星依連到的九向歸到一個星座，排列時往軸心靠。
 (() => {
   const GROUPS = [
     {id: 'culture', name: '文化核心', color: '#ffcf6e'},
@@ -12,10 +13,19 @@
     {id: 'history', name: '文史', color: '#c3a8ff'}
   ];
   const KINDS = ['三美', '四大文化領域', '九向', '教案主題', '課程', '課程單元', '課', '學習步驟卡', '成果主題', '成果', '合作計畫', '文史', '館別'];
-  const SIZE = {三美: 10, 四大文化領域: 8.5, 九向: 7, 教案主題: 7, 課程: 7, 課程單元: 5.5, 課: 4.2, 學習步驟卡: 5, 成果主題: 6.5, 成果: 4.2, 合作計畫: 6, 文史: 5.5, 館別: 7};
+  const SIZE = {三美: 10, 四大文化領域: 14, 九向: 7, 教案主題: 7, 課程: 7, 課程單元: 5.5, 課: 4.2, 學習步驟卡: 5, 成果主題: 6.5, 成果: 4.2, 合作計畫: 6, 文史: 5.5, 館別: 7};
   const NAMED = new Set(['三美', '四大文化領域', '九向', '教案主題', '課程', '成果主題', '合作計畫', '館別']);  // 平常就顯示名字的大星
   const SHOWN = new Set(['學習步驟卡', '課程單元', '文史']);  // 數量少的小星，位置夠就顯示名字
   const HUBS = {history: ['hub:museum', '文史資料館', 'museum.html'], event: ['hub:stories', '成果廣場', 'stories.html'], journey: ['hub:journeys', '我們怎麼學', 'journeys.html'], lesson: ['hub:lessons', '山海探索站', 'lessons.html'], theme: ['hub:lessons', '山海探索站', 'lessons.html'], coop: ['hub:partners', '合作計畫', 'partnerships.html'], culture: ['hub:learning', '課程架構屋', 'resource.html?id=PLAN-002']};
+  // 原民會 115 年訪視指標 1-2「完整文化領域：永續發展、文藝美學、生命哲學、民族社會」是四個星座的軸心，依這個順序順時針排在四角
+  const AXES = [
+    {name: '永續發展', color: '#7fe0a6', at: [-1, -1]},
+    {name: '文藝美學', color: '#ffa3d2', at: [1, -1]},
+    {name: '生命哲學', color: '#b8a6ff', at: [1, 1]},
+    {name: '民族社會', color: '#ffc46e', at: [-1, 1]}
+  ];
+  // 老師指定的對應（data.js 沒有寫，但確認過要連）：[星星, 三美]
+  const CONFIRMED = [['eventDomain:美術與創作', '藝術美']];
 
   function buildGraph(d) {
     const nodes = [], links = [], byId = new Map(), pairs = new Set();
@@ -23,9 +33,10 @@
       if (!byId.has(id)) { const n = {id, group, kind, label, title: label, summary: '', meta: '', href: '', ...more}; nodes.push(n); byId.set(id, n); }
       return byId.get(id);
     };
-    const link = (a, b) => {
+    // loose：只是「提到」的相關資料，畫線但不決定星座歸屬
+    const link = (a, b, loose) => {
       const key = a < b ? a + '|' + b : b + '|' + a;
-      if (a !== b && byId.has(a) && byId.has(b) && !pairs.has(key)) { pairs.add(key); links.push({source: a, target: b}); }
+      if (a !== b && byId.has(a) && byId.has(b) && !pairs.has(key)) { pairs.add(key); links.push(loose ? {source: a, target: b, loose} : {source: a, target: b}); }
     };
     const term = (year, semester) => year ? year + '學年度' + (semester === 1 ? '上學期' : semester === 2 ? '下學期' : '') : '';
     const c = d.curriculum115 || {};
@@ -38,9 +49,12 @@
         link('dir:' + dir.code, 'core:' + core.code);
       }
     }
+    // 四大文化領域用原民會的名稱（data.js 的「永續（生態永續）」就是原民會的「永續發展」）
+    const axisByCode = new Map();
     for (const [name, codes, text] of c.domains || []) {
-      add('domain:' + name, 'culture', '四大文化領域', name.replace(/（.*）/, ''), {title: name, meta: codes, summary: text || '', href: 'resource.html?id=PLAN-002#course-integration'});
-      for (const code of String(codes).split(/[、,，\s]+/)) link('domain:' + name, 'dir:' + code);
+      const short = name.replace(/（.*）/, ''), axis = AXES.find(a => a.name.startsWith(short));
+      const n = add('domain:' + name, 'culture', '四大文化領域', axis ? axis.name : short, {title: axis ? axis.name : name, meta: '原民會文化領域・' + codes, summary: text || '', href: 'resource.html?id=PLAN-002#course-integration', axis: axis?.name});
+      for (const code of String(codes).split(/[、,，\s]+/)) { link(n.id, 'dir:' + code); if (axis) axisByCode.set(code, axis.name); }
     }
 
     // 教案主題、課程與每一堂課
@@ -65,6 +79,8 @@
       addResource(id, 'event', '成果', head);
       for (const topic of res.get(id)?.topics || []) link('res:' + id, 'eventDomain:' + topic);
     }
+    const coreByTitle = new Map((c.cores || []).map(core => [core.title, 'core:' + core.code]));
+    for (const [id, title] of CONFIRMED) link(id, coreByTitle.get(title));
     for (const id of d.partnershipIds || []) addResource(id, 'coop', '合作計畫', head);
     const mentioned = [...(d.journeys || []).flatMap(j => j.resources || []), ...(d.partnershipIds || []).flatMap(id => res.get(id)?.related || [])];
     // 課程單元用冒號後的短名；短名和別的星同名（例如教案主題「服飾與工藝」）就用全名
@@ -76,10 +92,10 @@
     for (const j of d.journeys || []) {
       add('journey:' + j.id, 'journey', '學習步驟卡', j.short || j.title, {title: j.title, summary: j.lead || '', meta: [j.band, j.course, j.term].filter(Boolean).join('・'), href: 'journeys.html#' + encodeURIComponent(j.id)});
       for (const id of j.lessons || []) link('journey:' + j.id, 'lesson:' + id);
-      for (const id of j.resources || []) link('journey:' + j.id, 'res:' + id);
+      for (const id of j.resources || []) link('journey:' + j.id, 'res:' + id, true);
       link('journey:' + j.id, 'course:' + j.course);
     }
-    for (const n of nodes) if (n.id.startsWith('res:')) for (const id of res.get(n.id.slice(4)).related || []) link(n.id, 'res:' + id);
+    for (const n of nodes) if (n.id.startsWith('res:')) for (const id of res.get(n.id.slice(4)).related || []) link(n.id, 'res:' + id, true);
 
     // 文史：有完整內容的主題；標籤相同就連，標籤和九向同名也連
     const dirByTitle = new Map((c.cores || []).flatMap(core => core.directions || []).map(dir => [dir.title, 'dir:' + dir.code]));
@@ -96,10 +112,33 @@
       add(id, n.group, '館別', label, {href});
       link(n.id, id);
     }
+
+    // 每顆星歸到一個星座：九向看它屬於哪個文化領域，課看它的九向。三美和課程橫跨好幾個領域，相連的九向或課全在同一個領域才算，
+    // 否則當橋接在星座之間。其他星沿著課程關係與老師指定的對應，看相連的星多數屬於哪個星座（平手也當橋），一圈一圈往外推；只是提到的相關資料不算
+    const nb = new Map(nodes.map(n => [n.id, []]));
+    for (const l of links) if (!l.loose) { nb.get(l.source).push(l.target); nb.get(l.target).push(l.source); }
+    const axesOf = (n, kind) => nb.get(n.id).map(id => byId.get(id)).filter(o => o.kind === kind).map(o => o.axis);
+    for (const n of nodes) if (n.kind === '九向') n.axis = axisByCode.get(n.id.slice(4));
+    for (const n of nodes) if (n.kind === '課') n.axis = axesOf(n, '九向')[0];
+    for (const n of nodes) if (n.kind === '三美' || n.kind === '課程') { const set = new Set(axesOf(n, n.kind === '三美' ? '九向' : '課')); if (set.size === 1) n.axis = [...set][0]; }
+    const decided = new Set(['九向', '課', '三美', '課程', '館別']);
+    for (let round = 0; round < 8; round++) {
+      const next = [];
+      for (const n of nodes) {
+        if (n.axis || decided.has(n.kind)) continue;
+        const votes = {};
+        for (const id of nb.get(n.id)) { const a = byId.get(id).axis; if (a) votes[a] = (votes[a] || 0) + 1; }
+        const [first, second] = Object.entries(votes).sort((p, q) => q[1] - p[1]);
+        if (first && !(second && second[1] === first[1])) next.push([n, first[0]]);
+      }
+      if (!next.length) break;
+      for (const [n, a] of next) n.axis = a;
+    }
+    for (const n of nodes) if (n.kind === '四大文化領域' && n.axis) n.meta += `・星座裡有 ${nodes.filter(o => o.axis === n.axis).length} 顆星`;
     return {nodes, links};
   }
 
-  window.SALIMPO_STARS = {buildGraph, GROUPS};
+  window.SALIMPO_STARS = {buildGraph, GROUPS, AXES};
   const sky = typeof document !== 'undefined' && document.getElementById('sky');
   if (!sky || !window.SCHOOL_DATA) return;
 
@@ -117,16 +156,39 @@
   const motion = !window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
   const byKind = (a, b) => KINDS.indexOf(a.kind) - KINDS.indexOf(b.kind) || a.label.localeCompare(b.label, 'zh-Hant');
 
-  // 力導向排列：互斥＋連線彈簧＋向中心；用固定亂數種子先跑完，所以每次打開的星空都一樣
+  // 力導向排列：互斥＋連線彈簧；四個軸心固定在四角（可以拖），同一星座的星往軸心靠；橋接的星（例如生活美）往它連到的幾個軸心之間靠，
+  // 跟哪個星座都沒有連線的星（成果、合作計畫）往四個軸心的正中間靠。用固定亂數種子先跑完，所以每次打開的星空都一樣
+  const SX = 470, SY = 330, PULL = .06, axisNode = new Map();
+  for (const n of nodes) if (n.kind === '四大文化領域' && n.axis) {
+    const a = AXES.find(a => a.name === n.axis);
+    Object.assign(n, {isAxis: true, color: a.color, x: a.at[0] * SX, y: a.at[1] * SY});
+    axisNode.set(n.axis, n);
+  }
+  // homes：這顆星要靠向的軸心，重複出現代表比重（例如山海生活連到 6 堂永續發展的課、2 堂文藝美學的課）
+  const axisNear = new Map(nodes.map(n => [n, []]));
+  for (const l of links) if (!l.loose) { axisNear.get(l.a).push(l.b.axis); axisNear.get(l.b).push(l.a.axis); }
+  for (const n of nodes) {
+    const names = n.isAxis ? [] : n.axis ? [n.axis] : axisNear.get(n).filter(a => axisNode.has(a));
+    n.homes = (names.length || n.isAxis ? names : [...axisNode.keys()]).map(a => axisNode.get(a));
+  }
+  const homeOf = n => { let x = 0, y = 0; for (const h of n.homes) { x += h.x; y += h.y; } const c = n.homes.length || 1; return [x / c, y / c]; };
   let seed = 115;
   const rand = () => (seed = seed * 16807 % 2147483647) / 2147483647;
-  for (const n of nodes) { const a = rand() * Math.PI * 2, r = 40 + rand() * 320; n.x = Math.cos(a) * r; n.y = Math.sin(a) * r; n.vx = n.vy = 0; }
+  for (const n of nodes) {
+    n.vx = n.vy = 0;
+    if (n.isAxis) continue;
+    const [hx, hy] = homeOf(n), a = rand() * Math.PI * 2, r = 40 + rand() * 160;
+    n.x = hx + Math.cos(a) * r; n.y = hy + Math.sin(a) * r;
+  }
+  // 互斥只在 FAR 以內作用：遠處的星不會把整個星座推離軸心
   let alpha = 1, dragging = null;
+  const FAR = 300 * 300;
   function tick() {
     for (let i = 0; i < nodes.length; i++) {
       const a = nodes[i];
       for (let j = i + 1; j < nodes.length; j++) {
         const b = nodes[j], dx = b.x - a.x, dy = b.y - a.y, d2 = dx * dx + dy * dy || .01, min = a.r + b.r + 16;
+        if (d2 > FAR) continue;
         let w = -(50 + 11 * (a.r + b.r)) * alpha / d2;
         if (d2 < min * min) w -= (min - Math.sqrt(d2)) / Math.sqrt(d2) * .3;
         a.vx += dx * w; a.vy += dy * w; b.vx -= dx * w; b.vy -= dy * w;
@@ -140,13 +202,19 @@
       b.vx -= dx * l.bias; b.vy -= dy * l.bias; a.vx += dx * (1 - l.bias); a.vy += dy * (1 - l.bias);
     }
     for (const n of nodes) {
-      if (n === dragging) { n.vx = n.vy = 0; continue; }
-      n.vx = (n.vx - n.x * .015 * alpha) * .6; n.vy = (n.vy - n.y * .015 * alpha) * .6;
+      if (n === dragging || n.isAxis) { n.vx = n.vy = 0; continue; }
+      const [hx, hy] = homeOf(n);
+      n.vx = (n.vx - (n.x - hx) * PULL * alpha) * .6; n.vy = (n.vy - (n.y - hy) * PULL * alpha) * .6;
       n.x += n.vx; n.y += n.vy;
     }
   }
   for (let i = 0; i < 320; i++) { tick(); alpha *= .978; }
   alpha = 0;
+  // 星雲的大小：涵蓋星座裡大部分的星
+  for (const a of axisNode.values()) {
+    const ds = nodes.filter(n => n !== a && n.axis === a.axis).map(n => Math.hypot(n.x - a.x, n.y - a.y)).sort((p, q) => p - q);
+    a.reach = Math.max(150, (ds[Math.floor(ds.length * .85)] || 0) + 70);
+  }
 
   const canvas = document.getElementById('sky-canvas'), ctx = canvas.getContext('2d');
   const card = document.getElementById('sky-card'), tip = document.getElementById('sky-tip'), status = document.getElementById('sky-status');
@@ -194,7 +262,7 @@
   let meteor = null, nextMeteor = performance.now() + 5000;
 
   const widths = new Map();
-  const face = '"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif', TINY = '600 11px ' + face, FONT = '600 12px ' + face, BIG = '700 13px ' + face;
+  const face = '"PingFang TC","Noto Sans TC","Microsoft JhengHei",system-ui,sans-serif', TINY = '600 11px ' + face, FONT = '600 12px ' + face, BIG = '700 13px ' + face, AXIS_FONT = '800 16px ' + face, AXIS_SMALL = '800 14px ' + face;
   const measure = (text, font) => { const key = font + text; if (!widths.has(key)) { ctx.font = font; widths.set(key, ctx.measureText(text).width); } return widths.get(key); };
 
   function draw(time) {
@@ -217,6 +285,13 @@
       }
     }
 
+    // 四個星座的星雲
+    for (const a of axisNode.values()) {
+      if (!visible(a)) continue;
+      const [x, y] = toScreen(a.x, a.y), R = a.reach * cam.k, g = ctx.createRadialGradient(x, y, 0, x, y, R);
+      g.addColorStop(0, hexA(a.color, .26)); g.addColorStop(.55, hexA(a.color, .1)); g.addColorStop(1, hexA(a.color, 0));
+      ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(x - R, y - R, R * 2, R * 2);
+    }
     const focus = hovered || selected, lit = focus && new Set([focus.id, ...near.get(focus.id)]);
     ctx.globalAlpha = 1; ctx.lineWidth = 1;
     ctx.strokeStyle = lit ? 'rgba(160,195,255,.07)' : 'rgba(160,195,255,.18)';
@@ -245,6 +320,10 @@
         ctx.strokeStyle = hexA(color, .45); ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(x - r * 2.6, y); ctx.lineTo(x + r * 2.6, y); ctx.moveTo(x, y - r * 2.6); ctx.lineTo(x, y + r * 2.6); ctx.stroke();
       }
+      if (n.isAxis) {
+        ctx.strokeStyle = hexA(n.color, .9); ctx.lineWidth = 1.8;
+        ctx.beginPath(); ctx.arc(x, y, r * 1.45, 0, Math.PI * 2); ctx.stroke();
+      }
       if (n === selected) {
         ctx.globalAlpha = 1; ctx.strokeStyle = color; ctx.lineWidth = 1.6;
         ctx.beginPath(); ctx.arc(x, y, r * 1.9 + (motion ? Math.sin(time / 300) * 1.5 : 0), 0, Math.PI * 2); ctx.stroke();
@@ -255,20 +334,21 @@
     const wanted = [];
     for (const n of nodes) {
       if (!visible(n)) continue;
-      const p = n === selected ? 5 : n === hovered ? 4.5 : lit ? (lit.has(n.id) ? 3 : 0) : NAMED.has(n.kind) ? 2 : SHOWN.has(n.kind) && cam.k >= .3 ? 1.5 : cam.k >= 1.35 ? 1 : 0;
+      const p = n === selected ? 5 : n === hovered ? 4.5 : lit && lit.has(n.id) ? 3 : n.isAxis ? 2.6 : lit ? 0 : NAMED.has(n.kind) ? 2 : SHOWN.has(n.kind) && cam.k >= .3 ? 1.5 : cam.k >= 1.35 ? 1 : 0;
       if (p) wanted.push([p, n]);
     }
     wanted.sort((a, b) => b[0] - a[0] || b[1].r - a[1].r);
-    const boxes = [];
+    // 軸心星的光圈先佔位，其他名字不蓋在上面
+    const boxes = nodes.filter(n => n.isAxis && visible(n)).map(n => { const [x, y] = toScreen(n.x, n.y), R = starR(n) * 1.45; return [x - R, y - R, x + R, y + R]; });
     ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round'; ctx.globalAlpha = 1;
     const small = cam.k < .5;  // 拉遠看全景時字小一號
     for (const [p, n] of wanted) {
-      const [x, y0] = toScreen(n.x, n.y), y = y0 + starR(n) * 1.3 + 3, font = NAMED.has(n.kind) || p >= 4.5 ? (small ? FONT : BIG) : (small ? TINY : FONT), w = measure(n.label, font) + 6;
-      const box = [x - w / 2, y, x + w / 2, y + 17];
+      const [x, y0] = toScreen(n.x, n.y), y = y0 + starR(n) * (n.isAxis ? 1.6 : 1.3) + 3, font = n.isAxis ? (small ? AXIS_SMALL : AXIS_FONT) : NAMED.has(n.kind) || p >= 4.5 ? (small ? FONT : BIG) : (small ? TINY : FONT), w = measure(n.label, font) + 6;
+      const box = [x - w / 2, y, x + w / 2, y + (n.isAxis ? 21 : 17)];
       if (p < 4.5 && boxes.some(b => b[0] < box[2] && box[0] < b[2] && b[1] < box[3] && box[1] < b[3])) continue;
       boxes.push(box);
       ctx.font = font; ctx.lineWidth = 3.5; ctx.strokeStyle = 'rgba(3,8,20,.9)'; ctx.strokeText(n.label, x, y);
-      ctx.fillStyle = NAMED.has(n.kind) ? group[n.group].color : '#eef4ff'; ctx.fillText(n.label, x, y);
+      ctx.fillStyle = n.isAxis ? n.color : NAMED.has(n.kind) ? group[n.group].color : '#eef4ff'; ctx.fillText(n.label, x, y);
     }
   }
 
@@ -298,9 +378,10 @@
     const shown = nodes.filter(visible);
     if (!shown.length) return;
     const xs = shown.map(n => n.x), ys = shown.map(n => n.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-    // 留邊用螢幕像素算：左右要放得下名字、右邊還有縮放按鈕，名字寫在星星下方所以下緣多留一點
-    const k = clamp(Math.min((W - 150) / (x1 - x0 || 1), (H - 100) / (y1 - y0 || 1)), MIN, 1.6);
-    go((x0 + x1) / 2 + 22 / k, (y0 + y1) / 2 + 14 / k, k, animate);
+    // 留邊用螢幕像素算：左右要放得下名字、右邊還有縮放按鈕，名字寫在星星下方所以下緣多留一點；
+    // 手機上縮放按鈕和提示都在上方，左右少留一點、整片往下移
+    const narrow = W <= 620, k = clamp(Math.min((W - (narrow ? 76 : 150)) / (x1 - x0 || 1), (H - (narrow ? 150 : 100)) / (y1 - y0 || 1)), MIN, 1.6);
+    go((x0 + x1) / 2 + (narrow ? 6 : 22) / k, (y0 + y1) / 2 - (narrow ? 22 : -14) / k, k, animate);
   }
   function zoomAt(sx, sy, f) {
     const [wx, wy] = toWorld(sx, sy);
@@ -469,7 +550,7 @@
     const items = nodes.filter(n => n.group === g.id).sort(byKind);
     return items.length ? `<section><h3 style="--c:${g.color}">${g.name}<small>${items.length}</small></h3><ul>${items.map(n => `<li><a href="${esc(n.href)}">${esc(n.label)}</a><span>${esc(n.kind)}</span></li>`).join('')}</ul></section>` : '';
   }).join('');
-  document.getElementById('sky-count').textContent = `${nodes.length} 顆星、${links.length} 條連線，來自網站裡的課程架構、教案、學習步驟卡、成果與文史。`;
+  document.getElementById('sky-count').textContent = `${nodes.length} 顆星、${links.length} 條連線，以原民會四大文化領域（${[...axisNode.keys()].join('、')}）為四個星座的軸心；星星來自網站裡的課程架構、教案、學習步驟卡、成果與文史。`;
 
   new ResizeObserver(resize).observe(sky);
   if ('IntersectionObserver' in window) new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; wake(); }).observe(sky);
