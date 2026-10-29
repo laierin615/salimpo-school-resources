@@ -315,12 +315,73 @@ function buildVillage(){
 
   let night=false;function setTheme(theme){night=theme==='night';hemi.intensity=night?.7:2.3;hemi.color.set(night?0x9bb7eb:0xeafaff);sun.intensity=night?.5:3.2;sun.color.set(night?0xb0c4ed:0xfff1d2);fill.intensity=night?.25:.65;renderer.toneMappingExposure=night?.88:1.18;seaMaterial.color.set(night?0x173f59:0x73bfc0);stars.visible=night;nightMoon.visible=night;clouds.forEach(c=>c.group.visible=!night);lights.forEach(light=>light.intensity=night?2.2:0);lampGlow.emissiveIntensity=night?1.4:0;scene.fog=new THREE.Fog(night?0x102d45:0xb5ddd9,35,110);}
   setTheme(document.documentElement.dataset.theme);window.addEventListener('salimpo:theme',event=>setTheme(event.detail));
+  // 村子裡的 singsi：11 位老師站在各站旁邊，手上拿著代表道具，頭上有對話泡泡；點一下跳出對話卡（文字在 singsi.js，順序和這裡一樣）
+  // at 是腳底位置，y 是站的高度（勤偉站在成果廣場的景觀台上），turn 是面向（0.61 正對鏡頭）
+  const SINGSI=[
+    {at:[2.25,-1.65],turn:.35,top:0x3b6ea5,band:true,prop:'book'},
+    {at:[-.1,6.6],turn:.85,top:0x2f8f9d,prop:'spear'},
+    {at:[-5.5,4.35],turn:.95,top:0xd2453a,band:true,prop:'tube'},
+    {at:[.45,-2.55],turn:.4,top:0x8e6bb8,prop:'notebook'},
+    {at:[-3.85,-.55],turn:.75,top:0xe0a43a,prop:'wave'},
+    {at:[-4.13,1.74],y:.4,turn:.55,top:0x5f9e6e,prop:'easel'},
+    {at:[6.6,1.95],turn:.45,top:0xb76e4a,prop:'rattan'},
+    {at:[1.1,1.25],turn:.5,top:0x4a7f6a,prop:'map'},
+    {at:[-3.5,6.6],turn:.9,top:0x6aa0c8,prop:'leaf'},
+    {at:[-2.6,-2.6],turn:.5,top:0xc75f86,prop:'lens'},
+    {at:[3.15,4.55],turn:.4,top:0xd9774a,prop:'basket'}
+  ];
+  const singsiFigures=[],singsiBubbles=[];let talkingTo=-1,singsiHover=-1,waveArm=null,tapTube=null;
+  {
+    const V=(x,y,z)=>new THREE.Vector3(x,y,z);
+    // 對話泡泡：白色圓角框加三個綠點，所有 singsi 共用一張貼圖
+    const paper=document.createElement('canvas');paper.width=128;paper.height=104;const c=paper.getContext('2d');
+    c.fillStyle='#fff';c.strokeStyle='rgba(15,32,45,.22)';c.lineWidth=4;
+    c.beginPath();c.moveTo(40,70);c.lineTo(34,98);c.lineTo(64,70);c.closePath();c.fill();c.stroke();
+    c.beginPath();c.moveTo(36,6);c.arcTo(122,6,122,76,30);c.arcTo(122,76,6,76,30);c.arcTo(6,76,6,6,30);c.arcTo(6,6,122,6,30);c.closePath();c.fill();c.stroke();c.fillRect(39,64,24,10);
+    c.fillStyle='#1fd16c';for(const x of [40,64,88]){c.beginPath();c.arc(x,41,8,0,Math.PI*2);c.fill();}
+    const texture=new THREE.CanvasTexture(paper);texture.colorSpace=THREE.SRGBColorSpace;
+    const bubbleMaterial=new THREE.SpriteMaterial({map:texture,transparent:true,depthWrite:false});
+    // 看不見的圓柱讓小人比較好點，手機上也點得到
+    const hitMaterial=new THREE.MeshBasicMaterial({visible:false}),hitGeo=new THREE.CylinderGeometry(.22,.22,.7,8);
+    const glass=color=>new THREE.MeshStandardMaterial({color,transparent:true,opacity:.6,roughness:.15});
+    SINGSI.forEach((s,i)=>{
+      const g=new THREE.Group();g.position.set(s.at[0],s.y||.13,s.at[1]);g.rotation.y=s.turn;g.scale.setScalar(1.65);g.userData.singsi=i;scene.add(g);singsiFigures.push(g);
+      const body=chibi(g,{top:s.top,hair:[0x2b2422,0x4a3428,0x3a2c26][i%3],band:!!s.band});
+      const hit=new THREE.Mesh(hitGeo,hitMaterial);hit.position.y=.35;g.add(hit);
+      const bubble=new THREE.Sprite(bubbleMaterial);bubble.scale.set(.28,.22,1);bubble.position.set(.07,.58,0);g.add(bubble);singsiBubbles.push(bubble);
+      const p=s.prop;
+      if(p==='book'){/* 族語書：翻開捧在胸前 */const book=new THREE.Group();book.position.set(0,.165,.09);book.rotation.x=-.75;g.add(book);for(const k of [-1,1]){box(.085,.11,.012,k*.042,0,0,0xc0392b,book).rotation.y=-k*.28;box(.075,.1,.006,k*.04,0,.009,0xfbf6e6,book).rotation.y=-k*.28;}}
+      if(p==='spear'){/* 魚槍和綁在身上的浮球 */beam(V(.1,.02,.05),V(.12,.66,.02),.009,0x3d4448,g);const tip=mesh(geometry.cone,0xc9ced1,g);tip.scale.set(.016,.06,.016);tip.position.set(.121,.69,.02);const ball=mesh(new THREE.SphereGeometry(.05,12,10),0xf08a24,g);ball.position.set(-.13,.08,.06);beam(V(-.1,.11,.04),V(-.06,.13,.01),.004,0xe2cf9f,g);}
+      if(p==='tube'){/* 竹筒：在地上敲出節奏 */tapTube=new THREE.Group();tapTube.position.set(.1,.15,.05);g.add(tapTube);cylinder(.03,.3,0,0,0,0x9fbf55,tapTube);for(const y of [-.07,.06])cylinder(.033,.012,0,y,0,0x7e9c3e,tapTube);}
+      if(p==='notebook'){/* 筆記本和燒杯 */const note=new THREE.Group();note.position.set(-.1,.15,.06);note.rotation.set(-.4,.3,0);g.add(note);box(.075,.095,.014,0,0,0,0x3b7dd8,note);box(.06,.08,.004,0,0,.009,0xfbf6e6,note);const beaker=mesh(new THREE.CylinderGeometry(.03,.03,.07,12),glass(0xd8f1f6),g);beaker.position.set(.105,.16,.06);cylinder(.026,.035,.105,.145,.06,0x55c27a,g);}
+      if(p==='wave'){/* 揮手打招呼：舉起一隻手左右搖 */body.children.filter(o=>(o.geometry===chibiGeo.arm||o.geometry===chibiGeo.hand)&&o.position.x>0).forEach(o=>o.visible=false);waveArm=new THREE.Group();waveArm.position.set(.06,.19,0);waveArm.rotation.z=-.55;body.add(waveArm);const arm=new THREE.Mesh(chibiGeo.arm,smooth(s.top));arm.position.y=.04;arm.castShadow=true;waveArm.add(arm);const palm=new THREE.Mesh(chibiGeo.hand,smooth(0xe8c09a));palm.position.y=.09;waveArm.add(palm);}
+      if(p==='easel'){/* 畫板：旁邊立著畫架，手上拿畫筆 */const easel=new THREE.Group();easel.position.set(.24,0,.06);easel.rotation.y=-.5;g.add(easel);for(const x of [-.07,.07])beam(V(x,0,.03),V(x*.4,.36,0),.008,0x8a6a48,easel);beam(V(0,0,-.08),V(0,.33,-.01),.008,0x8a6a48,easel);box(.2,.16,.012,0,.27,.02,0xfbf6e6,easel);box(.07,.06,.004,-.04,.29,.028,0xd6553f,easel);box(.06,.05,.004,.05,.25,.028,0x5cc1d8,easel);box(.05,.04,.004,0,.22,.028,0x7ad86f,easel);beam(V(.08,.12,.03),V(.12,.2,.07),.006,0x6e4b32,g);}
+      if(p==='rattan'){/* 一捆黃藤 */for(const [r,t,c] of [[.055,.016,0xc9a35a],[.04,.012,0xb48c45]]){const coil=mesh(new THREE.TorusGeometry(r,t,6,16),c,g);coil.position.set(0,.13,.088);coil.rotation.x=1.2;}}
+      if(p==='map'){/* 部落地圖：兩手攤開 */const sheet=new THREE.Group();sheet.position.set(0,.16,.09);sheet.rotation.x=-.55;g.add(sheet);box(.18,.12,.006,0,0,0,0xf3ead8,sheet);box(.07,.05,.003,-.04,.015,.004,0x7cc06d,sheet);box(.18,.025,.003,0,-.035,.004,0x5cb8d6,sheet);box(.03,.03,.003,.05,.02,.004,0xd6553f,sheet);}
+      if(p==='leaf'){/* 月桃葉：舉在手上 */const leaf=mesh(geometry.leaf,0x4f9c55,g);leaf.scale.set(.028,.12,.055);leaf.position.set(.11,.25,.05);leaf.rotation.z=-.35;beam(V(.095,.13,.04),V(.105,.17,.045),.006,0x3f7d3f,g);}
+      if(p==='lens'){/* 放大鏡：拿在胸前看 */const lens=new THREE.Group();lens.position.set(.1,.19,.08);lens.rotation.set(0,-.3,-.4);g.add(lens);mesh(new THREE.TorusGeometry(.036,.008,6,18),0x3d4448,lens);const disc=mesh(new THREE.CylinderGeometry(.034,.034,.004,16),glass(0xcdeef7),lens);disc.rotation.x=Math.PI/2;beam(V(0,-.04,0),V(0,-.09,0),.008,0x6e4b32,lens);}
+      if(p==='basket'){/* 一籃野番茄 */const basket=mesh(new THREE.CylinderGeometry(.07,.055,.06,12),0xa0784a,g);basket.position.set(0,.11,.09);const berry=new THREE.SphereGeometry(.02,8,6);for(const [x,z] of [[-.03,.075],[.02,.085],[.035,.105],[-.01,.11],[0,.09]])mesh(berry,0xd6453a,g).position.set(x,.15,z);}
+    });
+    // 淑樺 singsi 的家屋工地在空房子右前方（避開低空的雲和散步的路線）：木頭骨架先立好、屋頂一半鋪了茅草，地上堆著木頭和黃藤
+    const site=new THREE.Group();site.position.set(6.95,.13,1.15);site.rotation.y=.61;scene.add(site);
+    for(const x of [-.42,.42])for(const z of [-.3,.3])box(.06,.62,.06,x,.31,z,0x8a6a48,site);
+    for(const z of [-.3,.3])box(.92,.05,.05,0,.6,z,0x8a6a48,site);for(const x of [-.42,.42])box(.05,.05,.66,x,.6,0,0x8a6a48,site);
+    beam(V(-.5,.9,0),V(.5,.9,0),.022,0x8a6a48,site);for(const x of [-.42,0,.42])for(const k of [-1,1])beam(V(x,.9,0),V(x,.6,k*.36),.013,0x8a6a48,site);
+    box(.98,.035,.5,0,.76,.19,0xd8c27a,site).rotation.x=.69;
+    for(const [x,z,r] of [[-.15,.62,0],[.05,.66,.2],[-.05,.7,-.1]])cylinder(.035,.5,x,.05,z,0x8a6a48,site).rotation.set(0,r,Math.PI/2);
+    const pile=mesh(new THREE.TorusGeometry(.07,.018,6,16),0xc9a35a,site);pile.position.set(.4,.03,.55);pile.rotation.x=Math.PI/2;
+  }
+  // 小人輕輕晃、泡泡上下飄；秋霞 singsi 揮手、Madal singsi 敲竹筒；正在說話的那一位轉向鏡頭、開心地跳
+  function animateSingsi(elapsed){singsiBubbles.forEach((b,i)=>{b.position.y=.58+Math.sin(elapsed*2.2+i*1.3)*.022;});if(waveArm)waveArm.rotation.z=-.55+Math.sin(elapsed*7)*.35;if(tapTube)tapTube.position.y=.15+Math.abs(Math.sin(elapsed*3.2))*.035;
+    singsiFigures.forEach((g,i)=>{const s=SINGSI[i],talk=i===talkingTo;g.position.y=(s.y||.13)+(talk?Math.abs(Math.sin(elapsed*4.5))*.045:0);g.rotation.y=talk?THREE.MathUtils.lerp(g.rotation.y,.61,.15):s.turn+Math.sin(elapsed*.55+i)*.08;});}
+  function hoverSingsi(i){if(i===singsiHover)return;singsiHover=i;document.querySelectorAll('.singsi-pin').forEach((pin,k)=>pin.classList.toggle('is-hover',k===i));}
   let selected=-1;const focus=new THREE.Vector3(0,0,0),targetFocus=new THREE.Vector3(0,0,0),pan=new THREE.Vector3(),targetPan=new THREE.Vector3();
   const VIEW={yaw:.61,pitch:Math.atan2(17,24)},RADIUS=Math.hypot(17,24),ZOOM=[.8,2.6],PITCH=[.32,1.25];
   let yaw=VIEW.yaw,targetYaw=VIEW.yaw,pitch=VIEW.pitch,targetPitch=VIEW.pitch,zoom=1,targetZoom=1,width=1,height=1;
   // 選到地點時鏡頭靠過去；放得越大，越把那一站擺到畫面中間
-  function aimFocus(){if(selected<0){targetFocus.set(0,0,0);return;}const [x,z]=positions[spots[selected]],base=Math.hypot(x,z)>7?.55:.1,pull=base+(1-base)*THREE.MathUtils.clamp((targetZoom-1)/.8,0,1);targetFocus.set(x*pull,0,z*pull);}
+  function aimFocus(){const at=selected>=0?positions[spots[selected]]:talkingTo>=0?SINGSI[talkingTo].at:null;if(!at){targetFocus.set(0,0,0);return;}const [x,z]=at,base=selected>=0&&Math.hypot(x,z)>7?.55:.1,pull=base+(1-base)*THREE.MathUtils.clamp((targetZoom-1)/.8,0,1);targetFocus.set(x*pull,0,z*pull);}
   window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.scale.setScalar(spots[selected]===14?.72:spots[selected]===11?1.3:1);selectionRing.position.set(positions[spots[selected]][0],.135,positions[spots[selected]][1]);targetPan.set(0,0,0);}aimFocus();});
+  window.addEventListener('salimpo:singsi',event=>{talkingTo=event.detail;if(talkingTo>=0){const s=SINGSI[talkingTo];selectionRing.scale.setScalar(.36);selectionRing.position.set(s.at[0],(s.y||.13)+.01,s.at[1]);selectionRing.visible=true;targetPan.set(0,0,0);}else if(selected<0)selectionRing.visible=false;aimFocus();});
   function project(){const aspect=width/height;/* 左右兩座小外島在任何寬度都要完整入鏡 */const half=width<600?13/aspect:Math.max(9.65,13/aspect);camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
   function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);project();}
   new ResizeObserver(resize).observe(canvas);resize();
@@ -337,7 +398,8 @@ function buildVillage(){
   const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();
   function placeAt(x,y){const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);for(const hit of raycaster.intersectObjects(buildings,true)){let item=hit.object;while(item&&item.userData.placeIndex===undefined)item=item.parent;if(item)return item.userData.placeIndex;}return -1;}
   function raftAt(x,y){const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);return raycaster.intersectObject(raft,true).length>0;}
-  function pick(x,y){const index=placeAt(x,y);if(index>=0)window.SALIMPO_VILLAGE?.select(index);else if(raftAt(x,y))window.SALIMPO_VILLAGE?.raft();else seaAt(x,y);reveal();}
+  function singsiAt(x,y){const rect=canvas.getBoundingClientRect();pointer.set((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1);raycaster.setFromCamera(pointer,camera);const hit=raycaster.intersectObjects(singsiFigures,true)[0];if(!hit)return -1;const wall=raycaster.intersectObjects(buildings,true)[0];if(wall&&wall.distance<hit.distance-.05)return -1;let item=hit.object;while(item&&item.userData.singsi===undefined)item=item.parent;return item?item.userData.singsi:-1;}
+  function pick(x,y){const who=singsiAt(x,y);if(who>=0)window.SALIMPO_VILLAGE?.singsi(who);else{const index=placeAt(x,y);if(index>=0)window.SALIMPO_VILLAGE?.select(index);else if(raftAt(x,y))window.SALIMPO_VILLAGE?.raft();else seaAt(x,y);}reveal();}
   window.addEventListener('salimpo:raft',()=>showHint('raft','點一下海面，竹筏就會划過去',true));
   // 點到海面：竹筏划過去。終點留在主島、兩座小外島和小帆船外面，最遠到半徑 14
   let raftGoal=null,raftClock=0,wakeAt=0;
@@ -370,7 +432,7 @@ function buildVillage(){
   function resetPointer(){down=null;dragging(false);}
   canvas.addEventListener('pointercancel',resetPointer);canvas.addEventListener('lostpointercapture',resetPointer);
   canvas.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch')showHint('intro','拖曳可以轉動聚落，按住 Ctrl 或 ⌘ 再滾動可以放大',true);});
-  canvas.addEventListener('pointerleave',()=>{hoverAt=null;setHover(-1);});
+  canvas.addEventListener('pointerleave',()=>{hoverAt=null;setHover(-1);hoverSingsi(-1);});
   canvas.addEventListener('contextmenu',event=>event.preventDefault());
   canvas.addEventListener('wheel',event=>{if(!event.ctrlKey&&!event.metaKey){showHint('wheel','想放大聚落？按住 Ctrl 或 ⌘ 再滾動，或按＋');return;}event.preventDefault();zoomTo(targetZoom*(Math.abs(event.deltaY)>=40?(event.deltaY<0?1.15:1/1.15):Math.exp(-event.deltaY*.01)));},{passive:false});
   // 觸控：單指左右滑動轉動（上下滑照常捲動頁面），雙指張合縮放、一起移動平移
@@ -387,15 +449,17 @@ function buildVillage(){
   let visible=true;new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;}).observe(world);
   const point=new THREE.Vector3();
   // 站名放得下就整個顯示（最多往下挪一格）；還是擠的話先縮成小圓點（選到的那一站優先、竹筏最後），放大聚落或滑過時名稱再出現
-  let pinWidths=null;document.fonts?.ready.then(()=>{pinWidths=null;});
+  let pinWidths=null,singsiSizes=[];document.fonts?.ready.then(()=>{pinWidths=null;});
   function labels(){
-    const pins=[...document.querySelectorAll('.place-pin')];const mobile=width<600;const guard=document.querySelector('.world-whispers');const minY=guard?guard.offsetTop+guard.offsetHeight+(mobile?22:26):(mobile?230:239);
-    if(!pinWidths||pinWidths.key!==width||pinWidths.length!==pins.length){pins.forEach(pin=>pin.classList.remove('is-dot'));pinWidths=pins.map(pin=>pin.offsetWidth);pinWidths.key=width;}
+    const pins=[...document.querySelectorAll('.place-pin')],talkers=[...document.querySelectorAll('.singsi-pin')];const mobile=width<600;const guard=document.querySelector('.world-whispers');const minY=guard?guard.offsetTop+guard.offsetHeight+(mobile?22:26):(mobile?230:239);
+    if(!pinWidths||pinWidths.key!==width||pinWidths.length!==pins.length||singsiSizes.length!==talkers.length){pins.forEach(pin=>pin.classList.remove('is-dot'));pinWidths=pins.map(pin=>pin.offsetWidth);pinWidths.key=width;singsiSizes=talkers.map(pin=>[pin.offsetWidth,pin.offsetHeight]);}
     const screen=(x,y,z)=>{point.set(x,y,z).project(camera);return {x:(point.x*.5+.5)*width,y:Math.max(minY,(-point.y*.5+.5)*height+(mobile?28:0))};};
     const rank=entry=>pins[entry.i]?.getAttribute('aria-pressed')==='true'?2:pins[entry.i]?.classList.contains('raft-pin')?0:1;
     /* 小外島的標籤浮高一點，不要蓋住島 */
     const entries=[...spots.map((spot,i)=>{const [x,z]=positions[spot];return {i,...screen(x,Math.hypot(x,z)>7?3:1.4,z)};}),{i:pins.length-1,...screen(raft.position.x,.9,raft.position.z)}].sort((a,b)=>rank(b)-rank(a)||a.y-b.y);
     const placed=[],fullH=mobile?26:32,dot=mobile?16:18,free=(x,y,w,h)=>!placed.some(o=>Math.abs(o.x-x)<(o.w+w)/2+3&&Math.abs(o.y-y)<(o.h+h)/2+3);
+    /* singsi 的名字標籤跟著頭頂；正在說話的那位先占位，旁邊的站名讓開 */
+    talkers.forEach((pin,i)=>{const s=SINGSI[i];if(!s)return;const at=screen(s.at[0],(s.y||.13)+1.1,s.at[1]);pin.style.left=at.x+'px';pin.style.top=at.y+'px';if(i===talkingTo&&singsiSizes[i]){const [w,h]=singsiSizes[i];placed.push({x:at.x,y:at.y-h/2,w,h});}});
     entries.forEach(entry=>{const pin=pins[entry.i];if(!pin)return;let w=pinWidths[entry.i],h=fullH,y=entry.y,x=THREE.MathUtils.clamp(entry.x,w/2+8,width-w/2-8);
       if(rank(entry)<2&&!free(x,y,w,h)){if(free(x,y+h+4,w,h))y+=h+4;else{w=h=dot;x=THREE.MathUtils.clamp(entry.x,w/2+8,width-w/2-8);for(let k=0;k<6&&!free(x,y,w,h);k++)y+=h+4;}}
       pin.classList.toggle('is-dot',w===dot);placed.push({x,y,w,h});pin.style.left=x+'px';pin.style.top=y+'px';});
@@ -405,9 +469,9 @@ function buildVillage(){
   function frame(now){requestAnimationFrame(frame);if(document.hidden||!visible||now-last<1000/30)return;last=now;const elapsed=(now-start)/1000;
     yaw=THREE.MathUtils.lerp(yaw,targetYaw,.12);pitch=THREE.MathUtils.lerp(pitch,targetPitch,.12);if(Math.abs(zoom-targetZoom)>.0005){zoom=THREE.MathUtils.lerp(zoom,targetZoom,.18);project();}focus.lerp(targetFocus,.12);pan.lerp(targetPan,.18);
     const lookX=focus.x+pan.x,lookZ=focus.z+pan.z,flat=Math.cos(pitch)*RADIUS;camera.position.set(lookX+Math.sin(yaw)*flat,Math.sin(pitch)*RADIUS,lookZ+Math.cos(yaw)*flat);camera.lookAt(lookX,.05,lookZ);
-    if(hoverAt&&!down){const index=placeAt(...hoverAt);setHover(index);if(index<0&&raftAt(...hoverAt))canvas.classList.add('is-pointing');hoverAt=null;}
+    if(hoverAt&&!down){const who=singsiAt(...hoverAt);hoverSingsi(who);const index=who>=0?-1:placeAt(...hoverAt);setHover(index);if(who>=0||index<0&&raftAt(...hoverAt))canvas.classList.add('is-pointing');hoverAt=null;}
     const moving=!!raftGoal;if(moving)moveRaft(Math.min(.1,(now-raftClock)/1000));raftClock=now;raftTarget.material.opacity=moving?(reduced?.7:.45+Math.sin(elapsed*5)*.25):Math.max(0,raftTarget.material.opacity-.06);
-    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});raft.position.y=RAFT_Y+Math.sin(elapsed*1.4)*.03;raft.rotation.z=Math.sin(elapsed*.9)*.03;paddle.rotation.z=raftGoal?Math.sin(elapsed*6)*.6:Math.sin(elapsed*1.6)*.35;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);animateCourse(elapsed);wakeStep(elapsed,moving);}
+    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});raft.position.y=RAFT_Y+Math.sin(elapsed*1.4)*.03;raft.rotation.z=Math.sin(elapsed*.9)*.03;paddle.rotation.z=raftGoal?Math.sin(elapsed*6)*.6:Math.sin(elapsed*1.6)*.35;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);animateCourse(elapsed);wakeStep(elapsed,moving);animateSingsi(elapsed);}
     labels();renderer.render(scene,camera);
   }
   frame(performance.now());requestAnimationFrame(()=>requestAnimationFrame(()=>{/* 超過 15 秒才載好時，從備用清單切回 3D 版面 */world.classList.remove('scene-unavailable');world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;}));

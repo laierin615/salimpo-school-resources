@@ -43,8 +43,32 @@
   const raftPin=document.createElement('button');raftPin.type='button';raftPin.className='place-pin raft-pin';raftPin.setAttribute('aria-label','竹筏 Dadangoyan');raftPin.setAttribute('aria-pressed','false');raftPin.innerHTML='<span class="pin-name">竹筏</span>';raftPin.addEventListener('click',showRaft);labelRoot.append(raftPin);
   const raftQuick=document.createElement('button');raftQuick.type='button';raftQuick.textContent='竹筏';raftQuick.setAttribute('aria-pressed','false');raftQuick.addEventListener('click',showRaft);picker.append(raftQuick);
   document.getElementById('raft-close')?.addEventListener('click',()=>select(-1));
+  // 村子裡的 singsi：點 3D 小人、頭上的名字或下方清單，跳出對話卡；一次說一則小知識，「再教我一個」換下一則，「考考我」出一題三選一，最後連到教案
+  const singsiList=window.SALIMPO_SINGSI||[],singsiCard=document.getElementById('singsi-card'),$=id=>document.getElementById(id);
+  const lessonTitle=id=>(window.SCHOOL_DATA?.lessons||[]).find(l=>l.id===id)?.title||id;
+  let talking=-1,tip=0;
+  const singsiPins=singsiList.map((s,i)=>{const pin=document.createElement('button');pin.type='button';pin.className='singsi-pin';pin.textContent=s.name;pin.setAttribute('aria-pressed','false');pin.addEventListener('click',()=>showSingsi(i));labelRoot.append(pin);return pin;});
+  function sayTip(){const s=singsiList[talking],t=s.tips[tip];$('singsi-say').textContent=t.text;$('singsi-ami').textContent=t.ami;$('singsi-zh').textContent=t.zh;$('singsi-count').textContent=(tip+1)+' / '+s.tips.length;$('singsi-talk').hidden=false;$('singsi-quiz').hidden=true;singsiCard.classList.remove('is-quiz');}
+  function askQuiz(){const s=singsiList[talking],box=$('singsi-options');$('singsi-question').textContent=s.quiz.q;$('singsi-result').textContent='';
+    // 正確答案不固定在第一個：依 singsi 的順序輪流換位置
+    box.replaceChildren(...s.quiz.options.map((_,k)=>(k+talking)%s.quiz.options.length).map(n=>{const b=document.createElement('button');b.type='button';b.textContent=s.quiz.options[n];b.addEventListener('click',()=>{const right=n===s.quiz.answer;b.classList.add(right?'is-right':'is-wrong');$('singsi-result').textContent=right?'答對了！':'再想想看';if(right)box.querySelectorAll('button').forEach(o=>o.disabled=true);});return b;}));
+    $('singsi-talk').hidden=true;$('singsi-quiz').hidden=false;singsiCard.classList.add('is-quiz');}
+  function hideSingsi(){if(talking<0)return;talking=-1;if(singsiCard){singsiCard.hidden=true;singsiCard.closest('.village-world')?.classList.remove('is-talking');}singsiPins.forEach(pin=>pin.setAttribute('aria-pressed','false'));window.dispatchEvent(new CustomEvent('salimpo:singsi',{detail:-1}));}
+  function showSingsi(i){const s=singsiList[i];if(!s||!singsiCard)return;select(-1);talking=i;tip=0;welcome.hidden=true;singsiCard.hidden=false;
+    // 桌機版對話卡靠到 singsi 的另一側，才看得到被點的人在說話；手機版先收起地點按鈕，讓卡片往下放
+    singsiCard.dataset.side=(parseFloat(singsiPins[i].style.left)||0)>document.documentElement.clientWidth/2-22?'left':'right';singsiCard.closest('.village-world')?.classList.add('is-talking');
+    $('singsi-where').textContent=s.where+' · '+s.prop;$('singsi-name').textContent=s.name;sayTip();
+    $('singsi-links').replaceChildren(...[...(s.links||[]),...(s.lessons||[]).map(id=>({label:lessonTitle(id),href:'lessons.html?lesson='+encodeURIComponent(id)}))].map(link=>{const a=document.createElement('a');a.href=link.href;const out=/^https?:/.test(link.href);a.textContent=link.label+(out?' ↗':' →');if(out){a.target='_blank';a.rel='noopener noreferrer';}return a;}));
+    singsiPins.forEach((pin,k)=>pin.setAttribute('aria-pressed',String(k===i)));window.dispatchEvent(new CustomEvent('salimpo:singsi',{detail:i}));}
+  $('singsi-next')?.addEventListener('click',()=>{if(talking<0)return;tip=(tip+1)%singsiList[talking].tips.length;sayTip();});
+  $('singsi-test')?.addEventListener('click',()=>{if(talking>=0)askQuiz();});
+  $('singsi-close')?.addEventListener('click',()=>select(-1));
+  // 下方清單「村子裡的 singsi」：點了回到聚落、打開那一位的對話卡
+  $('singsi-rows')?.replaceChildren(...singsiList.map((s,i)=>{const li=document.createElement('li'),row=document.createElement('button'),name=document.createElement('span'),strong=document.createElement('strong'),prop=document.createElement('small'),say=document.createElement('span'),where=document.createElement('span');
+    row.type='button';row.className='directory-row singsi-row';name.className='directory-name';strong.textContent=s.name;prop.className='singsi-prop';prop.textContent=s.prop;name.append(strong,prop);say.className='singsi-row-tip';say.textContent=s.tips[0].text;where.className='directory-type';where.textContent=s.where;row.append(name,say,where);
+    row.addEventListener('click',()=>{showSingsi(i);world.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});});li.append(row);return li;}));
   function select(index){
-    selected=index;const place=places[index];
+    selected=index;const place=places[index];hideSingsi();
     if(raftCard)raftCard.hidden=true;raftPin.setAttribute('aria-pressed','false');raftQuick.setAttribute('aria-pressed','false');
     welcome.hidden=!!place;card.hidden=!place;
     if(place){document.getElementById('place-category').textContent=place.category;document.getElementById('place-title').textContent=place.title;document.getElementById('place-description').textContent=place.description;const ami=document.getElementById('place-ami');if(ami){ami.hidden=!place.ami;ami.querySelector('i').textContent=place.ami;ami.querySelector('span').textContent=place.amiZh;}const link=document.getElementById('place-link');link.href=place.url;link.textContent=place.go||(place.external?'出發到族語挑戰島 ↗':'走進這一站 →');window.dispatchEvent(new CustomEvent('salimpo:listen',{detail:place.listen||''}));if(place.external){link.target='_blank';link.rel='noopener noreferrer';}else{link.removeAttribute('target');link.removeAttribute('rel');}const link2=document.getElementById('place-link2');if(link2){link2.hidden=!place.url2;if(place.url2){link2.href=place.url2;link2.textContent=place.go2;}}document.getElementById('place-counter').textContent=(index+1)+' / '+places.length;}
@@ -55,7 +79,7 @@
   document.getElementById('place-next').addEventListener('click',()=>select((selected+1)%places.length));
   document.getElementById('place-prev').addEventListener('click',()=>select(selected<0?places.length-1:(selected-1+places.length)%places.length));
   document.getElementById('place-close').addEventListener('click',()=>select(-1));
-  window.SALIMPO_VILLAGE={places,select,raft:showRaft,get selected(){return selected;}};
+  window.SALIMPO_VILLAGE={places,select,raft:showRaft,singsi:showSingsi,get selected(){return selected;}};
   window.failVillage=()=>{if(world.classList.contains('scene-ready'))return;world.classList.add('scene-unavailable');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=false;};
   setTimeout(()=>{if(!world.classList.contains('scene-ready'))window.failVillage();},15000);
 })();
