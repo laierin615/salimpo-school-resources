@@ -199,6 +199,9 @@ assert.equal(spots.length,[...home.matchAll(/data-place="/g)].length,'Every home
 const singsiCtx={window:{}};vm.runInNewContext(fs.readFileSync(path.join(dist,'singsi.js'),'utf8'),singsiCtx);const singsiList=singsiCtx.window.SALIMPO_SINGSI;
 assert.deepEqual(Array.from(singsiList,s=>s.name),['Masao','Lakaw','Madal','奕芸','秋霞','勤偉','淑樺','振海','育維','宏昌','素卿'].map(n=>n+' singsi'),'Eleven singsi, names only');
 for(const s of singsiList){assert.equal(s.tips.length,3,s.name);for(const t of s.tips)assert.ok(t.text&&t.ami&&t.zh,s.name);assert.equal(s.quiz.options.length,3,s.name);assert.ok(s.quiz.options[s.quiz.answer],s.name);for(const id of s.lessons||[])assert.ok(data.lessons.some(l=>l.id===id),'Missing lesson '+id);assert.ok((s.lessons||[]).length+(s.links||[]).length>0,'No link for '+s.name);assert.ok(!/迎靈|喪禮|kawas/i.test(JSON.stringify(s)),'Ritual topic in '+s.name);}
+// 白天／夜晚切換鈕只放太陽、月亮圖示，不放文字
+assert.ok(/<button id="theme-toggle"[^>]*aria-label="切換白天與夜晚"[^>]*><svg [^<]*<circle /.test(home)&&!/id="theme-toggle"[^>]*>白天</.test(home),'Theme toggle should show a sun icon, not text');
+{const appJs=fs.readFileSync(path.join(dist,'app.js'),'utf8');assert.ok(appJs.includes('const themeIcons = {')&&appJs.includes('themeButton.innerHTML = themeIcons[')&&!appJs.includes("'夜晚' : '白天'"),'Theme toggle icons missing in app.js');}
 assert.ok(home.includes('singsi.js?v=')&&home.includes('id="singsi-card"')&&home.includes('id="singsi-rows"')&&villageJs.includes('function singsiAt('),'Singsi wired into the home village');
 assert.equal((villageJs.match(/const SINGSI=\[([\s\S]*?)\n  \];/)?.[1].match(/at:\[/g)||[]).length,singsiList.length,'Every singsi stands somewhere in the village');
 console.log(`Singsi verified: ${singsiList.length} teachers in the village, each with 3 tips, a quiz and lesson links.`);

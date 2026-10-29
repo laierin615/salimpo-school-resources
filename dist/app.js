@@ -15,9 +15,14 @@
     themeButton.type = 'button'; themeButton.setAttribute('aria-label','切換白天與夜晚');
     document.querySelector('.header-inner').insertBefore(themeButton, menu);
   }
+  // 切換鈕只放圖示：白天是太陽、夜晚是月亮；按鈕名稱留在 aria-label，滑過時提示會切換到哪一個
+  const themeIcons = {
+    day: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="4.4" fill="currentColor"/><path d="M12 2.5V5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.75 1.75M16.95 16.95l1.75 1.75M5.3 18.7l1.75-1.75M16.95 7.05l1.75-1.75" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+    night: '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M20.4 13.1A8.5 8.5 0 1 1 10.9 3.6 7 7 0 0 0 20.4 13.1z" fill="currentColor"/></svg>'
+  };
   function applyTheme(theme) {
     document.documentElement.dataset.theme = theme;
-    if (themeButton) { themeButton.textContent = theme === 'night' ? '夜晚' : '白天'; themeButton.setAttribute('aria-pressed',String(theme === 'night')); }
+    if (themeButton) { themeButton.innerHTML = themeIcons[theme === 'night' ? 'night' : 'day']; themeButton.title = theme === 'night' ? '切換到白天' : '切換到夜晚'; themeButton.setAttribute('aria-pressed',String(theme === 'night')); }
     window.dispatchEvent(new CustomEvent('salimpo:theme',{detail:theme}));
   }
   try { applyTheme(localStorage.getItem('salimpo-theme') || 'day'); } catch { applyTheme('day'); }
