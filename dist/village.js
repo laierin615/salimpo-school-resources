@@ -4,7 +4,7 @@ const canvas=document.getElementById('village-canvas');
 const world=document.getElementById('village-world');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3],[3.8,2.75],[-5.9,3.4]];
-// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）改成老師的修煉場；9（原文史資料館）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去；位置 14 是左岸望向女人島的古謠樹
+// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）改成老師的工寮 talo'an；9（原文史資料館）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去；位置 14 是左岸望向女人島的古謠樹
 const spots=[0,1,2,4,5,6,14,7,8,11,12,3,13],placeOf=spot=>spots.indexOf(spot);
 let renderer;
 try{
@@ -94,13 +94,39 @@ function buildVillage(){
   const school=building(0,0xf0eadb,0x377b8e,1.65,1.3,1.04);box(1.35,.09,.5,0,.18,.96,0xb99866,school);box(.8,.15,.04,0,1.18,.72,0x31886b,school);for(let i=0;i<3;i++){const pole=beam(new THREE.Vector3(.9,.1,.8),new THREE.Vector3(.9,1.8,.8),.025,0xe8ede3,school);if(i===0)box(.31,.2,.02,1.05,1.6,.8,0x50b875,school);}
   const course=building(1,0xbf9271,0x9e634b,1.25,1.25,.9);box(1.6,.13,.52,0,.17,.91,0xc69c70,course);for(const x of [-.62,.62])beam(new THREE.Vector3(x,.2,.77),new THREE.Vector3(x,1.28,.77),.035,0x735536,course);
   const library=building(2,0xf0dec1,0x599579,1.5,1.25,1.15);for(let i=0;i<4;i++)box(.13,.4,.09,-.5+i*.16,.45,.76,[0xd88467,0x5c9aba,0xc9b66c,0x81a76f][i],library);box(1.35,.08,.24,0,.22,.78,0x8b694b,library);
-  // 修煉場：門上掛綠色招牌，右邊牆上掛一塊寫了字的小黑板（研習講座），牆邊工作台上攤著編到一半的月桃葉蓆和一疊葉子，前面兩張小板凳
-  const workshop=building(3,0xc6a080,0xc77656,1.2,1.1,.85);const workbench=box(.7,.11,.36,.8,.43,.65,0x9b7952,workshop);for(const x of [.5,1.1])box(.05,.4,.29,x,.24,.65,0x71523d,workshop);
-  box(.44,.13,.04,0,.89,.575,0x2f7a5e,workshop);box(.3,.022,.01,0,.89,.6,0xf3e2a6,workshop);
-  box(.36,.016,.26,.72,.493,.65,0xd2bf78,workshop);for(let k=0;k<4;k++){box(.36,.02,.03,.72,.496,.55+k*.066,0xa48a4c,workshop);box(.03,.022,.26,.6+k*.08,.498,.65,0xbfa65e,workshop);}
-  for(const [k,r] of [[0,.2],[1,-.15],[2,.45]])box(.2,.012,.055,1.0,.5+k*.012,.62+k*.03,0x6f9e4f,workshop).rotation.y=r;
-  for(const x of [.6,.98])cylinder(.07,.2,x,.1,1.02,0x8b6a47,workshop,10);
-  box(.035,.32,.46,.615,.66,-.12,0x7a5c41,workshop);box(.03,.27,.41,.625,.66,-.12,0x2f4f3f,workshop);for(const [y,z,w] of [[.72,-.15,.3],[.66,-.17,.24],[.6,-.13,.28]])box(.006,.016,w,.642,y,z,0xf1efe3,workshop);
+  // 老師的工寮 talo'an（位置 3，原教材工坊）：竹子高腳撐起竹地板，竹牆、茅草屋頂，中間一把小梯子爬上簷廊；簷廊（屋簷下）的矮工作台攤著編到一半的月桃葉蓆，
+  // 前面橫樑掛著葫蘆和魚簍，右牆掛小黑板（研習講座）；左前方三顆石頭架一口鍋（三石灶）。整間都在村民散步那一圈的內側
+  const talo=new THREE.Group();talo.position.set(positions[3][0],.14,positions[3][1]);talo.userData.placeIndex=placeOf(3);scene.add(talo);buildings.push(talo);
+  const campFlame=mesh(new THREE.ConeGeometry(.045,1,6),new THREE.MeshStandardMaterial({color:0xffa04a,emissive:0xff6a1f,emissiveIntensity:.9,flatShading:true}),talo);campFlame.castShadow=false;campFlame.scale.y=.13;campFlame.position.set(-.55,.07,1);
+  {
+    const P=(x,y,z)=>new THREE.Vector3(x,y,z),bamboo=0xb9b067,node=0x8f8a45,thatch=0xd8c27a,straw=0xb89f56;
+    // 六根竹子高腳（每根兩個竹節）、竹地板、右側一根斜撐
+    for(const x of [-.55,0,.55])for(const z of [-.45,.45]){cylinder(.035,.46,x,.23,z,bamboo,talo);for(const y of [.15,.32])cylinder(.04,.014,x,y,z,node,talo);}
+    box(1.24,.06,1.04,0,.43,0,0xc4a46a,talo);for(let k=0;k<6;k++)box(1.24,.004,.008,0,.462,-.43+k*.172,0xa3854f,talo);beam(P(.56,.06,-.42),P(.56,.4,.42),.012,node,talo);
+    // 竹牆小屋在後半部，前面留一條簷廊：牆上一根根竹子、上緣一道藤綁帶、門和小窗
+    box(1,.5,.6,0,.71,-.2,0xcdb57c,talo);for(let k=0;k<10;k++){const x=-.45+k*.1;if(x>-.22&&x<.06)continue;box(.012,.5,.006,x,.71,.103,0xa88f55,talo);}for(let k=0;k<6;k++)box(.006,.5,.012,.503,.71,-.45+k*.1,0xa88f55,talo);
+    box(1.01,.02,.61,0,.9,-.2,0x8a6a48,talo);box(.26,.38,.01,-.08,.66,.106,0x5a4532,talo);box(.2,.13,.01,.3,.78,.106,0x3e3328,talo);
+    // 茅草屋頂：屋脊壓一根竹子、草簷加厚、斜面上兩道草紋；簷廊前面兩根竹柱和一根橫樑，山牆掛木頭招牌
+    roof(1.3,1.15,.6,.96,thatch,talo);beam(P(0,1.56,-.6),P(0,1.56,.6),.03,straw,talo);for(const s of [-1,1]){box(.05,.05,1.17,s*.64,.95,0,straw,talo);for(const t of [.33,.66])box(.02,.02,1.16,s*(.65*(1-t)+.008),.969+.6*t,0,straw,talo);}
+    for(const x of [-.58,.58])cylinder(.028,.5,x,.71,.5,bamboo,talo);beam(P(-.6,.945,.5),P(.6,.945,.5),.015,node,talo);box(.36,.11,.02,0,1.12,.585,0x8a6a48,talo);box(.26,.022,.006,0,1.12,.597,0xf3e2a6,talo);
+    // 小梯子：從地上靠到簷廊中間
+    for(const x of [-.1,.1])beam(P(x,0,.88),P(x,.5,.54),.013,node,talo);for(let k=1;k<4;k++){const t=k/4;beam(P(-.1,.5*t,.88-.34*t),P(.1,.5*t,.88-.34*t),.009,node,talo);}
+    // 簷廊的矮工作台：攤著編到一半的月桃葉蓆，旁邊地板上一疊月桃葉
+    box(.38,.035,.3,.3,.528,.31,0x9b7952,talo);for(const x of [.14,.46])for(const z of [.19,.43])box(.03,.05,.03,x,.485,z,0x71523d,talo);
+    box(.3,.01,.24,.3,.551,.31,0xd2bf78,talo);for(let k=0;k<4;k++){box(.3,.012,.02,.3,.553,.22+k*.06,0xa48a4c,talo);box(.02,.013,.24,.19+k*.075,.555,.31,0xbfa65e,talo);}
+    for(const [k,r] of [[0,.2],[1,-.15],[2,.45]])box(.16,.012,.05,.06,.469+k*.012,.36+k*.02,0x6f9e4f,talo).rotation.y=r;
+    // 前面橫樑掛著葫蘆和魚簍
+    for(const [x,len] of [[-.42,.05],[.48,.04]])beam(P(x,.945,.5),P(x,.945-len,.5),.004,0x6e5238,talo);
+    mesh(new THREE.SphereGeometry(.045,10,8),0xd9b45a,talo).position.set(-.42,.82,.5);mesh(new THREE.SphereGeometry(.03,10,8),0xd9b45a,talo).position.set(-.42,.88,.5);
+    mesh(new THREE.CylinderGeometry(.045,.06,.1,10),0xa0784a,talo).position.set(.48,.82,.5);cylinder(.028,.035,.48,.89,.5,0x8a6438,talo);for(const y of [.8,.84]){const ring=mesh(new THREE.TorusGeometry(.054,.005,4,12),0x7c5a36,talo);ring.position.set(.48,y,.5);ring.rotation.x=Math.PI/2;}
+    // 右牆的小黑板（研習講座）
+    box(.02,.22,.34,.515,.72,-.22,0x7a5c41,talo);box(.012,.18,.3,.524,.72,-.22,0x2f4f3f,talo);for(const [y,z,w] of [[.77,-.24,.22],[.72,-.26,.17],[.67,-.22,.2]])box(.004,.012,w,.531,y,z,0xf1efe3,talo);
+    // 三石灶：三顆石頭架一口鍋，底下兩根柴，火苗在鍋底下輕輕跳
+    for(let k=0;k<3;k++){const a=k*2.094+.3;rock(.055,-.58+Math.cos(a)*.1,.04,.95+Math.sin(a)*.1,0x9a9590,talo);}
+    for(const r of [.5,-.6])cylinder(.016,.24,-.58,.025,.95,0x6e4b32,talo).rotation.set(0,r,Math.PI/2);
+    cylinder(.075,.08,-.58,.125,.95,0x3d3a38,talo);const rim=mesh(new THREE.TorusGeometry(.075,.008,5,14),0x2c2a28,talo);rim.position.set(-.58,.165,.95);rim.rotation.x=Math.PI/2;
+    const windowLight=new THREE.PointLight(0xffc86d,0,2.5);windowLight.position.set(0,.75,.75);talo.add(windowLight);lights.push(windowLight);
+  }
   const farm=building(4,0xddbe88,0x829468,.85,.85,.65);for(let row=0;row<3;row++){box(1.5,.09,.24,-.55,.12,.95+row*.38,0x806647,farm);for(let j=0;j<5;j++){const x=-1.1+j*.29;const stem=cylinder(.018,.22,x,.26,.95+row*.38,0x4e8b45,farm,5);const leaf=mesh(geometry.leaf,0x4f9c55,farm);leaf.scale.set(.11,.12,.11);leaf.position.set(x,.38,.95+row*.38);if(row===1)rock(.045,x+.055,.36,1.34,0xd6654c,farm);}}
   for(let j=0;j<5;j++){box(.045,.3,.045,-1.35+j*.62,.29,2.03,0xccb68b,farm);}box(2.5,.045,.045,-.12,.37,2.03,0xccb68b,farm);
   const ocean=building(5,0xe4e8dc,0x638fa3,.86,.86,.72);for(let j=0;j<8;j++)box(1.1,.055,.19,0,.11,1+j*.2,0xb9956e,ocean);for(const x of [-.5,.5])for(let j=0;j<3;j++)cylinder(.055,.75,x,-.15,1.05+j*.6,0x8b7257,ocean);
@@ -456,7 +482,7 @@ function buildVillage(){
         for(const [letter,color,x] of [['A','#d6453a',40],['B','#3b7dd8',96],['C','#2f9d5b',152]]){ink.fillStyle=color;ink.fillText(letter,x,66);}
         const letters=new THREE.CanvasTexture(sheet);letters.colorSpace=THREE.SRGBColorSpace;const face=new THREE.Mesh(new THREE.PlaneGeometry(.14,.09),new THREE.MeshStandardMaterial({map:letters,roughness:.8}));face.position.z=.0045;card.add(face);}
     });
-    // 淑樺 singsi 的家屋工地在修煉場右前方（避開低空的雲和散步的路線）：木頭骨架先立好、屋頂一半鋪了茅草，地上堆著木頭和黃藤
+    // 淑樺 singsi 的家屋工地在工寮右前方（避開低空的雲和散步的路線）：木頭骨架先立好、屋頂一半鋪了茅草，地上堆著木頭和黃藤
     const site=new THREE.Group();site.position.set(6.95,.13,1.15);site.rotation.y=.61;scene.add(site);
     for(const x of [-.42,.42])for(const z of [-.3,.3])box(.06,.62,.06,x,.31,z,0x8a6a48,site);
     for(const z of [-.3,.3])box(.92,.05,.05,0,.6,z,0x8a6a48,site);for(const x of [-.42,.42])box(.05,.05,.66,x,.6,0,0x8a6a48,site);
@@ -576,7 +602,7 @@ function buildVillage(){
     monster.rotation.y=yaw;if(moving&&monsterState==='up'&&Math.hypot(raft.position.x-monster.position.x,raft.position.z-monster.position.z)<1.46*monster.scale.x)diveMonster();
     /* 第一個畫面：一開始的位置看不到（被卡片或標題蓋住）就換到看得到的地方 */
     if(!monsterChecked){monsterChecked=true;if(spotView(monsterSpot)<2)placeMonster(nextMonsterSpot());}
-    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});raft.position.y=RAFT_Y+Math.sin(elapsed*1.4)*.03;raft.rotation.z=Math.sin(elapsed*.9)*.03;paddle.rotation.z=raftGoal?Math.sin(elapsed*6)*.6:Math.sin(elapsed*1.6)*.35;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);animateCourse(elapsed);wakeStep(elapsed,moving);animateSingsi(elapsed);animateMonster(now/1000);}
+    if(!reduced){clouds.forEach((c,i)=>{c.group.position.x=c.x+Math.sin(elapsed*.12+i)*.35;c.group.position.y=c.y+Math.sin(elapsed*.18+i)*.06;});raft.position.y=RAFT_Y+Math.sin(elapsed*1.4)*.03;raft.rotation.z=Math.sin(elapsed*.9)*.03;paddle.rotation.z=raftGoal?Math.sin(elapsed*6)*.6:Math.sin(elapsed*1.6)*.35;secondBoat.position.y=-.92+Math.sin(elapsed*1.1+1)*.04;secondBoat.rotation.z=Math.sin(elapsed*.75+1)*.025;people.forEach(p=>{const a=p.phase+elapsed*p.speed;p.group.position.set(Math.cos(a)*5.85,.13,Math.sin(a)*5.85);p.group.rotation.y=-a;});birds.forEach((bird,i)=>{const a=elapsed*.13+i*1.6;bird.position.set(Math.cos(a)*9,3.6+Math.sin(a*.4+i)*.6,Math.sin(a)*7);bird.rotation.y=-a;});ripples.forEach((ring,i)=>{const pulse=1+Math.sin(elapsed*.5+i)*.007;ring.scale.set(pulse,pulse,1);});animateSongIsland(elapsed);animateSongTree(elapsed);animateCourse(elapsed);wakeStep(elapsed,moving);campFlame.scale.y=.13+Math.sin(elapsed*11)*.025;animateSingsi(elapsed);animateMonster(now/1000);}
     labels();renderer.render(scene,camera);
   }
   frame(performance.now());requestAnimationFrame(()=>requestAnimationFrame(()=>{/* 超過 15 秒才載好時，從備用清單切回 3D 版面 */world.classList.remove('scene-unavailable');world.classList.add('scene-ready');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=true;}));

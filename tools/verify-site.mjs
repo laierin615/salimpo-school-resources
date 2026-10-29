@@ -187,14 +187,14 @@ let videoUrls=0;
 for(const file of ['index.html','data.js','media-links.js',...fs.readdirSync(path.join(dist,'books')).map(f=>'books/'+f)])for(const m of fs.readFileSync(path.join(dist,file),'utf8').matchAll(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^"'\s&\\()<]*)/g)){videoUrls++;assert.ok(/^[\w-]{11}$/.test(m[1]),`Broken YouTube link in ${file}: ${m[0]}`);}
 console.log(`Videos verified: ${videoUrls} YouTube links with full video ids, played in the site player with a link out to YouTube.`);
 
-// 山海探索站依主題整合：還沒填的「115上學期各科學習成果評量單」先不呈現（資料存在 archive/），會客室佐證也不列；教材工坊、教案書屋併進山海探索站，原本的房子留成空房子（教材工坊那間後來改成修煉場）
+// 山海探索站依主題整合：還沒填的「115上學期各科學習成果評量單」先不呈現（資料存在 archive/），會客室佐證也不列；教材工坊、教案書屋併進山海探索站，原本的房子留成空房子（教材工坊那間後來改成老師的工寮 talo'an）
 assert.ok(!ids.has('PLAN-015')&&!data.books.assessment,'Blank assessment sheets must stay hidden');
 for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js)$/.test(f)))assert.ok(!/PLAN-015|book=assessment|B:assessment|type=學習單/.test(fs.readFileSync(path.join(dist,file),'utf8')),'Hidden assessment sheets linked from '+file);
 for(const old of ['material','lesson','history','visit','archive'])assert.ok(!home.includes(`data-place="${old}"`),'Merged station still on the home village: '+old);
 for(const [place,href] of [['course','resource.html?id=PLAN-002'],['library','library.html'],['farm','lessons.html?topic=農耕與食農'],['ocean','lessons.html'],['reception','reception.html']])assert.ok(new RegExp(`data-place="${place}"[^>]*href="${href.replace(/[?.]/g,'\\$&')}"`).test(home),'Home station link '+place);
 for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js)$/.test(f)&&f!=='lessons.js'))assert.ok(!fs.readFileSync(path.join(dist,file),'utf8').includes('view=materials'),'Old materials workshop linked from '+file);
 const placeOrder=[...home.matchAll(/data-place="([^"]+)"/g)].map(m=>m[1]),villageJs=fs.readFileSync(path.join(dist,'village.js'),'utf8'),spots=JSON.parse(villageJs.match(/const spots=(\[[^\]]*\])/)[1]);
-assert.equal(spots.length,[...home.matchAll(/data-place="/g)].length,'Every home station needs a house spot');assert.ok(villageJs.includes('function seaAt(')&&villageJs.includes('function moveRaft(')&&villageJs.includes('courseGroup'),'Raft paddles where the sea is clicked; language island is an outdoor training ground');assert.ok([9,10].every(n=>!spots.includes(n)),'Spots 9 and 10 stay empty houses');assert.equal(spots[placeOrder.indexOf('training')],3,'修煉場 lives in the old workshop at spot 3');assert.ok(!fs.readFileSync(path.join(dist,'village-ui.js'),'utf8').includes('padStart(2')&&!/directory-number|place-number|directory-group-title"><b>/.test(home),'Stations show names only, no number codes');assert.equal(spots[placeOrder.indexOf('song-tree')],14,'Song tree lives on the west shore at spot 14');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierin615music/"'),'Song tree second link to 古調的現代新衣');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierindateng/"'),'Farm second link to Dateng 野菜探險家');
+assert.equal(spots.length,[...home.matchAll(/data-place="/g)].length,'Every home station needs a house spot');assert.ok(villageJs.includes('function seaAt(')&&villageJs.includes('function moveRaft(')&&villageJs.includes('courseGroup'),'Raft paddles where the sea is clicked; language island is an outdoor training ground');assert.ok([9,10].every(n=>!spots.includes(n)),'Spots 9 and 10 stay empty houses');assert.equal(spots[placeOrder.indexOf('training')],3,'老師的工寮 lives in the old workshop at spot 3');assert.ok(!fs.readFileSync(path.join(dist,'village-ui.js'),'utf8').includes('padStart(2')&&!/directory-number|place-number|directory-group-title"><b>/.test(home),'Stations show names only, no number codes');assert.equal(spots[placeOrder.indexOf('song-tree')],14,'Song tree lives on the west shore at spot 14');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierin615music/"'),'Song tree second link to 古調的現代新衣');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierindateng/"'),'Farm second link to Dateng 野菜探險家');
 // 海怪：首頁海上的傳說故事卡，四個連結都要找得到；海怪點得到、潛水換到看得到的地方（village.js），名字和快速選單接好（village-ui.js），文史文章能直接跳到第 5 段（museum.js）
 const monsterCard=home.match(/<article class="place-card raft-card monster-card" id="monster-card"[\s\S]*?<\/article>/)?.[0]||'';
 assert.ok(monsterCard.includes('<h2>海怪</h2>')&&monsterCard.includes('lang="ami">kimad</i>'),'Sea monster legend card missing on the home page');
@@ -216,13 +216,13 @@ assert.ok(home.includes('singsi.js?v=')&&home.includes('id="singsi-card"')&&home
 assert.equal((villageJs.match(/const SINGSI=\[([\s\S]*?)\n  \];/)?.[1].match(/at:\[/g)||[]).length,singsiList.length,'Every singsi stands somewhere in the village');
 console.log(`Singsi verified: ${singsiList.length} teachers in the village, each with an intro, 5 tips, 2 quizzes and lesson links.`);
 
-// 修煉場 pipananaman：113、114 學年度教師文化研習，一場一張卡片；照片點得開、教案與成果連結都找得到；首頁住進原本的教材工坊，會客室 3-3 與訪視專區連過來
+// 老師的工寮 talo'an：113、114 學年度教師文化研習，一場一張卡片；照片點得開、教案與成果連結都找得到；首頁住進原本的教材工坊，會客室 3-3 與訪視專區連過來
 {
   const trainingData={...data,assets:{...data.assets}},main={innerHTML:''};
   vm.runInNewContext(fs.readFileSync(path.join(dist,'training.js'),'utf8'),{window:{SCHOOL_DATA:trainingData},document:{getElementById:id=>id==='main'?main:null},location:{hash:''},requestAnimationFrame:()=>{}});
   const html=main.innerHTML,cards=[...html.matchAll(/<li class="training-card" id="([^"]+)">/g)].map(m=>m[1]);
   assert.equal(cards.length,21,'Training cards: 12 for 113 and 9 for 114');assert.equal(new Set(cards).size,cards.length,'Training card ids unique');
-  assert.ok(html.includes('id="y113"')&&html.includes('id="y114"')&&html.includes('lang="ami">pipananaman</i>'),'Training years and station word');
+  assert.ok(html.includes('id="y113"')&&html.includes('id="y114"')&&html.includes('lang="ami">talo\'an</i>'),'Training years and station word');
   for(const [,id] of html.matchAll(/data-photo="([^"]+)"/g)){const a=trainingData.assets[id];assert.ok(a&&fs.existsSync(path.join(dist,a.src))&&fs.existsSync(path.join(dist,a.thumb)),'Training photo '+id);}
   const src=fs.readFileSync(path.join(dist,'training.js'),'utf8'),calls=fn=>[...src.matchAll(new RegExp(fn+"\\('([^']+)'\\)",'g'))].map(m=>m[1]);
   for(const id of calls('lesson'))assert.ok(data.lessons.some(l=>l.id===id),'Training lesson '+id);
@@ -230,7 +230,9 @@ console.log(`Singsi verified: ${singsiList.length} teachers in the village, each
   for(const id of calls('steps'))assert.ok(data.journeys.some(j=>j.id===id),'Training steps '+id);
   for(const t of calls('topic'))assert.ok(data.lessonTopics.includes(t),'Training topic '+t);
   for(const [,href] of html.matchAll(/href="([^"]+)"/g)){if(/^https?:|^#/.test(href))continue;const url=href.replace(/&amp;/g,'&'),[file,query='']=url.split('#')[0].split('?');assert.ok(fs.existsSync(path.join(dist,file)),'Training link '+href);const book=new URLSearchParams(query).get('book');if(book)assert.ok(data.books[book],'Training book '+href);}
-  assert.ok(/data-place="training"[^>]*href="training\.html"/.test(home)&&data.indicators.find(i=>i.code==='3-3').evidence.plan.some(e=>e.startsWith('P:training.html|'))&&fs.readFileSync(path.join(dist,'visits.js'),'utf8').includes('href="training.html"'),'修煉場 reachable from the village, indicator 3-3 and the visit page');
+  assert.ok(/data-place="training"[^>]*href="training\.html"/.test(home)&&data.indicators.find(i=>i.code==='3-3').evidence.plan.some(e=>e.startsWith('P:training.html|'))&&fs.readFileSync(path.join(dist,'visits.js'),'utf8').includes('href="training.html"'),'老師的工寮 reachable from the village, indicator 3-3 and the visit page');
+  // 首頁 3D：位置 3 是高腳竹工寮（竹子高腳、茅草屋頂、小梯子、簷廊工作台上的月桃葉蓆、三石灶、屋簷下的葫蘆和魚簍）
+  assert.ok(villageJs.includes('const talo=new THREE.Group()')&&villageJs.includes('talo.userData.placeIndex=placeOf(3)')&&villageJs.includes('campFlame')&&!villageJs.includes('const workshop=')&&home.includes('data-ami="talo\'an"'),'Teachers\' stilt hut talo\'an at spot 3');
   console.log(`Training verified: ${cards.length} culture sessions, every photo and link resolves.`);
 }
 // 學生學習評量作業要點（115.9.1 修訂，掃描檔三個章保留）：放在閱覽室，會客室 3-2 和山海探索站連過來

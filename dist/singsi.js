@@ -62,7 +62,7 @@ window.SALIMPO_SINGSI=[
     quizzes:[{q:'mangcel 是哪一種動物？',options:['山羌','山豬','飛鼠'],answer:0},
       {q:'阿美族傳統服飾最常見的紅色，族語是哪一個？',options:['kahengangay',"riko'",'lotok'],answer:0}],
     lessons:['L-A-01','L-B-03']},
-  {id:'shuhua',name:'淑樺 singsi',where:'修煉場旁的家屋工地',prop:'一捆黃藤',
+  {id:'shuhua',name:'淑樺 singsi',where:'工寮旁的家屋工地',prop:'一捆黃藤',
     intro:'Nga\'ay ho! 我是淑樺 singsi。我正在搭家屋，手上這捆是黃藤，一起來看房子怎麼蓋。',
     tips:[{text:'搭家屋要先立起大木頭當骨架。',ami:'kilang',zh:'木頭'},
       {text:'屋架用黃藤綁緊，黃藤就像房子的神經。',ami:"'oway",zh:'黃藤'},
