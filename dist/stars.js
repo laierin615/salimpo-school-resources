@@ -49,6 +49,7 @@
     ['history:fishing-ritual', '傳統禮俗'], // 漁撈儀式
     ['history:fishing', '技能技藝'],        // 漁獵
     ['history:wedding', '傳統禮俗'],        // 婚禮
+    ['history:wedding', '社會制度'],        // 婚禮：母系社會、入贅成家
     ['history:architecture', '技能技藝'],   // 建築
     ['history:short-stories', '山海文學']   // 短文
   ];
