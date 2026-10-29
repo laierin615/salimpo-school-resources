@@ -105,7 +105,9 @@ for(const f of visit.forms){const book=JSON.parse(fs.readFileSync(path.join(dist
 for(const r of data.resources)assert.ok(Array.isArray(r.topics));
 console.log('Visit verified: 12 items, 3 forms, 8 training records, 29-file finance catalog; amounts reconcile.');
 {const b=data.visit115.briefing;assert.ok(b&&b.slides.length===22);for(const x of b.slides){const a=data.assets[x.photo];assert.ok(a&&a.width&&a.height&&x.title);}
-const vjs=fs.readFileSync(path.join(dist,'visits.js'),'utf8');assert.ok(vjs.includes('id="briefing"')&&vjs.includes('href="#briefing"'));assert.ok(fs.readFileSync(path.join(dist,'rich-ui.js'),'utf8').includes('.slide-deck'));
+const vjs=fs.readFileSync(path.join(dist,'visits.js'),'utf8');assert.ok(vjs.includes('id="briefing"')&&vjs.includes('href="#briefing"'));
+// 學校簡報上方內嵌今年國泰圓夢紀錄獎影片
+assert.ok(vjs.includes('youtube-nocookie.com/embed/k4QfU3gnGos')&&vjs.includes('${film}${deck}'),'Cathay award video should sit above the school briefing');assert.ok(fs.readFileSync(path.join(dist,'rich-ui.js'),'utf8').includes('.slide-deck'));
 console.log(`Briefing verified: ${b.slides.length} slides of the school briefing in the visit room, each with size and title.`);}
 
 assert.ok(home.includes('data-place="language-island"'));assert.ok(home.includes('data-place="song-island"'));assert.ok(/data-place="song-tree"[^>]*href="https:\/\/laierin615\.github\.io\/radiw-guyao\/"/.test(home),'Song tree links to the Radiw site');assert.ok(home.includes('https://laierin615.github.io/saopo-songs-review/'));assert.ok(fs.existsSync(path.join(dist,'media/audio/saopo-tasoki-12s.mp3')));assert.ok(home.includes('https://laierin615.github.io/amis-language-competition/'));assert.ok(home.includes('salimpo-home-logo'));assert.ok(home.includes('https://qrcmd.ar2vr.com/?')&&home.includes('https://drive.google.com/file/d/1zpAEaW6---fXPW0mi3QrbSZ92hZCHDFR/view'),'Raft card links the AR2VR champion work and its video');for(const word of ['dadangoyan',"'aol",'fitonay',"'oway",'mikadot'])assert.ok(home.includes(`<i class="ami" lang="ami">${word}</i>`),'Raft word '+word);
