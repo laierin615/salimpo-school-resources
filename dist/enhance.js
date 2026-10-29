@@ -64,7 +64,7 @@
     const pages = Object.values(data.books || {}).reduce((sum, b) => sum + (b.pages || 0), 0);
     const photos = Object.keys(data.assets || {}).length;
     const stats = [
-      ['st-stage', (data.eventIds || []).length, '項展演與比賽成果'],
+      ['st-stage', (data.eventIds || []).length, '項展演、比賽與社團成果'],
       ['st-book', (data.lessons || []).length, '個教案閱讀主題'],
       ['st-history', (data.historyMuseum?.topics || []).filter(t => t.hasContent).length, '篇族語文史'],
       ['st-ocean', photos, '張學習影像'],

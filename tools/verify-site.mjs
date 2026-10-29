@@ -9,11 +9,11 @@ const dist=path.resolve('dist');
 const context={window:{}};
 vm.runInNewContext(fs.readFileSync(path.join(dist,'data.js'),'utf8'),context);
 const data=context.window.SCHOOL_DATA;
-assert.equal(data.resources.length,62);
-assert.equal(data.eventIds.length,25);
+assert.equal(data.resources.length,63);
+assert.equal(data.eventIds.length,26);
 assert.equal(data.indicators.length,24);
 const ids=new Set(data.resources.map(r=>r.id));
-assert.equal(ids.size,62);
+assert.equal(ids.size,63);
 for(const resource of data.resources){
   assert.ok(resource.title&&resource.summary);
   assert.ok(!('source' in resource));
@@ -51,8 +51,8 @@ assert.equal(new Set(data.lessons.map(l=>l.id)).size,31);
 for(const l of data.lessons){const b=JSON.parse(fs.readFileSync(path.join(dist,'books',l.book+'.json'),'utf8'));assert.ok(l.start>=1&&l.end<=b.count&&l.start<=l.end);assert.ok(l.band&&l.topic&&l.title);if(l.cover)assert.ok(data.assets[l.cover]);}
 console.log(JSON.stringify({pages:pageNames.length,lesson_themes:data.lessons.length,photos:Object.keys(data.assets).length,reading_volumes:Object.keys(data.books).length,readable_pages:pageImages,resource_records:data.resources.length,event_results:data.eventIds.length,official_indicators:24,local_links:'valid',internal_paths_in_deployment:false,script_syntax:'valid'}));
 
-for(const id of data.eventIds){const e=data.resources.find(r=>r.id===id);assert.ok(e?.event?.result&&e.section==='活動與成果');assert.ok(['展演成果','比賽成果','成果展'].includes(e.type));}
-assert.equal(data.resources.filter(r=>r.section==='活動與成果').length,25);
+for(const id of data.eventIds){const e=data.resources.find(r=>r.id===id);assert.ok(e?.event?.result&&e.section==='活動與成果');assert.ok(['展演成果','比賽成果','成果展','社團活動'].includes(e.type));}
+assert.equal(data.resources.filter(r=>r.section==='活動與成果').length,26);
 
 assert.equal(data.curriculum115.cores.length,3);
 assert.equal(data.curriculum115.cores.flatMap(c=>c.directions).length,9);
@@ -82,7 +82,7 @@ assert.equal(history.chapters.length,7);
 for(const t of data.historyMuseum.topics){if(t.hasContent){assert.ok(history.chapters[t.chapter-1]);assert.ok(ids.has(t.resourceId));for(const s of t.sections)assert.ok(s.paragraph<history.chapters[t.chapter-1].blocks.length);}}
 assert.equal(data.historyMuseum.topics.find(t=>t.id==='short-stories').sections.length,8);
 assert.equal(Object.keys(data.books).length,25);
-assert.equal(Object.keys(data.assets).length,528);
+assert.equal(Object.keys(data.assets).length,532);
 console.log('Museum index verified: 15 topics, 7 full articles; withdrawn plan absent.');
 
 const visit=data.visit115;
