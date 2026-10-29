@@ -324,7 +324,7 @@ function buildVillage(){
   function project(){const aspect=width/height;/* 左右兩座小外島在任何寬度都要完整入鏡 */const half=width<600?13/aspect:Math.max(9.65,13/aspect);camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
   function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);project();}
   new ResizeObserver(resize).observe(canvas);resize();
-  // 號碼平常收起來：滑過、拖曳、點選或縮放聚落時才浮現，停下來一會兒再淡出
+  // 站名平常收起來：滑過、拖曳、點選或縮放聚落時才浮現，停下來一會兒再淡出
   const labelRoot=document.getElementById('village-labels'),hint=document.getElementById('village-hint'),zoomIn=document.querySelector('[data-zoom=in]'),zoomOut=document.querySelector('[data-zoom=out]');
   let revealTimer=0,hintTimer=0,hovered=-1,hoverAt=null;const hintAt={};
   function reveal(){labelRoot.classList.add('is-revealed');clearTimeout(revealTimer);revealTimer=setTimeout(()=>labelRoot.classList.remove('is-revealed'),2200);}
@@ -386,12 +386,21 @@ function buildVillage(){
   canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();world.classList.remove('scene-ready');window.failVillage?.();});
   let visible=true;new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;}).observe(world);
   const point=new THREE.Vector3();
+  // 站名放得下就整個顯示（最多往下挪一格）；還是擠的話先縮成小圓點（選到的那一站優先、竹筏最後），放大聚落或滑過時名稱再出現
+  let pinWidths=null;document.fonts?.ready.then(()=>{pinWidths=null;});
   function labels(){
-    const pins=[...document.querySelectorAll('.place-pin')];const mobile=width<600;const entries=spots.map((spot,i)=>{const [x,z]=positions[spot];/* 小外島的標籤浮高一點，不要蓋住島 */point.set(x,Math.hypot(x,z)>7?3:1.4,z).project(camera);return {i,x:(point.x*.5+.5)*width,y:(-point.y*.5+.5)*height+(mobile?28:0),w:mobile?(selected===i?130:30):pins[i]?.offsetWidth||130};}).sort((a,b)=>a.y-b.y);
-    const placed=[];const guard=document.querySelector('.world-whispers');const minY=guard?guard.offsetTop+guard.offsetHeight+(mobile?22:26):(mobile?230:239);
-    entries.forEach(entry=>{entry.x=THREE.MathUtils.clamp(entry.x,entry.w/2+8,width-entry.w/2-8);entry.y=Math.max(minY,entry.y);for(let attempts=0;attempts<8;attempts++){if(!placed.some(other=>Math.abs(other.x-entry.x)<(other.w+entry.w)/2+3&&Math.abs(other.y-entry.y)<(mobile?32:38)))break;entry.y+=mobile?33:38;}placed.push(entry);const pin=pins[entry.i];if(pin){pin.style.left=entry.x+'px';pin.style.top=entry.y+'px';}});
-    const raftPin=document.querySelector('.raft-pin');if(raftPin){point.set(raft.position.x,.9,raft.position.z).project(camera);raftPin.style.left=THREE.MathUtils.clamp((point.x*.5+.5)*width,30,width-30)+'px';raftPin.style.top=Math.max(minY,(-point.y*.5+.5)*height+(mobile?28:0))+'px';}
+    const pins=[...document.querySelectorAll('.place-pin')];const mobile=width<600;const guard=document.querySelector('.world-whispers');const minY=guard?guard.offsetTop+guard.offsetHeight+(mobile?22:26):(mobile?230:239);
+    if(!pinWidths||pinWidths.key!==width||pinWidths.length!==pins.length){pins.forEach(pin=>pin.classList.remove('is-dot'));pinWidths=pins.map(pin=>pin.offsetWidth);pinWidths.key=width;}
+    const screen=(x,y,z)=>{point.set(x,y,z).project(camera);return {x:(point.x*.5+.5)*width,y:Math.max(minY,(-point.y*.5+.5)*height+(mobile?28:0))};};
+    const rank=entry=>pins[entry.i]?.getAttribute('aria-pressed')==='true'?2:pins[entry.i]?.classList.contains('raft-pin')?0:1;
+    /* 小外島的標籤浮高一點，不要蓋住島 */
+    const entries=[...spots.map((spot,i)=>{const [x,z]=positions[spot];return {i,...screen(x,Math.hypot(x,z)>7?3:1.4,z)};}),{i:pins.length-1,...screen(raft.position.x,.9,raft.position.z)}].sort((a,b)=>rank(b)-rank(a)||a.y-b.y);
+    const placed=[],fullH=mobile?26:32,dot=mobile?16:18,free=(x,y,w,h)=>!placed.some(o=>Math.abs(o.x-x)<(o.w+w)/2+3&&Math.abs(o.y-y)<(o.h+h)/2+3);
+    entries.forEach(entry=>{const pin=pins[entry.i];if(!pin)return;let w=pinWidths[entry.i],h=fullH,y=entry.y,x=THREE.MathUtils.clamp(entry.x,w/2+8,width-w/2-8);
+      if(rank(entry)<2&&!free(x,y,w,h)){if(free(x,y+h+4,w,h))y+=h+4;else{w=h=dot;x=THREE.MathUtils.clamp(entry.x,w/2+8,width-w/2-8);for(let k=0;k<6&&!free(x,y,w,h);k++)y+=h+4;}}
+      pin.classList.toggle('is-dot',w===dot);placed.push({x,y,w,h});pin.style.left=x+'px';pin.style.top=y+'px';});
   }
+
   let start=performance.now(),last=0;
   function frame(now){requestAnimationFrame(frame);if(document.hidden||!visible||now-last<1000/30)return;last=now;const elapsed=(now-start)/1000;
     yaw=THREE.MathUtils.lerp(yaw,targetYaw,.12);pitch=THREE.MathUtils.lerp(pitch,targetPitch,.12);if(Math.abs(zoom-targetZoom)>.0005){zoom=THREE.MathUtils.lerp(zoom,targetZoom,.18);project();}focus.lerp(targetFocus,.12);pan.lerp(targetPan,.18);

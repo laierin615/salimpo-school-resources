@@ -31,24 +31,23 @@
     if(before)track.style.animationDuration=(110*copies[0].offsetWidth/before).toFixed(1)+'s';
   }).catch(()=>{});
   let selected=-1;
-  const number=i=>String(i+1).padStart(2,'0');
   places.forEach((place,i)=>{
-    const pin=document.createElement('button');pin.type='button';pin.className='place-pin';pin.dataset.index=String(i);pin.setAttribute('aria-label',number(i)+' '+place.title);pin.setAttribute('aria-pressed','false');
-    const badge=document.createElement('b');badge.textContent=number(i);const name=document.createElement('span');name.className='pin-name';name.textContent=place.title;pin.append(badge,name);pin.addEventListener('click',()=>select(i));labelRoot.append(pin);
-    const quick=document.createElement('button');quick.type='button';quick.textContent=number(i)+' '+place.title;quick.setAttribute('aria-pressed','false');quick.addEventListener('click',()=>select(i));picker.append(quick);
-    const dot=document.createElement('button');dot.type='button';dot.setAttribute('aria-label',number(i)+' '+place.title);dot.setAttribute('aria-pressed','false');dot.addEventListener('click',()=>select(i));dots.append(dot);
+    const pin=document.createElement('button');pin.type='button';pin.className='place-pin';pin.dataset.index=String(i);pin.setAttribute('aria-label',place.title);pin.setAttribute('aria-pressed','false');
+    const name=document.createElement('span');name.className='pin-name';name.textContent=place.title.split(' · ')[0];pin.append(name);pin.addEventListener('click',()=>select(i));labelRoot.append(pin);
+    const quick=document.createElement('button');quick.type='button';quick.textContent=place.title;quick.setAttribute('aria-pressed','false');quick.addEventListener('click',()=>select(i));picker.append(quick);
+    const dot=document.createElement('button');dot.type='button';dot.setAttribute('aria-label',place.title);dot.setAttribute('aria-pressed','false');dot.addEventListener('click',()=>select(i));dots.append(dot);
   });
-  // 竹筏不算編號的一站：用自己的卡片，打開時先收起地點卡
+  // 竹筏不在逐站導覽裡：用自己的卡片，打開時先收起地點卡
   const raftCard=document.getElementById('raft-card');
   function showRaft(){select(-1);if(!raftCard)return;welcome.hidden=true;raftCard.hidden=false;raftPin.setAttribute('aria-pressed','true');raftQuick.setAttribute('aria-pressed','true');window.dispatchEvent(new CustomEvent('salimpo:raft'));}
-  const raftPin=document.createElement('button');raftPin.type='button';raftPin.className='place-pin raft-pin';raftPin.setAttribute('aria-label','竹筏 Dadangoyan');raftPin.setAttribute('aria-pressed','false');raftPin.innerHTML='<b>筏</b><span class="pin-name">竹筏</span>';raftPin.addEventListener('click',showRaft);labelRoot.append(raftPin);
-  const raftQuick=document.createElement('button');raftQuick.type='button';raftQuick.textContent='筏 竹筏';raftQuick.setAttribute('aria-pressed','false');raftQuick.addEventListener('click',showRaft);picker.append(raftQuick);
+  const raftPin=document.createElement('button');raftPin.type='button';raftPin.className='place-pin raft-pin';raftPin.setAttribute('aria-label','竹筏 Dadangoyan');raftPin.setAttribute('aria-pressed','false');raftPin.innerHTML='<span class="pin-name">竹筏</span>';raftPin.addEventListener('click',showRaft);labelRoot.append(raftPin);
+  const raftQuick=document.createElement('button');raftQuick.type='button';raftQuick.textContent='竹筏';raftQuick.setAttribute('aria-pressed','false');raftQuick.addEventListener('click',showRaft);picker.append(raftQuick);
   document.getElementById('raft-close')?.addEventListener('click',()=>select(-1));
   function select(index){
     selected=index;const place=places[index];
     if(raftCard)raftCard.hidden=true;raftPin.setAttribute('aria-pressed','false');raftQuick.setAttribute('aria-pressed','false');
     welcome.hidden=!!place;card.hidden=!place;
-    if(place){document.getElementById('place-number').textContent=number(index);document.getElementById('place-category').textContent=place.category;document.getElementById('place-title').textContent=place.title;document.getElementById('place-description').textContent=place.description;const ami=document.getElementById('place-ami');if(ami){ami.hidden=!place.ami;ami.querySelector('i').textContent=place.ami;ami.querySelector('span').textContent=place.amiZh;}const link=document.getElementById('place-link');link.href=place.url;link.textContent=place.go||(place.external?'出發到族語挑戰島 ↗':'走進這一站 →');window.dispatchEvent(new CustomEvent('salimpo:listen',{detail:place.listen||''}));if(place.external){link.target='_blank';link.rel='noopener noreferrer';}else{link.removeAttribute('target');link.removeAttribute('rel');}const link2=document.getElementById('place-link2');if(link2){link2.hidden=!place.url2;if(place.url2){link2.href=place.url2;link2.textContent=place.go2;}}document.getElementById('place-counter').textContent=number(index)+' / '+places.length;}
+    if(place){document.getElementById('place-category').textContent=place.category;document.getElementById('place-title').textContent=place.title;document.getElementById('place-description').textContent=place.description;const ami=document.getElementById('place-ami');if(ami){ami.hidden=!place.ami;ami.querySelector('i').textContent=place.ami;ami.querySelector('span').textContent=place.amiZh;}const link=document.getElementById('place-link');link.href=place.url;link.textContent=place.go||(place.external?'出發到族語挑戰島 ↗':'走進這一站 →');window.dispatchEvent(new CustomEvent('salimpo:listen',{detail:place.listen||''}));if(place.external){link.target='_blank';link.rel='noopener noreferrer';}else{link.removeAttribute('target');link.removeAttribute('rel');}const link2=document.getElementById('place-link2');if(link2){link2.hidden=!place.url2;if(place.url2){link2.href=place.url2;link2.textContent=place.go2;}}document.getElementById('place-counter').textContent=(index+1)+' / '+places.length;}
     else document.getElementById('place-counter').textContent='探索聚落';
     [labelRoot,picker,dots].forEach(container=>[...container.children].forEach((button,i)=>{if(button!==raftPin&&button!==raftQuick)button.setAttribute('aria-pressed',String(i===selected));}));
     window.dispatchEvent(new CustomEvent('salimpo:place',{detail:index}));
