@@ -47,3 +47,6 @@
 .sky-door-top{display:none}
 [data-theme=night] .sky-door-top{position:absolute;top:151px;right:clamp(18px,4vw,52px);z-index:6;display:inline-flex}
 @media(max-width:900px){[data-theme=night] .sky-door-top{display:none}[data-theme=night] .village-header .pill[href="stars.html"]{background:rgba(9,18,36,.82);border-color:rgba(255,207,110,.62);color:#ffe7a8;box-shadow:0 0 16px rgba(255,207,110,.38)}}
+.place-go-alt{margin-left:8px;background:var(--surface);color:var(--ink);border:1px solid var(--line)}
+.place-go-alt[hidden]{display:none}
+@media(max-width:600px){.place-go-alt{margin-left:0}}

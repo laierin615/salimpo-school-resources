@@ -3,9 +3,9 @@ import * as THREE from './vendor/three.module.js';
 const canvas=document.getElementById('village-canvas');
 const world=document.getElementById('village-world');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3],[3.8,2.75]];
-// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去；位置 9 種了古謠樹
-const spots=[0,1,2,4,5,6,9,7,8,11,12,13],placeOf=spot=>spots.indexOf(spot);
+const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3],[3.8,2.75],[-5.9,3.4]];
+// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）、9（原文史資料館）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去；位置 14 是左岸望向女人島的古謠樹
+const spots=[0,1,2,4,5,6,14,7,8,11,12,13],placeOf=spot=>spots.indexOf(spot);
 let renderer;
 try{
   renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
@@ -85,7 +85,7 @@ function buildVillage(){
     upper.position.set(x,h*.84+.05,z);upper.rotation.y=i*.43;
   });
   function tree(x,z,size=1,type=0){const group=new THREE.Group();group.position.set(x,.09,z);group.scale.setScalar(size);scene.add(group);cylinder(.07,.65,0,.35,0,0x876849,group,7);if(type===0){for(let i=0;i<2;i++){const crown=mesh(geometry.cone,i?0x5d9b5c:0x72b371,group);crown.scale.set(.46-i*.11,.73,.46-i*.11);crown.position.y=.72+i*.33;}}else{const crown=mesh(geometry.leaf,0x7db971,group);crown.scale.set(.52,.65,.52);crown.position.y=1.03;}return group;}
-  for(let i=0;i<55;i++){const a=random()*Math.PI*2;const r=4.4+random()*2.85;const x=Math.cos(a)*r,z=Math.sin(a)*r;if(positions.slice(0,13).some(([px,pz])=>Math.hypot(x-px,z-pz)<1.35)||Math.abs(x)<2.8&&z<-3.6||Math.hypot(x+3.1,z-5.45)<1.45||Math.hypot(x+.35,z-6.35)<.9)continue;const t=tree(x,z,.75+random()*.5,i%3===0?1:0);if(Math.hypot(x-positions[13][0],z-positions[13][1])<1.35)t.visible=false;}
+  for(let i=0;i<55;i++){const a=random()*Math.PI*2;const r=4.4+random()*2.85;const x=Math.cos(a)*r,z=Math.sin(a)*r;if(positions.slice(0,13).some(([px,pz])=>Math.hypot(x-px,z-pz)<1.35)||Math.abs(x)<2.8&&z<-3.6||Math.hypot(x+3.1,z-5.45)<1.45||Math.hypot(x+.35,z-6.35)<.9)continue;const t=tree(x,z,.75+random()*.5,i%3===0?1:0);if(Math.hypot(x-positions[13][0],z-positions[13][1])<1.35||Math.hypot(x-positions[14][0],z-positions[14][1])<1.35)t.visible=false;}
   for(let i=0;i<12;i++)tree(-6.2+(i%3)*.4,-4.5+Math.floor(i/3)*.65,.65+random()*.3,1);
   const grassGeo=new THREE.ConeGeometry(.035,.14,3);const grass=new THREE.InstancedMesh(grassGeo,material(0x548a49),250);for(let i=0;i<250;i++){const a=random()*Math.PI*2,r=Math.sqrt(random())*7.2;transform.position.set(Math.cos(a)*r,.15,Math.sin(a)*r);transform.rotation.set(0,random()*6.28,random()*.2);transform.scale.setScalar(.75+random()*.7);transform.updateMatrix();grass.setMatrixAt(i,transform.matrix);}scene.add(grass);
 
@@ -101,13 +101,14 @@ function buildVillage(){
   const stage=new THREE.Group();stage.position.set(...[positions[6][0],.14,positions[6][1]]);stage.userData.placeIndex=placeOf(6);scene.add(stage);buildings.push(stage);cylinder(1,.22,0,.11,0,0xe8d6ad,stage,24);for(const x of [-.74,.74])for(const z of [-.55,.55])box(.055,1.15,.055,x,.79,z,0xc8bda2,stage);roof(1.85,1.45,.45,1.38,0xc59b68,stage);box(.45,.44,.26,-.48,.46,-.3,0x8c7152,stage);box(.45,.44,.26,.48,.46,-.3,0x8c7152,stage);
   const archive=building(7,0xe8e4d9,0x5b7f95,1.7,1.35,1.1);for(const x of [-.7,-.35,.35,.7])box(.09,1.02,.09,x,.69,.8,0xe7e8dd,archive);box(1.95,.1,.6,0,.19,.86,0xc8c9b4,archive);box(.75,.1,.04,0,1.19,.79,0x50a578,archive);
   const kiosk=building(8,0xddcca3,0x58a8a0,.95,.9,.65);box(.55,.42,.06,0,.81,.54,0x37758c,kiosk);box(.055,.2,.04,0,.8,.58,0xf8f1d9,kiosk);box(.055,.04,.04,0,.97,.58,0xf8f1d9,kiosk);
-  // 古謠樹（位置 9，原文史資料館的空房子）：樹根是耆老傳下的古調，捲成金色的音符線；樹冠長出孩子哼的新旋律，音符往上飄
-  const songTree=new THREE.Group();songTree.position.set(positions[9][0],.14,positions[9][1]);songTree.scale.setScalar(1.3);songTree.userData.placeIndex=placeOf(9);scene.add(songTree);buildings.push(songTree);
-  cylinder(.95,.1,0,.05,0,0xcdbb92,songTree,20);
-  beam(new THREE.Vector3(0,.05,0),new THREE.Vector3(.06,1.05,-.02),.13,0x7d5a3c,songTree);
-  for(const [a,l] of [[.3,.62],[1.9,.55],[3.4,.66],[4.8,.58]]){const tip=new THREE.Vector3(Math.cos(a)*l,.12,Math.sin(a)*l);beam(new THREE.Vector3(0,.22,0),tip,.045,0x7d5a3c,songTree);
-    const curl=mesh(new THREE.TorusGeometry(.11,.022,6,14,Math.PI*1.5),0xe0b04f,songTree);curl.position.copy(tip).setY(.16);curl.rotation.set(-Math.PI/2,0,a);curl.castShadow=false;}
-  for(const [x,y,z,r,c] of [[0,1.25,0,.55,0x5e9d5a],[-.36,1.05,.18,.36,0x72b36b],[.38,1.1,-.1,.38,0x6aa863],[.05,1.58,.05,.34,0x82bf74]]){const crown=mesh(geometry.leaf,c,songTree);crown.scale.setScalar(r);crown.position.set(x,y,z);}
+  const history=building(9,0xe8cda3,0x82785b,1.3,1.18,.94);for(const x of [-.54,.54])beam(new THREE.Vector3(x,.15,.75),new THREE.Vector3(x,1.3,.75),.035,0x806348,history);box(.82,.19,.045,0,1.18,.67,0x578875,history);for(let i=0;i<4;i++)box(.13,.31,.09,-.26+i*.15,.48,.72,[0xaf7d61,0x5b8290,0xb5a063,0x638367][i],history);
+  // 古謠樹（位置 14，左岸望向女人島）：樹根是耆老傳下的古調，捲成金色的音符線；樹冠長出孩子哼的新旋律，音符往上飄
+  const songTree=new THREE.Group();songTree.position.set(positions[14][0],.14,positions[14][1]);songTree.scale.setScalar(1.3);songTree.userData.placeIndex=placeOf(14);scene.add(songTree);buildings.push(songTree);
+  cylinder(.95,.1,0,.05,0,0xb9a57a,songTree,20);
+  beam(new THREE.Vector3(0,.05,0),new THREE.Vector3(.06,1.05,-.02),.13,0x5a3b24,songTree);
+  for(const [a,l] of [[.3,.62],[1.9,.55],[3.4,.66],[4.8,.58]]){const tip=new THREE.Vector3(Math.cos(a)*l,.12,Math.sin(a)*l);beam(new THREE.Vector3(0,.22,0),tip,.045,0x5a3b24,songTree);
+    const curl=mesh(new THREE.TorusGeometry(.11,.022,6,14,Math.PI*1.5),0xd49a2a,songTree);curl.position.copy(tip).setY(.16);curl.rotation.set(-Math.PI/2,0,a);curl.castShadow=false;}
+  for(const [x,y,z,r,c] of [[0,1.25,0,.55,0x2f6b3a],[-.36,1.05,.18,.36,0x3c7d44],[.38,1.1,-.1,.38,0x35753f],[.05,1.58,.05,.34,0x4a8a4b]]){const crown=mesh(geometry.leaf,c,songTree);crown.scale.setScalar(r);crown.position.set(x,y,z);}
   for(const [x,y,z,c] of [[-.32,1.32,.42,0xd6553f],[.42,1.4,.25,0xf2c14e],[.15,1.05,.5,0xd6553f],[-.48,1.12,-.2,0xf2c14e]]){const fruit=mesh(geometry.leaf,c,songTree);fruit.scale.setScalar(.06);fruit.position.set(x,y,z);}
   const treeNotes=[];
   for(let i=0;i<3;i++){const group=new THREE.Group();songTree.add(group);const noteMaterial=new THREE.MeshStandardMaterial({color:[0xd6553f,0xf2c14e,0x7bcdd0][i],emissive:0x5a3a00,emissiveIntensity:.25,roughness:.7,flatShading:true,transparent:true});
@@ -127,6 +128,9 @@ function buildVillage(){
   const officeStones=new THREE.InstancedMesh(paverGeometry,material(0xe1dfc7),12);
   for(let i=0;i<12;i++){const t=i/11;transform.position.set(positions[13][0]*(1-t)+.4*t,.13,positions[13][1]*(1-t)+1.5*t);transform.rotation.y=i*1.7;transform.scale.set(1.1,1,1);transform.updateMatrix();officeStones.setMatrixAt(i,transform.matrix);}
   officeStones.receiveShadow=true;scene.add(officeStones);
+  const treeStones=new THREE.InstancedMesh(paverGeometry,material(0xe1dfc7),8);
+  for(let i=0;i<8;i++){const t=.18+i/7*.5;transform.position.set(positions[14][0]*(1-t)+.4*t,.13,positions[14][1]*(1-t)+1.5*t);transform.rotation.y=i*1.3;transform.scale.set(1.1,1,1);transform.updateMatrix();treeStones.setMatrixAt(i,transform.matrix);}
+  treeStones.receiveShadow=true;scene.add(treeStones);
   // 外島不要像圓柱那樣整齊：岩壁、沙灘、草地共用一條起伏的海岸線，岩壁往下收窄、凹凸不一
   function coast(p,q,r){return a=>1+.14*Math.sin(2*a+p)+.08*Math.sin(3*a+q)+.05*Math.sin(5*a+r);}
   function islet(edge,radius,height,y,color,parent,bottom=1){
