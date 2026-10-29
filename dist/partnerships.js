@@ -2,7 +2,7 @@
  const data=window.SCHOOL_DATA;
  const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  window.partnershipDetail=r=>r.collaboration?`<section class="partner-contribution" aria-label="合作計畫與課程的連結"><h2>這個計畫，讓學習多走了哪一步？</h2><div class="partner-flow">${[['協力支持',r.collaboration.role],['走進課程',r.collaboration.course],['作品與學習',r.collaboration.outputs]].map(([t,v],i)=>`<div><span>0${i+1} / ${t}</span><p>${esc(v)}</p></div>`).join('')}</div></section>`:'';
- window.partnershipMedia=r=>r.video?`<section class="partner-video"><div><p class="eyebrow">WATCH THE STORY</p><h2>${esc(r.video.title)}</h2><p>${esc(r.video.text)}</p></div><a class="button primary" href="${esc(r.video.url)}" target="_blank" rel="noopener noreferrer">觀看圓夢紀錄影片 ↗</a></section>`:'';
+ window.partnershipMedia=r=>r.video?`<section class="partner-video"><div><p class="eyebrow">WATCH THE STORY</p><h2>${esc(r.video.title)}</h2><p>${esc(r.video.text)}</p></div><a class="button primary" href="${esc(r.video.url)}" target="_blank" rel="noopener noreferrer" data-video-title="${esc(r.video.title)}">▶ 觀看圓夢紀錄影片</a></section>`:'';
  window.partnershipCallout=()=>`<section class="partner-callout"><div><p class="eyebrow">一起把學習的路走寬</p><h2>每一份支持，都走進孩子的課堂</h2><p>文化採集、歌謠錄製、科學探究與工藝分享，看看合作計畫如何連起課程和成果。</p></div><a class="button" href="partnerships.html">走進合作計畫 →</a></section>`;
  window.showPartnerships=()=>{
  const projects=data.partnershipIds.map(id=>data.resources.find(r=>r.id===id)),main=document.getElementById('main');

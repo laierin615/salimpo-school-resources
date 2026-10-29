@@ -139,3 +139,47 @@
   if(page==='resource')showResource();
   if(page==='reviews')showReviews();
 })();
+
+// 站內影片播放窗：YouTube 和標了 data-video 的雲端影片點了在網站裡播放，不跳出網站；按住 Ctrl／⌘ 點或用滑鼠中鍵，照樣開新分頁
+(() => {
+  const seconds = t => { if (!t) return 0; if (/^\d+$/.test(t)) return Number(t); const m = t.match(/^(?:(\d+)h)?(?:(\d+)m)?(?:(\d+)s)?$/); return m ? (Number(m[1]) || 0) * 3600 + (Number(m[2]) || 0) * 60 + (Number(m[3]) || 0) : 0; };
+  function videoOf(a) {
+    let url; try { url = new URL(a.href, location.href); } catch { return null; }
+    const host = url.hostname.replace(/^(?:www|m)\./, '');
+    const id = host === 'youtu.be' ? url.pathname.slice(1) : /^youtube(?:-nocookie)?\.com$/.test(host) ? url.searchParams.get('v') || (url.pathname.match(/^\/(?:shorts|embed|live)\/([^/]+)/) || [])[1] : '';
+    if (/^[\w-]{11}$/.test(id || '')) {
+      const start = seconds(url.searchParams.get('t') || url.searchParams.get('start'));
+      return { src: `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1${start ? '&start=' + start : ''}`, out: `https://www.youtube.com/watch?v=${id}${start ? '&t=' + start + 's' : ''}`, label: '到 YouTube 看 ↗' };
+    }
+    // 雲端硬碟的檔案不一定是影片，連結要標 data-video 才在網站裡播
+    const drive = a.hasAttribute('data-video') && host === 'drive.google.com' && (url.pathname.match(/^\/file\/d\/([\w-]+)/) || [])[1];
+    return drive ? { src: `https://drive.google.com/file/d/${drive}/preview`, out: url.href, label: '到雲端硬碟看 ↗' } : null;
+  }
+  const titleOf = a => (a.dataset.videoTitle || a.querySelector('strong')?.textContent || a.title || a.textContent || '').replace(/[↗→▶]/g, '').replace(/\s+/g, ' ').trim() || '影片';
+  let dialog, opener;
+  function play(video, title) {
+    if (!dialog) {
+      dialog = document.createElement('dialog'); dialog.className = 'video-dialog'; dialog.setAttribute('aria-labelledby', 'video-dialog-title');
+      dialog.innerHTML = '<header><p id="video-dialog-title"></p><button type="button" data-close aria-label="關閉影片">關閉 ×</button></header><div class="video-frame"></div><footer><a data-out target="_blank" rel="noopener noreferrer"></a></footer>';
+      document.body.append(dialog);
+      dialog.querySelector('[data-close]').onclick = () => dialog.close();
+      dialog.addEventListener('click', e => { if (e.target !== dialog) return; const r = dialog.getBoundingClientRect(); if (e.clientX < r.left || e.clientX > r.right || e.clientY < r.top || e.clientY > r.bottom) dialog.close(); });
+      // 關掉就把播放器整個拿掉，影片才會停；每次開新的播放器，上一頁鍵才不會變成在播放器裡倒退
+      dialog.addEventListener('close', () => { dialog.querySelector('.video-frame').replaceChildren(); opener?.focus(); });
+    }
+    const frame = document.createElement('iframe');
+    frame.title = title; frame.src = video.src; frame.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen'; frame.allowFullscreen = true; frame.referrerPolicy = 'strict-origin-when-cross-origin';
+    dialog.querySelector('#video-dialog-title').textContent = title;
+    Object.assign(dialog.querySelector('[data-out]'), { href: video.out, textContent: video.label });
+    dialog.querySelector('.video-frame').replaceChildren(frame);
+    if (!dialog.open) dialog.showModal();
+  }
+  document.addEventListener('click', e => {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    const a = e.target.closest?.('a[href]');
+    if (!a || a.hasAttribute('download') || a.closest('.video-dialog')) return;
+    const video = videoOf(a);
+    if (!video) return;
+    e.preventDefault(); opener = a; play(video, titleOf(a));
+  }, true);
+})();

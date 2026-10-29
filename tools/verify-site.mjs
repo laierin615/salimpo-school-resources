@@ -178,6 +178,14 @@ for(const [group,valid] of [['lessons',id=>mediaLessonIds.has(id)],['topics',t=>
 }
 assert.ok(fs.readFileSync(path.join(dist,'lessons.html'),'utf8').includes('media-links.js?v='),'media-links.js missing on lessons page');
 console.log(`Media links verified: ${mediaCount} Padlet boards and videos on ${Object.keys(media.lessons).length} lessons and ${Object.keys(media.topics).length} topics.`);
+// 站內影片播放窗：YouTube 和竹筏的雲端 VR 影片點了在網站裡播放；每個 YouTube 網址都要有完整的 11 碼影片編號（書裡被斷行切開的要接回來）
+const playerJs=fs.readFileSync(path.join(dist,'app.js'),'utf8'),bookTextJs=fs.readFileSync(path.join(dist,'reader.js'),'utf8');
+assert.ok(playerJs.includes("dialog.className = 'video-dialog'")&&playerJs.includes('https://www.youtube-nocookie.com/embed/')&&playerJs.includes('/preview')&&fs.readFileSync(path.join(dist,'styles.css'),'utf8').includes('.video-dialog{'),'In-site video player missing');
+assert.ok(bookTextJs.includes('videoLinks(esc(page.text')&&bookTextJs.includes('videoLinks(esc(b.text))'),'YouTube links in book text should play in the site');
+assert.ok(/href="https:\/\/drive\.google\.com\/file\/d\/[\w-]+\/view" data-video /.test(home),'Raft VR video should play in the site');
+let videoUrls=0;
+for(const file of ['index.html','data.js','media-links.js',...fs.readdirSync(path.join(dist,'books')).map(f=>'books/'+f)])for(const m of fs.readFileSync(path.join(dist,file),'utf8').matchAll(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^"'\s&\\()<]*)/g)){videoUrls++;assert.ok(/^[\w-]{11}$/.test(m[1]),`Broken YouTube link in ${file}: ${m[0]}`);}
+console.log(`Videos verified: ${videoUrls} YouTube links with full video ids, played in the site player with a link out to YouTube.`);
 
 // 山海探索站依主題整合：還沒填的「115上學期各科學習成果評量單」先不呈現（資料存在 archive/），會客室佐證也不列；教材工坊、教案書屋併進山海探索站，原本的房子留成空房子
 assert.ok(!ids.has('PLAN-015')&&!data.books.assessment,'Blank assessment sheets must stay hidden');
