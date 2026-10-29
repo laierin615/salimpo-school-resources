@@ -1,34 +1,87 @@
-/* 星空 fo'is：互動知識圖譜 */
+/* 星空 fo'is：互動知識圖譜。整個畫面就是一片星空，頁首與頁尾收起來，左上角的 Logo 回首頁 */
 .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.stars-page{padding-bottom:56px}
-.stars-page .page-heading h1 .ami{font-size:.6em;margin-left:.35em;color:var(--green-text)}
-.sky-wrap{display:grid;gap:12px}
-.sky-toolbar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;justify-content:space-between}
-.sky-search{display:flex;gap:8px;flex:1 1 280px;max-width:430px}
-.sky-search input{flex:1;min-width:0;min-height:44px;padding:8px 16px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit}
-.sky-search input:focus{outline:2px solid var(--green,#1fd16c);outline-offset:1px}
-.sky-search button{min-height:44px;min-width:64px;padding:0 16px;border:0;border-radius:999px;background:var(--green,#1fd16c);color:#06210f;font:inherit;font-weight:800;cursor:pointer}
-.sky-legend{display:flex;flex-wrap:wrap;gap:6px}
-.sky-legend-chip{display:inline-flex;align-items:center;gap:6px;min-height:36px;padding:4px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font:inherit;font-size:.86rem;font-weight:600;cursor:pointer}
-.sky-legend-chip span{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px rgba(15,32,45,.28),0 0 8px var(--c)}
-.sky-legend-chip small{color:var(--muted);font-variant-numeric:tabular-nums}
-.sky-legend-chip[aria-pressed=false]{opacity:.5}
-.sky-legend-chip[aria-pressed=false] span{background:transparent;box-shadow:inset 0 0 0 2px var(--c),0 0 0 1px rgba(15,32,45,.28)}
+html.sky-mode,html.sky-mode body{height:100%;overflow:hidden;overscroll-behavior:none;background:#040a18}
+.sky-mode .site-header,.sky-mode .site-footer{display:none}
+.stars-page{position:fixed;inset:0;margin:0;padding:0;max-width:none}
+
+/* 從別頁按「星空」進來：舊畫面退後、暗下去，星空從中央一圈展開（瀏覽器支援跨頁轉場才看得到；星星亮起來的進場在 stars.js） */
+@media (prefers-reduced-motion:no-preference){
+  ::view-transition{background:#02060f}
+  ::view-transition-old(root){animation:sky-leave .6s cubic-bezier(.4,0,.2,1) both;mix-blend-mode:normal}
+  ::view-transition-new(root){animation:sky-open 1s cubic-bezier(.25,.8,.25,1) .12s both;mix-blend-mode:normal}
+}
+@keyframes sky-leave{to{opacity:0;transform:scale(.9);filter:brightness(.25)}}
+@keyframes sky-open{from{clip-path:circle(0% at 50% 50%)}to{clip-path:circle(75% at 50% 50%)}}
 
 /* 星空本體：不論白天夜晚都是夜空 */
-.sky{position:relative;height:min(74vh,740px);min-height:440px;border-radius:24px;overflow:hidden;background:#060d1d;box-shadow:var(--shadow,0 14px 44px rgba(15,32,45,.13));isolation:isolate}
+.sky{position:absolute;inset:0;overflow:hidden;background:#060d1d;color:#eef4ff;isolation:isolate}
 .sky canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;outline:none}
 .sky canvas:focus-visible{box-shadow:inset 0 0 0 3px #2ee67a}
-.sky-zoom{position:absolute;right:14px;top:14px;display:grid;gap:8px;z-index:2}
-.sky-zoom button{width:42px;height:42px;border:1px solid rgba(255,255,255,.18);border-radius:50%;background:rgba(10,20,38,.72);color:#eef4ff;font:inherit;font-size:1.15rem;font-weight:800;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
-.sky-zoom button:hover,.sky-zoom button:focus-visible{border-color:#2ee67a;outline:none}
-.sky-hint{position:absolute;left:18px;right:76px;bottom:14px;margin:0;color:rgba(226,236,255,.7);font-size:.82rem;pointer-events:none;z-index:2;transition:opacity .2s}
-.sky.has-card .sky-hint{opacity:0}
-.hint-narrow{display:none}
-.sky-tip{position:absolute;left:50%;top:16px;transform:translateX(-50%);max-width:calc(100% - 120px);margin:0;padding:8px 16px;border-radius:999px;background:rgba(10,20,38,.88);color:#eef4ff;font-size:.86rem;text-align:center;pointer-events:none;z-index:4}
-.sky-noscript{position:absolute;inset:auto 18px 18px;color:#eef4ff}
+.sky-top,.sky-zoom,.sky-foot{position:absolute;z-index:2}
+.sky-noscript{position:absolute;inset:auto 18px 80px;color:#eef4ff}
 
-.sky-card{position:absolute;top:14px;left:14px;width:min(340px,calc(100% - 84px));max-height:calc(100% - 28px);overflow:auto;padding:16px 18px 18px;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(8,16,32,.88);color:#eef4ff;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);z-index:3;overscroll-behavior:contain}
+/* 左上：Logo（回首頁）、名稱、找一顆星 */
+.sky-top{top:14px;left:14px;right:84px;display:flex;align-items:center;gap:12px;pointer-events:none}
+.sky-top>*{pointer-events:auto}
+.sky-home{flex:none;display:block;border-radius:50%;transition:transform .2s}
+.sky-home img{display:block;width:76px;height:57px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(255,226,160,.38)) drop-shadow(0 4px 12px rgba(0,0,0,.5))}
+.sky-home:hover,.sky-home:focus-visible{transform:scale(1.07);outline:none}
+.sky-home:focus-visible img{filter:drop-shadow(0 0 3px #2ee67a) drop-shadow(0 0 12px #2ee67a)}
+.sky-title{margin:0;color:#fff;font-size:1.3rem;font-weight:900;letter-spacing:.06em;white-space:nowrap;text-shadow:0 2px 12px rgba(0,0,0,.7)}
+.sky-title .ami{margin-left:.4em;font-size:.72em;font-weight:700;color:#8ff0b6}
+.sky-search{display:flex;gap:8px;flex:0 1 380px;min-width:0;margin-left:8px}
+.sky-search input{flex:1;min-width:0;min-height:44px;padding:8px 16px;border:1px solid rgba(255,255,255,.2);border-radius:999px;background:rgba(10,20,38,.72);color:#eef4ff;font:inherit;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.sky-search input::placeholder{color:rgba(226,236,255,.55)}
+.sky-search input:focus{outline:2px solid #2ee67a;outline-offset:1px}
+.sky-search button{min-height:44px;min-width:60px;padding:0 16px;border:0;border-radius:999px;background:#2ee67a;color:#06210f;font:inherit;font-weight:800;cursor:pointer}
+
+/* 右上：全螢幕、放大、縮小、回到全景 */
+.sky-zoom{top:14px;right:14px;display:grid;gap:8px}
+.sky-zoom button{display:grid;place-items:center;width:44px;height:44px;padding:0;border:1px solid rgba(255,255,255,.18);border-radius:50%;background:rgba(10,20,38,.72);color:#eef4ff;font:inherit;font-size:1.15rem;font-weight:800;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sky-zoom button[hidden]{display:none}
+.sky-zoom button:hover,.sky-zoom button:focus-visible{border-color:#2ee67a;outline:none}
+.sky-zoom svg{fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.sky-zoom .i-exit,.sky-zoom [aria-pressed=true] .i-full{display:none}
+.sky-zoom [aria-pressed=true] .i-exit{display:block}
+
+/* 下方：清單與依種類篩選 */
+.sky-foot{left:14px;right:14px;bottom:14px;display:flex;align-items:flex-end;gap:10px;pointer-events:none}
+.sky-foot>*{pointer-events:auto}
+.sky-legend{display:flex;flex-wrap:wrap;gap:6px;min-width:0}
+.sky-legend-chip{flex:none;display:inline-flex;align-items:center;gap:6px;min-height:38px;padding:4px 12px;border:1px solid rgba(255,255,255,.16);border-radius:999px;background:rgba(10,20,38,.72);color:#eef4ff;font:inherit;font-size:.86rem;font-weight:600;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sky-legend-chip span{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.sky-legend-chip small{color:rgba(226,236,255,.6);font-variant-numeric:tabular-nums}
+.sky-legend-chip:hover,.sky-legend-chip:focus-visible{border-color:var(--c);outline:none}
+.sky-legend-chip[aria-pressed=false]{opacity:.5}
+.sky-legend-chip[aria-pressed=false] span{background:transparent;box-shadow:inset 0 0 0 2px var(--c)}
+.sky-list{position:relative;flex:none}
+.sky-list summary{display:inline-flex;align-items:center;gap:7px;min-height:38px;padding:4px 15px;border:1px solid rgba(255,255,255,.22);border-radius:999px;background:rgba(10,20,38,.8);color:#eef4ff;font-size:.9rem;font-weight:800;list-style:none;cursor:pointer;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.sky-list summary::-webkit-details-marker{display:none}
+.sky-list summary::before{content:"";width:14px;height:10px;background:linear-gradient(currentColor 0 0) top/100% 2px no-repeat,linear-gradient(currentColor 0 0) center/100% 2px no-repeat,linear-gradient(currentColor 0 0) bottom/100% 2px no-repeat}
+.sky-list summary:focus-visible{outline:2px solid #2ee67a;outline-offset:2px}
+.sky-list[open] summary{border-color:#2ee67a;background:#2ee67a;color:#06210f}
+.sky-list-panel{position:absolute;left:0;bottom:calc(100% + 10px);width:min(780px,calc(100vw - 28px));max-height:calc(100vh - 160px);max-height:calc(100dvh - 160px);overflow:auto;padding:18px 20px 20px;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(8,16,32,.95);color:#eef4ff;box-shadow:0 18px 48px rgba(0,0,0,.45);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);overscroll-behavior:contain}
+.sky-list-panel>p{margin:0 0 6px;color:rgba(238,244,255,.88);font-size:.92rem;line-height:1.7}
+.sky-list-panel>.sky-count{color:rgba(226,236,255,.6);font-size:.84rem}
+.sky-list-groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:18px 24px;padding-top:12px}
+.sky-list h3{display:flex;align-items:center;gap:8px;margin:0 0 8px;color:#fff;font-size:1rem}
+.sky-list h3::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
+.sky-list h3 small{color:rgba(226,236,255,.55);font-weight:600}
+.sky-list ul{display:grid;gap:5px;margin:0;padding:0;list-style:none}
+.sky-list li{display:flex;justify-content:space-between;gap:10px;font-size:.92rem}
+.sky-list li a{color:#eef4ff;text-decoration-color:rgba(238,244,255,.3);text-underline-offset:3px}
+.sky-list li a:hover,.sky-list li a:focus-visible{text-decoration-color:#2ee67a}
+.sky-list li span{flex:none;color:rgba(226,236,255,.5);font-size:.78rem}
+
+/* 操作提示：一開始浮在下方，動手之後或幾秒後淡掉 */
+.sky-hint{position:absolute;left:50%;bottom:74px;transform:translateX(-50%);max-width:calc(100% - 40px);margin:0;padding:6px 14px;border-radius:999px;background:rgba(10,20,38,.7);color:rgba(226,236,255,.85);font-size:.82rem;text-align:center;white-space:nowrap;pointer-events:none;z-index:2;transition:opacity .4s;animation:sky-hint-out .6s 9s forwards}
+@keyframes sky-hint-out{to{opacity:0}}
+.sky.touched .sky-hint,.sky.has-card .sky-hint{opacity:0}
+.hint-narrow{display:none}
+.sky-tip{position:absolute;left:50%;top:86px;transform:translateX(-50%);max-width:calc(100% - 40px);margin:0;padding:8px 16px;border-radius:999px;background:rgba(10,20,38,.9);color:#eef4ff;font-size:.86rem;text-align:center;pointer-events:none;z-index:4}
+
+/* 星星介紹卡：桌機在左側，手機從下方升起 */
+.sky-card{position:absolute;top:86px;left:14px;width:min(340px,calc(100% - 84px));max-height:calc(100% - 156px);overflow:auto;padding:16px 18px 18px;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(8,16,32,.9);color:#eef4ff;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);z-index:3;overscroll-behavior:contain}
 .sky-card-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .sky-chip{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:800;color:var(--c)}
 .sky-chip::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c)}
@@ -44,27 +97,25 @@
 .sky-card-near b{flex:0 0 100%;font-size:.74rem;color:rgba(226,236,255,.55);font-weight:700}
 .sky-card-near button{min-height:32px;padding:4px 10px;border:1px solid color-mix(in srgb,var(--c) 45%,transparent);border-radius:999px;background:rgba(255,255,255,.06);color:#eef4ff;font:inherit;font-size:.84rem;cursor:pointer}
 .sky-card-near button:hover,.sky-card-near button:focus-visible{background:rgba(255,255,255,.14);border-color:var(--c);outline:none}
-.sky-count{margin:0;color:var(--muted);font-size:.86rem}
-
-/* 清單檢視 */
-.sky-list{margin-top:6px;padding:4px 20px;border:1px solid var(--line);border-radius:18px;background:var(--surface)}
-.sky-list summary{padding:14px 0;font-weight:800;cursor:pointer}
-.sky-list-groups{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:18px 24px;padding:4px 0 18px}
-.sky-list h3{display:flex;align-items:center;gap:8px;margin:0 0 8px;font-size:1rem}
-.sky-list h3::before{content:"";width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 0 1px rgba(15,32,45,.28)}
-.sky-list h3 small{color:var(--muted);font-weight:600}
-.sky-list ul{display:grid;gap:5px;margin:0;padding:0;list-style:none}
-.sky-list li{display:flex;justify-content:space-between;gap:10px;font-size:.92rem}
-.sky-list li a{color:var(--ink)}
-.sky-list li span{flex:none;color:var(--muted);font-size:.78rem}
 
 @media(max-width:620px){
-  .sky{height:70vh;min-height:400px;border-radius:18px}
-  .sky-card{top:auto;right:10px;bottom:10px;left:10px;width:auto;max-height:54%}
-  .sky-hint{top:12px;bottom:auto;left:14px;right:64px;font-size:.78rem}
+  .sky-top{top:10px;left:10px;right:10px;gap:8px}
+  .sky-home img{width:60px;height:45px}
+  .sky-title{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .sky-search{flex:1;margin:0}
+  .sky-search input{padding:8px 14px}
+  .sky-search button{min-width:52px;padding:0 12px}
+  .sky-zoom{top:66px;right:10px}
+  .sky-zoom button{width:42px;height:42px}
+  .sky-foot{left:10px;right:10px;bottom:10px;gap:8px}
+  .sky-legend{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent);mask-image:linear-gradient(to right,#000 calc(100% - 22px),transparent)}
+  .sky-legend::-webkit-scrollbar{display:none}
+  .sky-legend-chip{min-height:36px;padding:3px 10px;font-size:.82rem}
+  .sky-list summary{min-height:36px;padding:3px 12px}
+  .sky-list-panel{width:calc(100vw - 20px);max-height:calc(100vh - 140px);max-height:calc(100dvh - 140px);padding:16px}
+  .sky-hint{bottom:60px}
   .hint-wide{display:none}
-  .hint-narrow{display:inline;padding:5px 10px;border-radius:999px;background:rgba(10,20,38,.7)}
-  .sky.touched .sky-hint{opacity:0}
-  .sky-zoom{right:10px;top:10px}
-  .sky-legend-chip{min-height:34px;padding:3px 10px;font-size:.82rem}
+  .hint-narrow{display:inline}
+  .sky-tip{top:66px;max-width:calc(100% - 80px)}
+  .sky-card{top:auto;right:10px;bottom:10px;left:10px;width:auto;max-height:54%}
 }

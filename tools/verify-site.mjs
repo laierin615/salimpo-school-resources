@@ -276,10 +276,15 @@ for(const [domain,target,axis] of [['美術與創作','core:B','文藝美學'],[
   assert.ok(sky.links.some(l=>[l.source,l.target].sort().join('|')===[id,target].sort().join('|')),domain+' must link to '+target);
   assert.equal(sky.nodes.find(n=>n.id===id)?.axis,axis,domain+' must be in the '+axis+' constellation');
 }
+// stars.js 的 CONFIRMED 每一組都要真的連上（資料改了編號就會在這裡發現）
+const confirmed=starContext.window.SALIMPO_STARS.CONFIRMED,cultureId=new Map(sky.nodes.filter(n=>n.group==='culture').map(n=>[n.label,n.id]));
+for(const [id,title] of confirmed)assert.ok(cultureId.has(title)&&sky.links.some(l=>[l.source,l.target].sort().join('|')===[id,cultureId.get(title)].sort().join('|')),`Confirmed star link missing: ${id} - ${title}`);
 const starsHtml=fs.readFileSync(path.join(dist,'stars.html'),'utf8');
 assert.ok(starsHtml.includes(`lang="ami">fo'is</i>`)&&starsHtml.includes('id="sky-canvas"')&&starsHtml.includes('id="sky-list-groups"'),'Star map page incomplete');
+// 全螢幕星空把頁首收起來，左上角要有 Logo 回首頁
+assert.ok(starsHtml.includes('<html lang="zh-Hant" class="sky-mode">')&&starsHtml.includes('<a class="sky-home" href="index.html"'),'Full-screen star map needs the logo link home');
 for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('<a href="stars.html">星空</a></p>'),'Star map footer link missing on '+page);
 for(const entrance of ['<a class="pill" href="stars.html">星空</a>','class="sky-door sky-door-top" href="stars.html"'])assert.ok(home.includes(entrance),'Home missing star entrance '+entrance);
 const villageCss=fs.readFileSync(path.join(dist,'village.css'),'utf8');
 assert.ok(villageCss.includes('[data-theme=night] .sky-door-top{')&&villageCss.includes('[data-theme=night] .village-header .pill[href="stars.html"]{'),'Night star entrances missing in village.css');
-console.log(`Star map verified: ${sky.nodes.length} stars and ${sky.links.length} links from data.js, four constellations around the visit 1-2 cultural domains, every star linked to a page; entrance on every page and in the home night sky.`);
+console.log(`Star map verified: ${sky.nodes.length} stars and ${sky.links.length} links from data.js, four constellations around the visit 1-2 cultural domains, ${confirmed.length} teacher-confirmed links, every star linked to a page; full-screen sky with the logo home, entrance on every page and in the home night sky.`);

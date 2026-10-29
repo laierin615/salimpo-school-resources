@@ -24,12 +24,33 @@
     {name: '生命哲學', color: '#b8a6ff', at: [1, 1]},
     {name: '民族社會', color: '#ffc46e', at: [-1, 1]}
   ];
-  // 老師指定的對應（data.js 沒有寫，但確認過要連）：[星星, 三美或九向]
+  // 老師指定的對應（data.js 沒有寫，但確認過要連）：[星星, 三美、九向或四大文化領域]，依學校九向的內涵對應
   const CONFIRMED = [
     ['eventDomain:美術與創作', '藝術美'],
     ['eventDomain:歌謠與樂舞', '樂舞文化'],
     ['eventDomain:族語與表達', '山海文學'],
-    ['eventDomain:食農與四健', '飲食文化']
+    ['eventDomain:食農與四健', '飲食文化'],
+    ['res:EVENT-004', '技能技藝'],          // Mipacing 漁獵科展
+    ['res:EVENT-014', '自然環境'],          // 原住民族雲端科展
+    ['res:EVENT-005', '自然環境'],          // 科普閱讀力大賽
+    ['res:EVENT-013', '飲食文化'],          // 永續台灣創意教案
+    ['res:EVENT-022', '山海文學'],          // 國泰圓夢紀錄獎
+    ['res:EVENT-003', '永續發展'],          // Salimpo 山海成果展：跨好幾個領域，連到兩個文化領域
+    ['res:EVENT-003', '文藝美學'],
+    ['res:COOP-001', '山海文學'],           // 國泰圓夢
+    ['res:COOP-002', '樂舞文化'],           // 多元智能
+    ['res:COOP-003', '自然環境'],           // 原資中心子計畫
+    ['res:COOP-004', '傳統服飾'],           // 東博潛能覺醒艙
+    ['res:PLAN-005', '自然環境'],           // 山海生活與山海人文
+    ['res:PLAN-007', '飲食文化'],           // 山海專題：Kamamit 野番茄慢食
+    ['res:PLAN-010', '自然環境'],           // 山海專題：Mipacing 科學與智慧農業
+    ['journey:cross-stitch', '傳統服飾'],   // 十字繡
+    ['journey:farming', '自然環境'],        // 農耕
+    ['history:fishing-ritual', '傳統禮俗'], // 漁撈儀式
+    ['history:fishing', '技能技藝'],        // 漁獵
+    ['history:wedding', '傳統禮俗'],        // 婚禮
+    ['history:architecture', '技能技藝'],   // 建築
+    ['history:short-stories', '山海文學']   // 短文
   ];
 
   function buildGraph(d) {
@@ -84,8 +105,6 @@
       addResource(id, 'event', '成果', head);
       for (const topic of res.get(id)?.topics || []) link('res:' + id, 'eventDomain:' + topic);
     }
-    const cultureByTitle = new Map((c.cores || []).flatMap(core => [[core.title, 'core:' + core.code], ...(core.directions || []).map(dir => [dir.title, 'dir:' + dir.code])]));
-    for (const [id, title] of CONFIRMED) link(id, cultureByTitle.get(title));
     for (const id of d.partnershipIds || []) addResource(id, 'coop', '合作計畫', head);
     const mentioned = [...(d.journeys || []).flatMap(j => j.resources || []), ...(d.partnershipIds || []).flatMap(id => res.get(id)?.related || [])];
     // 課程單元用冒號後的短名；短名和別的星同名（例如教案主題「服飾與工藝」）就用全名
@@ -110,6 +129,10 @@
       for (const tag of t.tags || []) if (dirByTitle.has(tag)) link('history:' + t.id, dirByTitle.get(tag));
     }
     stories.forEach((a, i) => stories.slice(i + 1).forEach(b => { if ((a.tags || []).some(tag => (b.tags || []).includes(tag))) link('history:' + a.id, 'history:' + b.id); }));
+
+    // 老師指定的對應最後才連：成果、合作計畫、步驟卡與文史這時都已經是星了
+    const cultureByTitle = new Map(nodes.filter(n => n.group === 'culture').map(n => [n.label, n.id]));
+    for (const [id, title] of CONFIRMED) link(id, cultureByTitle.get(title));
 
     const linked = new Set(links.flatMap(l => [l.source, l.target]));
     for (const n of [...nodes]) if (!linked.has(n.id) && HUBS[n.group]) {
@@ -143,7 +166,7 @@
     return {nodes, links};
   }
 
-  window.SALIMPO_STARS = {buildGraph, GROUPS, AXES};
+  window.SALIMPO_STARS = {buildGraph, GROUPS, AXES, CONFIRMED};
   const sky = typeof document !== 'undefined' && document.getElementById('sky');
   if (!sky || !window.SCHOOL_DATA) return;
 
@@ -224,7 +247,8 @@
   const canvas = document.getElementById('sky-canvas'), ctx = canvas.getContext('2d');
   const card = document.getElementById('sky-card'), tip = document.getElementById('sky-tip'), status = document.getElementById('sky-status');
   const legend = document.getElementById('sky-legend'), form = document.getElementById('sky-search'), input = document.getElementById('sky-q');
-  let W = 0, H = 0, dpr = 1, backdrop = null, fitted = false;
+  const list = sky.querySelector('.sky-list'), bars = ['.sky-top', '.sky-foot', '.sky-zoom'].map(s => sky.querySelector(s));
+  let W = 0, H = 0, dpr = 1, backdrop = null, fitted = false, intro = null;
   const cam = {x: 0, y: 0, k: 1}, MIN = .1, MAX = 3.2;
   const toScreen = (x, y) => [(x - cam.x) * cam.k + W / 2, (y - cam.y) * cam.k + H / 2];
   const toWorld = (x, y) => [(x - W / 2) / cam.k + cam.x, (y - H / 2) / cam.k + cam.y];
@@ -289,16 +313,20 @@
         else { g.addColorStop(0, `rgba(255,255,255,${.8 * (1 - p)})`); g.addColorStop(1, 'rgba(255,255,255,0)'); ctx.globalAlpha = 1; ctx.strokeStyle = g; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + 90, y - 50); ctx.stroke(); }
       }
     }
+    // 進場：先是一片黑，夜空慢慢亮開；中央的星先亮，再一圈一圈往外，連線和名字最後才出現
+    const ip = intro ? Math.min(1, (time - intro.t0) / intro.ms) : 1;
+    const fade = (from, span) => clamp((ip - from) / span, 0, 1), shine = n => ip === 1 ? 1 : fade(n.delay * .55, .35);
+    if (ip < .4) { ctx.globalAlpha = 1 - ip / .4; ctx.fillStyle = '#02060f'; ctx.fillRect(0, 0, W, H); }
 
     // 四個星座的星雲
     for (const a of axisNode.values()) {
       if (!visible(a)) continue;
       const [x, y] = toScreen(a.x, a.y), R = a.reach * cam.k, g = ctx.createRadialGradient(x, y, 0, x, y, R);
       g.addColorStop(0, hexA(a.color, .26)); g.addColorStop(.55, hexA(a.color, .1)); g.addColorStop(1, hexA(a.color, 0));
-      ctx.globalAlpha = 1; ctx.fillStyle = g; ctx.fillRect(x - R, y - R, R * 2, R * 2);
+      ctx.globalAlpha = fade(0, .6); ctx.fillStyle = g; ctx.fillRect(x - R, y - R, R * 2, R * 2);
     }
     const focus = hovered || selected, lit = focus && new Set([focus.id, ...near.get(focus.id)]);
-    ctx.globalAlpha = 1; ctx.lineWidth = 1;
+    ctx.globalAlpha = fade(.45, .4); ctx.lineWidth = 1;
     ctx.strokeStyle = lit ? 'rgba(160,195,255,.07)' : 'rgba(160,195,255,.18)';
     ctx.beginPath();
     for (const l of links) {
@@ -316,10 +344,11 @@
     }
 
     for (const n of nodes) {
-      if (!visible(n)) continue;
-      const [x, y] = toScreen(n.x, n.y), r = starR(n), color = group[n.group].color;
+      const s = visible(n) ? shine(n) : 0;
+      if (!s) continue;
+      const [x, y] = toScreen(n.x, n.y), r = starR(n) * (.35 + .65 * s), color = group[n.group].color;
       if (x < -60 || y < -60 || x > W + 60 || y > H + 60) continue;
-      ctx.globalAlpha = lit && !lit.has(n.id) ? .16 : 1;
+      ctx.globalAlpha = (lit && !lit.has(n.id) ? .16 : 1) * s;
       ctx.drawImage(glow[n.group], x - r * 3, y - r * 3, r * 6, r * 6);
       if (NAMED.has(n.kind)) {
         ctx.strokeStyle = hexA(color, .45); ctx.lineWidth = 1;
@@ -345,7 +374,7 @@
     wanted.sort((a, b) => b[0] - a[0] || b[1].r - a[1].r);
     // 軸心星的光圈先佔位，其他名字不蓋在上面
     const boxes = nodes.filter(n => n.isAxis && visible(n)).map(n => { const [x, y] = toScreen(n.x, n.y), R = starR(n) * 1.45; return [x - R, y - R, x + R, y + R]; });
-    ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round'; ctx.globalAlpha = 1;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'top'; ctx.lineJoin = 'round'; ctx.globalAlpha = fade(.7, .3);
     const small = cam.k < .5;  // 拉遠看全景時字小一號
     for (const [p, n] of wanted) {
       const [x, y0] = toScreen(n.x, n.y), y = y0 + starR(n) * (n.isAxis ? 1.6 : 1.3) + 3, font = n.isAxis ? (small ? AXIS_SMALL : AXIS_FONT) : NAMED.has(n.kind) || p >= 4.5 ? (small ? FONT : BIG) : (small ? TINY : FONT), w = measure(n.label, font) + 6;
@@ -361,15 +390,16 @@
   let raf = 0, lastDraw = 0, tween = null, inView = true;
   function frame(time) {
     raf = 0;
-    const busy = alpha > .003 || dragging || tween;
+    const busy = alpha > .003 || dragging || tween || intro;
     if (busy || time - lastDraw > 45) {
       if (alpha > .003 || dragging) { tick(); alpha = dragging ? Math.max(alpha, .25) : alpha * .96; }
       if (tween) {
-        const p = Math.min(1, (time - tween.t0) / tween.ms), e = p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
+        const p = Math.min(1, (time - tween.t0) / tween.ms), e = tween.out ? 1 - (1 - p) ** 3 : p < .5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2;
         for (const key of ['x', 'y', 'k']) cam[key] = tween.from[key] + (tween.to[key] - tween.from[key]) * e;
         if (p === 1) tween = null;
       }
       draw(time); lastDraw = time;
+      if (intro && time - intro.t0 >= intro.ms) intro = null;
     }
     if (busy || (motion && inView && !document.hidden)) raf = requestAnimationFrame(frame);
   }
@@ -379,14 +409,19 @@
     else tween = {from: {...cam}, to: {x, y, k}, t0: performance.now(), ms: 520};
     wake();
   }
+  // 浮在星空上的列與按鈕（左上的 Logo 與搜尋、下方的清單與篩選、右上的縮放）：排鏡頭時避開，星星不要躲在下面
+  function insets() {
+    const box = sky.getBoundingClientRect(), [top, foot, zoom] = bars.map(el => el.getBoundingClientRect());
+    return {t: top.bottom - box.top, b: box.bottom - foot.top, r: W <= 620 ? 0 : box.right - zoom.left};
+  }
   function fit(animate) {
     const shown = nodes.filter(visible);
     if (!shown.length) return;
     const xs = shown.map(n => n.x), ys = shown.map(n => n.y), x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Math.max(...ys);
-    // 留邊用螢幕像素算：左右要放得下名字、右邊還有縮放按鈕，名字寫在星星下方所以下緣多留一點；
-    // 手機上縮放按鈕和提示都在上方，左右少留一點、整片往下移
-    const narrow = W <= 620, k = clamp(Math.min((W - (narrow ? 76 : 150)) / (x1 - x0 || 1), (H - (narrow ? 150 : 100)) / (y1 - y0 || 1)), MIN, 1.6);
-    go((x0 + x1) / 2 + (narrow ? 6 : 22) / k, (y0 + y1) / 2 - (narrow ? 22 : -14) / k, k, animate);
+    // 留邊用螢幕像素算：名字寫在星星左右與下方，所以兩側和下緣多留一點；整片放在避開按鈕後的空間正中央
+    const {t, b, r} = insets(), side = W <= 620 ? 34 : 64, left = side, right = W - r - side, top = t + 24, bottom = H - b - 46;
+    const k = clamp(Math.min((right - left) / (x1 - x0 || 1), (bottom - top) / (y1 - y0 || 1)), MIN, 1.6);
+    go((x0 + x1) / 2 - ((left + right) / 2 - W / 2) / k, (y0 + y1) / 2 - ((top + bottom) / 2 - H / 2) / k, k, animate);
   }
   function zoomAt(sx, sy, f) {
     const [wx, wy] = toWorld(sx, sy);
@@ -407,6 +442,14 @@
       fit(false);
       const start = byId.get(decodeURIComponent(location.hash.slice(1)));
       if (start) select(start, true);
+      // 進場：鏡頭從遠處拉近到全景（或網址指定的那顆星），星星從中央往外亮起來
+      if (motion) {
+        const to = tween ? tween.to : {...cam}, far = Math.max(...nodes.map(n => Math.hypot(n.x, n.y))) || 1;
+        for (const n of nodes) n.delay = Math.hypot(n.x, n.y) / far;
+        cam.k = to.k * .4;
+        tween = {from: {...cam}, to, t0: performance.now(), ms: 1700, out: true};
+        intro = {t0: tween.t0, ms: 1700};
+      }
     }
     draw(performance.now());
   }
@@ -454,6 +497,7 @@
   canvas.addEventListener('pointerdown', e => {
     canvas.setPointerCapture(e.pointerId);
     sky.classList.add('touched');
+    list.open = false;
     pointers.set(e.pointerId, at(e));
     if (pointers.size === 2) {
       const [[x1, y1], [x2, y2]] = [...pointers.values()];
@@ -519,10 +563,22 @@
     else return;
     e.preventDefault();
   });
+  // 全螢幕連網址列都蓋掉：瀏覽器規定要使用者自己按才能進入，不支援的手機（例如 iPhone）就不顯示這顆按鈕
+  const fullBtn = sky.querySelector('[data-zoom="full"]'), root = document.documentElement;
+  const fullNow = () => document.fullscreenElement || document.webkitFullscreenElement;
+  if (document.fullscreenEnabled || document.webkitFullscreenEnabled) {
+    fullBtn.hidden = false;
+    const sync = () => { const on = !!fullNow(); fullBtn.setAttribute('aria-pressed', String(on)); fullBtn.setAttribute('aria-label', on ? '離開全螢幕' : '全螢幕'); };
+    document.addEventListener('fullscreenchange', sync); document.addEventListener('webkitfullscreenchange', sync);
+  }
   sky.querySelector('.sky-zoom').addEventListener('click', e => {
     const zoom = e.target.closest('[data-zoom]')?.dataset.zoom;
-    if (zoom === 'fit') fit(true); else if (zoom) zoomAt(W / 2, H / 2, zoom === 'in' ? 1.3 : 1 / 1.3);
+    if (zoom === 'full') Promise.resolve(fullNow() ? (document.exitFullscreen || document.webkitExitFullscreen).call(document) : (root.requestFullscreen || root.webkitRequestFullscreen).call(root)).catch(() => {});
+    else if (zoom === 'fit') fit(true); else if (zoom) zoomAt(W / 2, H / 2, zoom === 'in' ? 1.3 : 1 / 1.3);
   });
+  // 清單：打開時收起介紹卡；按 Esc 或點星空就關上
+  list.addEventListener('toggle', () => { if (list.open && selected) select(null); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && list.open) { list.open = false; list.querySelector('summary').focus(); } });
 
   // 依種類顯示或隱藏
   legend.innerHTML = GROUPS.filter(g => nodes.some(n => n.group === g.id)).map(g => `<button type="button" class="sky-legend-chip" data-group="${g.id}" aria-pressed="true" style="--c:${g.color}"><span aria-hidden="true"></span>${g.name}<small>${nodes.filter(n => n.group === g.id).length}</small></button>`).join('');
@@ -545,7 +601,6 @@
     const n = nodes.find(n => n.find === q) || nodes.find(n => n.label === q) || nodes.find(n => n.find.includes(q) || n.title.includes(q));
     if (!n) { status.textContent = `找不到「${q}」，換個詞試試。`; tip.textContent = status.textContent; tip.hidden = false; clearTimeout(tipTimer); tipTimer = setTimeout(() => { tip.hidden = true; }, 2200); return; }
     if (!visible(n)) showGroup(n.group, true);
-    sky.scrollIntoView({block: 'nearest', behavior: motion ? 'smooth' : 'auto'});
     select(n, true);
   });
   input.addEventListener('change', () => { if (nodes.some(n => n.find === input.value)) form.requestSubmit(); });
