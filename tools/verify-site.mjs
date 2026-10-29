@@ -45,7 +45,7 @@ for(const asset of ['village.js','village-ui.js','village.css','village-theme.cs
 for(const a of Object.values(data.assets)){assert.ok(fs.existsSync(path.join(dist,a.src)));assert.ok(fs.existsSync(path.join(dist,a.thumb)));}
 let pageImages=0;
 for(const id of Object.keys(data.books)){const b=JSON.parse(fs.readFileSync(path.join(dist,'books',id+'.json'),'utf8'));if(b.format==='pages'){assert.equal(b.pages.length,b.count);for(const p of b.pages)assert.ok(fs.existsSync(path.join(dist,p.src)));pageImages+=b.count;}else{const check=blocks=>{for(const b of blocks){for(const img of b.images||[])assert.ok(data.assets[img]);if(b.kind==='table')for(const row of b.rows)for(const cell of row)check(cell);}};for(const c of b.chapters)check(c.blocks);}}
-assert.equal(pageImages,1269);
+assert.equal(pageImages,1298);
 assert.equal(data.lessons.length,31);
 assert.equal(new Set(data.lessons.map(l=>l.id)).size,31);
 for(const l of data.lessons){const b=JSON.parse(fs.readFileSync(path.join(dist,'books',l.book+'.json'),'utf8'));assert.ok(l.start>=1&&l.end<=b.count&&l.start<=l.end);assert.ok(l.band&&l.topic&&l.title);if(l.cover)assert.ok(data.assets[l.cover]);}
@@ -81,7 +81,7 @@ assert.equal(data.historyMuseum.topics.length,15);
 assert.equal(history.chapters.length,7);
 for(const t of data.historyMuseum.topics){if(t.hasContent){assert.ok(history.chapters[t.chapter-1]);assert.ok(ids.has(t.resourceId));for(const s of t.sections)assert.ok(s.paragraph<history.chapters[t.chapter-1].blocks.length);}}
 assert.equal(data.historyMuseum.topics.find(t=>t.id==='short-stories').sections.length,8);
-assert.equal(Object.keys(data.books).length,24);
+assert.equal(Object.keys(data.books).length,25);
 assert.equal(Object.keys(data.assets).length,529);
 console.log('Museum index verified: 15 topics, 7 full articles; withdrawn plan absent.');
 
@@ -215,7 +215,7 @@ for(const shelf of shelves){
     for(const pdf of item.pdfs||[]){shelfPdfs++;const file=path.join(dist,pdf.href);assert.ok(pdf.href.startsWith('media/library/')&&fs.readFileSync(file).subarray(0,5).toString()==='%PDF-','PDF '+pdf.href);assert.ok(pdf.label&&pdf.name.endsWith('.pdf')&&/^\d+\.\d MB$/.test(pdf.size),'PDF fields '+pdf.href);}
   }
 }
-assert.equal(shelfBooks,7);assert.equal(shelfPdfs,8);
+assert.equal(shelfBooks,8);assert.equal(shelfPdfs,9);
 for(const file of fs.readdirSync(path.join(dist,'media/library')))assert.ok(shelves.some(s=>(s.items||[]).some(i=>(i.pdfs||[]).some(p=>p.href==='media/library/'+file))),'Unlisted file in media/library: '+file);
 const readerJs=fs.readFileSync(path.join(dist,'reader.js'),'utf8');assert.ok(readerJs.includes("['library.html','教材書屋']")&&readerJs.includes("'reception.html','會客室'"),'Reader breadcrumbs for the library and the reception');
 assert.ok(fs.readFileSync(path.join(dist,'museum.js'),'utf8').includes('<a href="library.html">教材書屋</a>'),'Museum breadcrumb to the library');
