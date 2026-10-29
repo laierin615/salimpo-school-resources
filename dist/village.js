@@ -320,7 +320,7 @@ function buildVillage(){
   // 海怪：照壁畫做——一大團往下垂的綠色長毛；頭頂兩側各橫伸一支暗紅色、兩頭圓圓的角，微微往上翹，中段往上分出一小叉（右邊那支比較長）；
   // 小小的黑眼睛往左看、兩團粉紅臉頰、一張和臉一樣寬的橘色月牙大嘴，嘴上兩排白點；兩手抱著一條藍色大魚，魚頭在左上、尾巴在右下
   // 上半身露出海面、一直面向鏡頭，身子微微往左轉、往後仰，從上面看下來就像壁畫；點了打開傳說故事卡，潛下去再從另一個地方冒出來
-  const WATER_Y=-1.32,monster=new THREE.Group(),beast=new THREE.Group(),body=new THREE.Group(),ball=new THREE.SphereGeometry(1,12,8),fur=0x55893a,cy=.36;monster.userData.monster=true;monster.scale.setScalar(1.15);beast.rotation.x=-.3;body.rotation.y=-.5;beast.add(body);monster.add(beast);scene.add(monster);
+  const WATER_Y=-1.32,monster=new THREE.Group(),beast=new THREE.Group(),body=new THREE.Group(),ball=new THREE.SphereGeometry(1,12,8),fur=0x55893a,cy=.36;monster.userData.monster=true;monster.scale.setScalar(1.05);beast.rotation.x=-.3;body.rotation.y=-.5;beast.add(body);monster.add(beast);scene.add(monster);
   // 身體：圓頂、越往下越寬，右半邊比較蓬；表面一道道往下的毛紋，臉那一塊平順，眼睛和嘴巴才貼得上去
   const bodyGeo=new THREE.IcosahedronGeometry(1,5),bodyPos=bodyGeo.attributes.position,bulge=(x,y)=>(1+.05*(1-y))*(1+.1*Math.max(0,x))*(y>0&&y<1?Math.cbrt(1-y**3)/Math.sqrt(1-y*y):1);
   for(let i=0;i<bodyPos.count;i++){const x=bodyPos.getX(i),y=bodyPos.getY(i),z=bodyPos.getZ(i),around=Math.atan2(x,z),face=THREE.MathUtils.clamp((z-.45)/.25,0,1)*THREE.MathUtils.clamp((y+.1)/.3,0,1),r=1+(Math.sin(around*12+y*2)*.03+Math.sin(around*5-y*6)*.02)*(1-face),w=bulge(x,y)*r;bodyPos.setXYZ(i,x*w*.64,y*r*.8,z*w*.52);}
@@ -472,8 +472,8 @@ function buildVillage(){
   window.addEventListener('salimpo:place',event=>{selected=event.detail;selectionRing.visible=selected>=0;if(selected>=0){selectionRing.scale.setScalar(spots[selected]===14?.72:spots[selected]===11?1.3:1);selectionRing.position.set(positions[spots[selected]][0],.135,positions[spots[selected]][1]);targetPan.set(0,0,0);}aimFocus();});
   window.addEventListener('salimpo:singsi',event=>{talkingTo=event.detail;if(talkingTo>=0){const s=SINGSI[talkingTo];selectionRing.scale.setScalar(.36);selectionRing.position.set(s.at[0],(s.y||.13)+.01,s.at[1]);selectionRing.visible=true;targetPan.set(0,0,0);}else if(selected<0)selectionRing.visible=false;aimFocus();});
   function project(){const aspect=width/height;/* 左右兩座小外島在任何寬度都要完整入鏡 */const half=width<600?13/aspect:Math.max(9.65,13/aspect);camera.left=-half*aspect/zoom;camera.right=half*aspect/zoom;camera.top=half/zoom;camera.bottom=-half/zoom;camera.updateProjectionMatrix();}
-  /* 手機畫面小，海怪放大一點才看得到、點得到 */
-  function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);project();monster.scale.setScalar(width<600?1.4:1.15);}
+  /* 海怪比女人島小一點（寬度大約是女人島的三分之二）；手機畫面小，再放大一點才點得到 */
+  function resize(){width=canvas.clientWidth;height=canvas.clientHeight;renderer.setSize(width,height,false);project();monster.scale.setScalar(width<600?1.1:1.05);}
   new ResizeObserver(resize).observe(canvas);resize();
   // 站名平常收起來：滑過、拖曳、點選或縮放聚落時才浮現，停下來一會兒再淡出
   const labelRoot=document.getElementById('village-labels'),hint=document.getElementById('village-hint'),zoomIn=document.querySelector('[data-zoom=in]'),zoomOut=document.querySelector('[data-zoom=out]');
