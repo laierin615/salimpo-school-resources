@@ -274,6 +274,17 @@ const roomJs=fs.readFileSync(path.join(dist,'room.js'),'utf8');assert.ok(roomJs.
 assert.ok(fs.readFileSync(path.join(dist,'reception.html'),'utf8').includes('<h1>會客室</h1>'),'Reception heading');
 assert.ok(appSource.includes("if(page==='learning')location.replace(")&&appSource.includes("'resource.html?id=PLAN-002'+location.hash"),'Old learning page redirect');
 for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js)$/.test(f)))assert.ok(!fs.readFileSync(path.join(dist,file),'utf8').includes('learning.html'),'Old learning page linked from '+file);
+// 族語詞庫（書屋 › 族語教材）：老師自編詞彙裡查證過的詞，8 個主題，每個詞有族語、中文和查證來源；詞庫來源的詞要在 tatokem 詞庫裡；不放查不到或意思不同的詞
+{const ctx={window:{}};vm.runInNewContext(fs.readFileSync(path.join(dist,'words-data.js'),'utf8'),ctx);const bank=ctx.window.SALIMPO_WORDS;
+  assert.deepEqual(Array.from(bank.topics),['稱讚','校園生活','課室用語','動植物','飲食','身體','情緒','家庭'],'Word bank topics');assert.ok(bank.words.length>=100,'Word bank size');
+  assert.equal(new Set(bank.words.map(w=>w.ami.toLowerCase())).size,bank.words.length,'Word bank entries unique');
+  for(const w of bank.words){assert.ok(w.ami&&w.zh&&w.topics.length&&w.topics.every(t=>bank.topics.includes(t))&&['lex','moe'].includes(w.src),'Word bank entry '+w.ami);}
+  for(const t of bank.topics)assert.ok(bank.words.some(w=>w.topics.includes(t)),'Empty word bank topic '+t);
+  for(const banned of ["kaeso'",'micedem','maedeng',"tana'",'holangky',"'amamoleng",'epah','toko','tatireng',"talalosa'",'limelaay','ciolahay','cinavu',"'atakiway","'icep"])assert.ok(!bank.words.some(w=>w.ami.toLowerCase()===banned),'Unverified or held-back word in the bank: '+banned);
+  if(fs.existsSync(lexiconFile)){const verified=new Set(Object.values(JSON.parse(fs.readFileSync(lexiconFile,'utf8')).categories).flatMap(c=>Object.keys(c)).map(w=>w.toLowerCase()));for(const w of bank.words.filter(w=>w.src==='lex'))assert.ok(verified.has(w.ami.toLowerCase()),'Word bank word not in the lexicon: '+w.ami);}
+  const page=fs.readFileSync(path.join(dist,'words.html'),'utf8'),lib=fs.readFileSync(path.join(dist,'library.js'),'utf8');
+  assert.ok(page.includes('<title>族語詞庫｜Salimpo 學校資料館</title>')&&page.includes('words-data.js?v=')&&page.includes('words.js?v=')&&fs.readFileSync(path.join(dist,'library.html'),'utf8').includes('words-data.js?v=')&&lib.includes('href="words.html"')&&lib.includes("s.id==='language'?wordBank()"),'Word bank page and its library entrance');
+  console.log(`Word bank verified: ${bank.words.length} checked words in ${bank.topics.length} topics, entrance on the language shelf.`);}
 console.log(`Library verified: ${shelves.length} shelves, ${shelfBooks} books readable in the reading room, ${shelfPdfs} PDF downloads; reception doors and old learning links redirected.`);
 
 // 村辦公室：網站上只能有加密後的連結；原文與密碼留在本機 .runtime，不會進到 dist
