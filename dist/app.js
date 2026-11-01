@@ -46,7 +46,7 @@
   // 主選單只放聚落的站名；沒有自己選單的頁面，亮起它所在的那一站
   const navHome = {journeys:'lessons',partnerships:'stories',reviews:'reception',visits:'reception',museum:'library',learning:'lessons'};
   const markNav = href => nav?.querySelectorAll('a').forEach(a => { if (a.getAttribute('href') === href) a.setAttribute('aria-current','page'); });
-  if (pageTitles[page]) document.title = `${pageTitles[page]}｜Salimpo 學校資料館`;
+  if (pageTitles[page]) document.title = `${pageTitles[page]}｜Salimpo 山海學習聚落`;
   markNav(`${navHome[page]||page}.html`);
   const sectionNames = {'課程與教材':'山海探索站','活動與成果':'成果廣場','認識學校':'學校與部落','原民會訪視':'原民會訪視','評鑑與訪視':'實驗教育評鑑'};
   // 每一站的族語詞（取自已驗證詞庫，和首頁站牌相同），掛在該站首頁大標題的上方
@@ -109,7 +109,7 @@
   }
   function showResource(){
     const r=resourceById(params.get('id'));
-    if(!r){main.innerHTML=heading('這段故事暫時找不到','回到資料服務站，換個入口再看看。')+`<a class="button primary" href="resources.html">查找資料</a>`;return;}
+    if(!r){main.innerHTML=heading('這段故事暫時找不到','回到資料服務站，換個關鍵字或入口再看看。')+`<a class="button primary" href="resources.html">查找資料</a>`;return;}
     document.title=`${r.title}｜Salimpo 山海故事`;
     if(r.historyTopic&&window.showHistoryArticle){markNav('library.html');window.showHistoryArticle(r.historyTopic);return;}
     if(r.curriculum===115&&window.renderCurriculum115){markNav('lessons.html');main.innerHTML=heading(r.title,r.summary,{title:'山海探索站',url:'lessons.html'})+window.renderCurriculum115();return;}

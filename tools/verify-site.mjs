@@ -153,11 +153,15 @@ for(const [id,code] of Object.entries(lessonDirections)){assert.ok(lessonIds.has
 for(const name of ['reception','visits','reviews']){const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');assert.ok(html.includes('room.js?v=')&&html.includes('room.css?v='),'Room assets missing on '+name);}
 console.log(`Room verified: ${visitItems.length} visit items and ${data.indicators.length} indicators, ${evidenceCount} evidence links resolve; 31 lessons mapped to directions.`);
 
-// 主選單用聚落站名；聚落 13 站中 12 站有族語詞（村辦公室的詞待族語老師建議），若本機有 tatokem 詞庫，就核對全部（連同各頁大標題上的詞與星空的 fo'is）是已驗證的詞
-const navLine='<a href="about.html">學校與部落</a><a href="lessons.html">山海探索站</a><a href="library.html">教材書屋</a><a href="stories.html">成果廣場</a><a href="resources.html">資料服務站</a><a href="reception.html">會客室</a>';
+// 主選單用聚落站名加一行功能提示，資料服務站與會客室是服務入口；聚落 13 站中 12 站有族語詞（村辦公室的詞待族語老師建議），若本機有 tatokem 詞庫，就核對全部（連同各頁大標題上的詞與星空的 fo'is）是已驗證的詞
+const navLine='<a href="about.html">學校與部落<small>認識我們</small></a><a href="lessons.html">山海探索站<small>課程與教案</small></a><a href="library.html">教材書屋<small>繪本・文史・族語</small></a><a href="stories.html">成果廣場<small>展演・比賽・夥伴</small></a><a class="nav-service" href="resources.html">資料服務站<small>找資料</small></a><a class="nav-service" href="reception.html">會客室<small>訪視與評鑑</small></a>';
 const subpages=pageNames.filter(name=>name!=='index');
 for(const name of subpages)assert.ok(fs.readFileSync(path.join(dist,name+'.html'),'utf8').includes(navLine),'Main nav on '+name);
 for(const name of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,name+'.html'),'utf8').includes('lang="ami">Aray!</i>'),'Footer word on '+name);
+// 站名統一為「山海學習聚落」：每頁有自己的標題、描述與社群預覽（og）標籤，頁尾有服務入口與老師專區
+for(const name of ['index',...subpages]){const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');assert.ok(!html.replace(/文史資料館/g,'').includes('學校資料館'),'Old site name on '+name);assert.ok(/<title>[^<]+｜[^<]*山海學習聚落<\/title>/.test(html),'Page title on '+name);for(const tag of ['og:title','og:description','og:url','og:image'])assert.ok(html.includes(`property="${tag}" content="`),`${tag} on ${name}`);assert.ok(html.includes('class="footer-staff">老師專區</span><a href="training.html">老師的工寮</a>'),'Footer teacher links on '+name);}
+assert.ok(fs.existsSync(path.join(dist,'media/brand/salimpo-og.png')),'Social preview image');
+assert.ok(/<small class="directory-line">認識我們<\/small><h3>學校與部落<\/h3>/.test(home)&&home.includes('<small class="directory-line">服務入口</small>')&&home.includes('<small class="directory-line">老師專區</small>')&&home.includes('class="directory-row directory-plain" href="journeys.html"'),'Home directory grouped by the four lines');
 const amiWords=[...home.matchAll(/data-ami="([^"]+)" data-ami-zh="([^"]+)"/g)].map(m=>m[1].replace(/&#x27;/g,"'"));
 assert.equal(amiWords.length,12);
 for(const control of ['data-zoom="in"','data-zoom="out"','data-zoom="reset"','id="village-hint"','id="place-ami"',"lang=\"ami\">Nga'ay ho!</i>"])assert.ok(home.includes(control),'Home missing '+control);
@@ -288,7 +292,7 @@ for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js)$/.test(f)))assert.
   for(const banned of ["kaeso'",'micedem','maedeng',"tana'",'holangky',"'amamoleng",'epah','toko','tatireng',"talalosa'",'limelaay','ciolahay','cinavu',"'atakiway","'icep"])assert.ok(!bank.words.some(w=>w.ami.toLowerCase()===banned),'Unverified or held-back word in the bank: '+banned);
   if(fs.existsSync(lexiconFile)){const verified=new Set(Object.values(JSON.parse(fs.readFileSync(lexiconFile,'utf8')).categories).flatMap(c=>Object.keys(c)).map(w=>w.toLowerCase()));for(const w of bank.words.filter(w=>w.src==='lex'))assert.ok(verified.has(w.ami.toLowerCase()),'Word bank word not in the lexicon: '+w.ami);}
   const page=fs.readFileSync(path.join(dist,'words.html'),'utf8'),lib=fs.readFileSync(path.join(dist,'library.js'),'utf8');
-  assert.ok(page.includes('<title>族語詞庫｜Salimpo 學校資料館</title>')&&page.includes('words-data.js?v=')&&page.includes('words.js?v=')&&fs.readFileSync(path.join(dist,'library.html'),'utf8').includes('words-data.js?v=')&&lib.includes('href="words.html"')&&lib.includes("s.id==='language'?wordBank()"),'Word bank page and its library entrance');
+  assert.ok(page.includes('<title>族語詞庫｜Salimpo 山海學習聚落</title>')&&page.includes('words-data.js?v=')&&page.includes('words.js?v=')&&fs.readFileSync(path.join(dist,'library.html'),'utf8').includes('words-data.js?v=')&&lib.includes('href="words.html"')&&lib.includes("s.id==='language'?wordBank()"),'Word bank page and its library entrance');
   console.log(`Word bank verified: ${bank.words.length} checked words in ${bank.topics.length} topics, entrance on the language shelf.`);}
 console.log(`Library verified: ${shelves.length} shelves, ${shelfBooks} books readable in the reading room, ${shelfPdfs} PDF downloads; reception doors and old learning links redirected.`);
 

@@ -5,7 +5,7 @@ const world=document.getElementById('village-world');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3],[3.8,2.75],[-5.9,3.4]];
 // 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）改成老師的工寮 talo'an；9（原文史資料館）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去；位置 14 是左岸望向女人島的古謠樹
-const spots=[0,1,2,4,5,6,14,7,8,11,12,3,13],placeOf=spot=>spots.indexOf(spot);
+const spots=[0,1,5,4,2,11,12,6,14,8,7,3,13],placeOf=spot=>spots.indexOf(spot);
 let renderer;
 try{
   renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
