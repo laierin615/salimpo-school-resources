@@ -22,7 +22,7 @@ for(const resource of data.resources){
   for(const id of resource.related)assert.ok(ids.has(id),'Unknown related resource '+id);
 }
 for(const indicator of data.indicators){for(const id of indicator.related)assert.ok(ids.has(id));}
-const pageNames=['index','about','learning','stories','reviews','resources','resource','reader','lessons','library','partnerships','journeys','museum','visits','reception','office','stars','training'];
+const pageNames=['index','about','learning','stories','reviews','resources','resource','reader','lessons','library','partnerships','journeys','museum','visits','reception','office','stars','training','brave'];
 for(const name of pageNames){
   const html=fs.readFileSync(path.join(dist,name+'.html'),'utf8');
   assert.ok(html.includes('lang="zh-Hant"'));
@@ -38,7 +38,7 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
   const content=fs.readFileSync(path.join(dist,filename),'utf8');
   for(const pattern of ['/Users/','source_repository_credential','relative_path','private_token'])assert.ok(!content.includes(pattern),'Private field in '+filename);
 }
-for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','library.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js','office.js','office-data.js','stars.js','training.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
+for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','library.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js','office.js','office-data.js','stars.js','training.js','brave.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
 assert.equal([...home.matchAll(/data-place="/g)].length,13);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
@@ -348,8 +348,10 @@ const starsHtml=fs.readFileSync(path.join(dist,'stars.html'),'utf8');
 assert.ok(starsHtml.includes(`lang="ami">fo'is</i>`)&&starsHtml.includes('id="sky-canvas"')&&starsHtml.includes('id="sky-list-groups"'),'Star map page incomplete');
 // 全螢幕星空把頁首收起來，左上角要有 Logo 回首頁
 assert.ok(starsHtml.includes('<html lang="zh-Hant" class="sky-mode">')&&starsHtml.includes('<a class="sky-home" href="index.html"'),'Full-screen star map needs the logo link home');
-for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('<a href="stars.html">星空</a></p>'),'Star map footer link missing on '+page);
+for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('<a href="stars.html">星空</a><a href="brave.html">勇氣小學堂</a></p>'),'Star map and 勇氣小學堂 footer links missing on '+page);
 for(const entrance of ['<a class="pill pill-icon" href="stars.html" aria-label="星空" title="星空"><svg ','class="sky-door sky-door-top" href="stars.html"'])assert.ok(home.includes(entrance),'Home missing star entrance '+entrance);
 const villageCss=fs.readFileSync(path.join(dist,'village.css'),'utf8');
 assert.ok(villageCss.includes('[data-theme=night] .sky-door-top{')&&villageCss.includes('[data-theme=night] .village-header .pill[href="stars.html"]{'),'Night star entrances missing in village.css');
 console.log(`Star map verified: ${sky.nodes.length} stars and ${sky.links.length} links from data.js, four constellations around the visit 1-2 cultural domains, ${confirmed.length} teacher-confirmed links, every star linked to a page; full-screen sky with the logo home, entrance on every page and in the home night sky.`);
+// 勇氣小學堂：全校兒少保護宣導遊戲，六關合計 10 分鐘，附通報提醒
+{const braveHtml=fs.readFileSync(path.join(dist,'brave.html'),'utf8'),braveJs=fs.readFileSync(path.join(dist,'brave.js'),'utf8');assert.ok(braveHtml.includes('id="brave"')&&braveHtml.includes('brave.js?v=')&&braveHtml.includes('brave.css?v='),'勇氣小學堂 page incomplete');const seconds=[...braveJs.matchAll(/seconds:(\d+)/g)].map(m=>Number(m[1]));assert.equal(seconds.length,6,'勇氣小學堂 has six stages');assert.equal(seconds.reduce((a,b)=>a+b,0),600,'勇氣小學堂 stages add up to 10 minutes');assert.ok(braveJs.includes("'113'")&&braveJs.includes('關懷e起來'),'勇氣小學堂 hotline and reporting reminder');console.log('Brave verified: 勇氣小學堂 six stages in 10 minutes, 113 hotline and reporting reminder, footer entrance on every page.');}

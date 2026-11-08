@@ -1,0 +1,127 @@
+/* 勇氣小學堂：投影用的大字版面，顏色全部取自 village-theme 的 token，白天與夜晚都適用 */
+.brave{--bv-o:#0a8743;--bv-x:#c2412d;--bv-sun:#f4b740;position:relative;margin:0 0 64px;padding:22px;border:1px solid var(--line);border-radius:24px;background:var(--surface);box-shadow:var(--shadow);color:var(--ink)}
+:root[data-theme=night] .brave{--bv-o:#2ee67a;--bv-x:#ff7a66;--bv-sun:#ffd77a}
+.brave.is-full{display:flex;flex-direction:column;margin:0;border-radius:0;border:0;overflow:auto;background:var(--bg)}
+.brave.is-full .bv-stage{flex:1;min-height:0}
+
+.bv-bar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.bv-steps{display:flex;flex-wrap:wrap;gap:6px;list-style:none;margin:0;padding:0}
+.bv-steps button{display:flex;align-items:center;gap:6px;min-height:42px;padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font-weight:700;font-size:.875rem}
+.bv-steps button span{display:grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--soft);color:var(--green-text);font-family:Outfit,sans-serif;font-size:.75rem}
+.bv-steps button small{color:var(--muted);font-weight:500;font-size:.75rem}
+.bv-steps button[aria-current=true]{background:var(--green);border-color:var(--green);color:#06270f}
+.bv-steps button[aria-current=true] span{background:#06270f;color:var(--green)}
+.bv-steps button[aria-current=true] small{color:#06270f}
+.bv-tools{display:flex;gap:6px;align-items:center}
+.bv-tool,.bv-timer{min-height:42px;padding:6px 14px;border:1px solid var(--line);border-radius:999px;background:var(--surface);color:var(--ink);font-weight:700;font-size:.875rem}
+.bv-tool[aria-pressed=true]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.bv-timer{font-family:Outfit,sans-serif;font-variant-numeric:tabular-nums}
+.bv-timer small{color:var(--muted);margin-left:4px}
+.bv-timer.is-running{border-color:var(--green)}
+.bv-timer.is-over{background:var(--bv-x);border-color:var(--bv-x);color:#fff}
+.bv-timer.is-over small{color:#fff}
+
+.bv-stage{min-height:min(62vh,560px);display:grid;place-items:center;padding:24px 8px;border-radius:18px;background:var(--soft);outline:none}
+.bv-center{display:grid;justify-items:center;gap:20px;text-align:center;max-width:900px}
+.bv-kicker{font-weight:700;color:var(--green-text);font-size:clamp(1rem,2vw,1.4rem);letter-spacing:.08em}
+.bv-hero{font-size:clamp(3rem,10vw,7.5rem);line-height:1.1;font-weight:900;letter-spacing:.06em}
+.bv-title{font-size:clamp(1.5rem,3.4vw,2.6rem);font-weight:900}
+.bv-sub,.bv-question,.bv-prompt{font-size:clamp(1.15rem,2.4vw,1.8rem);color:var(--muted)}
+.bv-prompt b{color:var(--ink)}
+.bv-answer{font-size:clamp(1.6rem,4.4vw,3.2rem);font-weight:900;line-height:1.4;color:var(--green-text)}
+.bv-banner{padding:14px 22px;border-radius:16px;background:var(--surface);border:2px solid var(--green);font-weight:900;font-size:clamp(1.1rem,2.4vw,1.7rem);text-align:center}
+.bv-button{min-height:56px;padding:10px 28px;border:2px solid var(--ink);border-radius:999px;background:var(--surface);color:var(--ink);font-weight:900;font-size:clamp(1rem,2vw,1.35rem)}
+.bv-button.primary{background:var(--green);border-color:var(--green);color:#06270f}
+.bv-button:hover:not(:disabled){transform:translateY(-2px)}
+.bv-button:disabled{opacity:.4}
+.bv-row{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+
+.brave .visually-hidden{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* 圈圈叉叉 */
+.bv-cards{display:grid;justify-items:center;gap:18px;width:100%;max-width:880px}
+.bv-dots{display:flex;gap:10px}
+.bv-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--muted);background:transparent;padding:0}
+.bv-dot.is-current{border-color:var(--ink);box-shadow:0 0 0 3px var(--surface),0 0 0 5px var(--ink)}
+.bv-dot.is-o{background:var(--bv-o);border-color:var(--bv-o)}
+.bv-dot.is-x{background:var(--bv-x);border-color:var(--bv-x)}
+.bv-card{display:grid;justify-items:center;gap:18px;width:100%;padding:clamp(22px,4vw,44px);border-radius:24px;background:var(--surface);border:3px solid var(--line);text-align:center}
+.bv-card.is-o{border-color:var(--bv-o)}
+.bv-card.is-x{border-color:var(--bv-x)}
+.bv-count{font-family:Outfit,"Noto Sans TC",sans-serif;font-weight:700;color:var(--muted)}
+.bv-scene{font-size:clamp(1.5rem,3.8vw,2.7rem);font-weight:900;line-height:1.45}
+.bv-verdict{display:flex;align-items:center;gap:16px;font-size:clamp(1.6rem,4vw,2.8rem)}
+.bv-card.is-o .bv-verdict{color:var(--bv-o)}
+.bv-card.is-x .bv-verdict{color:var(--bv-x)}
+.bv-why{font-size:clamp(1.1rem,2.4vw,1.7rem);line-height:1.6;max-width:720px}
+.bv-mark{position:relative;display:inline-block;width:clamp(56px,8vw,88px);height:clamp(56px,8vw,88px)}
+.mark-o{border:clamp(9px,1.3vw,14px) solid var(--bv-o);border-radius:50%}
+.mark-x::before,.mark-x::after{content:"";position:absolute;left:50%;top:-6%;width:clamp(10px,1.4vw,15px);height:112%;margin-left:calc(clamp(10px,1.4vw,15px) / -2);border-radius:8px;background:var(--bv-x);transform:rotate(45deg)}
+.mark-x::after{transform:rotate(-45deg)}
+
+/* 三句話 */
+.bv-phrases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;width:100%}
+.bv-phrase{display:grid;justify-items:center;align-content:center;gap:8px;min-height:200px;padding:20px;border-radius:22px;border:3px dashed var(--muted);background:var(--surface);color:var(--muted)}
+.bv-phrase strong{font-size:clamp(1.3rem,3vw,2.2rem);font-weight:900}
+.bv-phrase small{font-size:clamp(.95rem,1.6vw,1.15rem);line-height:1.5}
+.bv-phrase.is-open{border:3px solid var(--green);color:var(--ink)}
+.bv-num{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;background:var(--green);color:#06270f;font-family:Outfit,sans-serif;font-weight:700;font-size:1.2rem}
+
+/* 安全圈與撥號 */
+.bv-split{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;width:100%;align-items:start;text-align:center}
+.bv-split>div{display:grid;justify-items:center;gap:12px}
+.bv-ring{position:relative;width:min(340px,80vw);aspect-ratio:1;border-radius:50%;border:3px dashed var(--green);margin:8px 0}
+.bv-me{position:absolute;inset:34%;display:grid;place-items:center;border-radius:50%;background:var(--green);color:#06270f;font-weight:900;font-size:clamp(1.4rem,3vw,2rem)}
+.bv-person{position:absolute;left:50%;top:50%;padding:6px 12px;border-radius:999px;background:var(--surface);border:2px solid var(--green);font-weight:700;font-size:clamp(.85rem,1.6vw,1.05rem);white-space:nowrap;transform:translate(-50%,-50%)}
+.bv-chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.bv-chip{min-height:46px;padding:6px 16px;border-radius:999px;border:2px solid var(--line);background:var(--surface);color:var(--ink);font-weight:700;font-size:clamp(.95rem,1.8vw,1.15rem)}
+.bv-chip[aria-pressed=true]{background:var(--green);border-color:var(--green);color:#06270f}
+.bv-phone{display:grid;gap:12px;width:min(300px,80vw);padding:18px;border-radius:30px;background:var(--ink);color:var(--surface)}
+.bv-dial-screen{min-height:84px;display:grid;place-items:center;border-radius:16px;background:var(--surface);color:var(--ink);font-family:Outfit,sans-serif;font-size:2rem;font-weight:700;letter-spacing:.2em}
+.bv-dial-result{min-height:84px;display:grid;gap:4px;place-items:center;padding:10px;border-radius:16px;background:var(--green);color:#06270f;line-height:1.45}
+.bv-dial-result strong{font-size:1.5rem}
+.bv-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.bv-key{min-height:52px;border-radius:14px;border:0;background:var(--surface);color:var(--ink);font-family:Outfit,sans-serif;font-size:1.5rem;font-weight:700}
+.bv-key.is-word{font-family:"Noto Sans TC",sans-serif;font-size:1rem}
+
+/* 勇氣練習 */
+.bv-bubble{position:relative;max-width:760px;padding:16px 24px 16px 70px;border-radius:24px 24px 24px 6px;background:var(--surface);border:2px solid var(--line);font-size:clamp(1.3rem,3vw,2.1rem);font-weight:900;text-align:left}
+.bv-bubble b{position:absolute;left:16px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:var(--soft);color:var(--green-text);font-size:.95rem}
+.bv-bubble.is-adult{justify-self:end;border-radius:24px 24px 6px 24px;border-color:var(--green)}
+.bv-bubble.is-adult b{background:var(--green);color:#06270f}
+.bv-blank{display:inline-block;min-width:4em;border-bottom:4px solid var(--green);text-align:center;color:var(--green-text)}
+.bv-tip{max-width:760px;padding:12px 18px;border-radius:14px;border:1px dashed var(--muted);color:var(--muted);font-size:clamp(.95rem,1.8vw,1.15rem)}
+.bv-tip b{margin-right:10px;color:var(--ink)}
+
+/* 收尾 */
+.bv-recap{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;list-style:none;padding:0;margin:0;counter-reset:recap}
+.bv-recap li{padding:8px 18px;border-radius:999px;background:var(--surface);border:2px solid var(--green);font-weight:900;font-size:clamp(1rem,2.2vw,1.5rem)}
+.bv-recap li::before{counter-increment:recap;content:counter(recap) "　";color:var(--green-text)}
+.bv-hotline{font-family:Outfit,sans-serif;font-size:1.5em;color:var(--ink)}
+.bv-finale .bv-hero{font-size:clamp(2.4rem,7.5vw,5.6rem);color:var(--green-text)}
+
+.bv-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:18px}
+.bv-progress{color:var(--muted);font-size:.9375rem;text-align:center}
+
+/* 老師提示：只有老師按 N 或按鈕才出現 */
+.bv-notes{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;margin-top:18px;padding:18px 22px;border-radius:18px;border:2px dashed var(--warn);background:var(--surface);font-size:.9375rem}
+.bv-notes h3{font-size:1rem;margin-bottom:8px}
+.bv-notes ul,.bv-notes ol{margin:0;padding-left:20px;display:grid;gap:4px}
+.bv-disclosure h3{color:var(--warn)}
+
+.bv-pop{animation:bv-pop .45s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes bv-pop{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:none}}
+.bv-person.bv-pop{animation-name:bv-fade}
+@keyframes bv-fade{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.bv-pop{animation:none}.bv-button:hover:not(:disabled){transform:none}}
+
+@media(max-width:760px){
+  .brave{padding:14px;border-radius:18px}
+  .bv-tools{width:100%;justify-content:flex-end}
+  .bv-steps button small{display:none}
+  .bv-phrases,.bv-split,.bv-notes{grid-template-columns:1fr}
+  .bv-phrase{min-height:120px}
+  .bv-bubble{padding-left:64px}
+  .bv-nav .bv-button{padding:8px 14px;min-height:48px;white-space:nowrap;font-size:.95rem}
+  .bv-progress{font-size:.8125rem}
+}
