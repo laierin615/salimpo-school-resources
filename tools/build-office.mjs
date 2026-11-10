@@ -15,8 +15,8 @@ const ITERATIONS = 600000;
 
 const passwordFile = path.join(runtime, 'office-password.txt');
 const password = (process.env.OFFICE_PASSWORD ?? (fs.existsSync(passwordFile) ? fs.readFileSync(passwordFile, 'utf8').split(/\r?\n/)[0] : '')).trim();
-if (password.length < 8) {
-  console.error('需要至少 8 個字元的通關密碼：設定 OFFICE_PASSWORD，或寫在 .runtime/office-password.txt 第一行。');
+if (password.length < 6) {
+  console.error('需要至少 6 個字元的通關密碼：設定 OFFICE_PASSWORD，或寫在 .runtime/office-password.txt 第一行。');
   process.exit(1);
 }
 
