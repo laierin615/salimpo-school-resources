@@ -72,7 +72,7 @@ window.SALIMPO_SINGSI=[
     quizzes:[{q:'家屋的屋架用什麼綁緊？',options:["'oway 黃藤","eli' 茅草",'nanom 水'],answer:0},
       {q:'家屋的牆最外層常用哪一種材料？',options:["folo' 箭竹","eli' 茅草",'kilang 木頭'],answer:0}],
     lessons:['L-A-14','L-A-12']},
-  {id:'zhenhai',name:'振海 singsi',where:'資料服務站',prop:'部落地圖',
+  {id:'zhenhai',name:'振海 singsi',face:'media/singsi/zhenhai.webp',where:'資料服務站',prop:'部落地圖',
     intro:'Nga\'ay ho! 我是振海 singsi。我帶著部落地圖，一起認識家鄉的地名和土地。',
     tips:[{text:'每個部落的海祭日子由部落自己決定，所以各部落的時間不一樣。',ami:"niyaro'",zh:'部落'},
       {text:'傳統領域是祖先留下的土地，重點是彼此的關係和責任。',ami:'sofal',zh:'領域'},
