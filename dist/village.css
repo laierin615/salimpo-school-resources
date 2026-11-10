@@ -108,3 +108,7 @@
 /* 首頁右上角的快速連結只放圖示（清單、會客室、星空、找資料），做成和白天／夜晚切換鈕一樣的圓鈕；名稱寫在 aria-label 和 title（滑過會顯示）。手機一排三個，排成 3＋2 */
 .village-header nav .pill-icon{width:42px;padding:0}.village-header nav .pill-icon svg{display:block;width:20px;height:20px}
 @media(max-width:600px){.village-header nav .pill-icon{width:38px;min-height:38px;padding:0}[data-page=home] .village-header nav{max-width:126px}}
+/* singsi 的 3D 公仔頭像（依老師照片生成）：對話卡右上角、清單名字前面 */
+.singsi-face{float:right;width:88px;height:88px;margin:0 34px 6px 12px;border-radius:20px;object-fit:cover;background:#f6efe0;box-shadow:0 6px 16px rgba(15,32,45,.18)}
+.singsi-row-face{width:36px;height:36px;margin-right:8px;border-radius:10px;object-fit:cover;vertical-align:middle;float:left}
+@media(max-width:600px){.singsi-face{width:64px;height:64px;border-radius:16px;margin-right:30px}}

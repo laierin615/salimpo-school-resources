@@ -63,7 +63,7 @@
   function showSingsi(i){const s=singsiList[i];if(!s||!singsiCard)return;select(-1);talking=i;tip=0;quizAt=0;welcome.hidden=true;singsiCard.hidden=false;
     // 桌機版對話卡靠到 singsi 的另一側，才看得到被點的人在說話；手機版先收起地點按鈕，讓卡片往下放
     singsiCard.dataset.side=(parseFloat(singsiPins[i].style.left)||0)>document.documentElement.clientWidth/2-22?'left':'right';singsiCard.closest('.village-world')?.classList.add('is-talking');
-    $('singsi-where').textContent=s.where+' · '+s.prop;$('singsi-name').textContent=s.name;const intro=$('singsi-intro');if(intro){intro.textContent=s.intro||'';intro.hidden=!s.intro;}sayTip();
+    const face=$('singsi-face');if(face){face.hidden=!s.face;if(s.face){face.src=s.face;face.alt=s.name+'的 3D 公仔頭像';}}$('singsi-where').textContent=s.where+' · '+s.prop;$('singsi-name').textContent=s.name;const intro=$('singsi-intro');if(intro){intro.textContent=s.intro||'';intro.hidden=!s.intro;}sayTip();
     $('singsi-links').replaceChildren(...[...(s.links||[]),...(s.lessons||[]).map(id=>({label:lessonTitle(id),href:'lessons.html?lesson='+encodeURIComponent(id)}))].map(link=>{const a=document.createElement('a');a.href=link.href;const out=/^https?:/.test(link.href);a.textContent=link.label+(out?' ↗':' →');if(out){a.target='_blank';a.rel='noopener noreferrer';}return a;}));
     singsiPins.forEach((pin,k)=>pin.setAttribute('aria-pressed',String(k===i)));window.dispatchEvent(new CustomEvent('salimpo:singsi',{detail:i}));}
   $('singsi-next')?.addEventListener('click',()=>{if(talking<0)return;tip=(tip+1)%singsiList[talking].tips.length;sayTip();});
@@ -71,7 +71,7 @@
   $('singsi-close')?.addEventListener('click',()=>select(-1));
   // 下方清單「村子裡的 singsi」：點了回到聚落、打開那一位的對話卡
   $('singsi-rows')?.replaceChildren(...singsiList.map((s,i)=>{const li=document.createElement('li'),row=document.createElement('button'),name=document.createElement('span'),strong=document.createElement('strong'),prop=document.createElement('small'),say=document.createElement('span'),where=document.createElement('span');
-    row.type='button';row.className='directory-row singsi-row';name.className='directory-name';strong.textContent=s.name;prop.className='singsi-prop';prop.textContent=s.prop;name.append(strong,prop);say.className='singsi-row-tip';say.textContent=s.tips[0].text;where.className='directory-type';where.textContent=s.where;row.append(name,say,where);
+    row.type='button';row.className='directory-row singsi-row';name.className='directory-name';strong.textContent=s.name;if(s.face){const pic=document.createElement('img');pic.className='singsi-row-face';pic.src=s.face;pic.alt='';pic.width=pic.height=36;pic.loading='lazy';name.append(pic);}prop.className='singsi-prop';prop.textContent=s.prop;name.append(strong,prop);say.className='singsi-row-tip';say.textContent=s.tips[0].text;where.className='directory-type';where.textContent=s.where;row.append(name,say,where);
     row.addEventListener('click',()=>{showSingsi(i);world.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth',block:'start'});});li.append(row);return li;}));
   function select(index){
     selected=index;const place=places[index];hideSingsi();

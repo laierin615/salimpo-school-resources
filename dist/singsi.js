@@ -1,6 +1,6 @@
 // 村子裡的 singsi：首頁 3D 聚落裡的 12 位老師（內容 1029 老師確認；Jeff singsi 教英文，族語、英文、中文三種說法一起教）。intro 是一打開對話卡的自我介紹；每位 5 則小知識各帶一個族語詞
 // （tatokem 詞庫或阿美語萌典查證，詞庫和萌典意思不一樣的詞先不用）；quizzes 每題三選一（answer 是正確選項在 options 裡的位置），
-// 「考考我」按一次換一題；最後連到的教案（lessons 填課號，標題從 data.js 帶入）或網站。只寫「X singsi」，不寫全名。
+// 「考考我」按一次換一題；最後連到的教案（lessons 填課號，標題從 data.js 帶入）或網站。face 是依老師照片請 ChatGPT 生成的 3D 公仔頭像（media/singsi/，沒有就不顯示）。只寫「X singsi」，不寫全名。
 window.SALIMPO_SINGSI=[
   {id:'masao',name:'Masao singsi',where:'教材書屋',prop:'族語書',
     intro:'Nga\'ay ho! 我是 Masao singsi。我手上這本是族語書，想跟你說說家屋和部落的故事。',
@@ -22,7 +22,7 @@ window.SALIMPO_SINGSI=[
     quizzes:[{q:'潛水抓魚為什麼要帶浮球？',options:['讓夥伴看到我在哪裡，累了也能抓著休息','用來裝魚','拿來玩'],answer:0},
       {q:'抓到太小的魚，應該怎麼做？',options:['放回海裡，讓牠長大','帶回家養','丟在沙灘上'],answer:0}],
     lessons:['L-B-07']},
-  {id:'madal',name:'Madal singsi',where:'古謠樹',prop:'竹筒',
+  {id:'madal',name:'Madal singsi',face:'media/singsi/madal.webp',where:'古謠樹',prop:'竹筒',
     intro:'Nga\'ay ho! 我是 Madal singsi。我敲著竹筒打拍子，一起來唱歌吧！',
     tips:[{text:'阿美族的歌叫 radiw。',ami:'radiw',zh:'歌'},
       {text:'古謠常常是一個人先唱、大家應和，聲音一層一層疊起來。',ami:'romadiw',zh:'唱歌'},
@@ -32,7 +32,7 @@ window.SALIMPO_SINGSI=[
     quizzes:[{q:'古謠常常怎麼唱？',options:['一個人先唱、大家應和','每個人輪流獨唱','只彈樂器不唱歌'],answer:0},
       {q:'soni 是什麼意思？',options:['聲音','唱歌','竹筒'],answer:0}],
     links:[{label:'Radiw 古謠網站',href:'https://laierin615.github.io/radiw-guyao/'}]},
-  {id:'yiyun',name:'奕芸 singsi',where:'村辦公室',prop:'筆記本、燒杯',
+  {id:'yiyun',name:'奕芸 singsi',face:'media/singsi/yiyun.webp',where:'村辦公室',prop:'筆記本、燒杯',
     intro:'Nga\'ay ho! 我是奕芸 singsi。我帶著筆記本和燒杯，一起把好奇的事變成科學專題。',
     tips:[{text:'好奇的事先寫成一個問題：為什麼會這樣？要去哪裡找答案？',ami:'kilim',zh:'尋找'},
       {text:'魚在水裡看起來比實際淺一點，這是光的折射，所以射魚要瞄低一點。',ami:'nanom',zh:'水'},
@@ -42,7 +42,7 @@ window.SALIMPO_SINGSI=[
     quizzes:[{q:'射魚的時候要瞄哪裡？',options:['比看到的魚低一點','比看到的魚高一點','正對看到的魚'],answer:0},
       {q:'龍葵的族語是哪一個？',options:['tatokem','rorang','lengac'],answer:0}],
     lessons:['L-A-23','L-B-07']},
-  {id:'qiuxia',name:'秋霞 singsi',where:'會客室前面',prop:'揮手打招呼',
+  {id:'qiuxia',name:'秋霞 singsi',face:'media/singsi/qiuxia.webp',where:'會客室前面',prop:'揮手打招呼',
     intro:'Nga\'ay ho! 我是秋霞 singsi。歡迎來到會客室，先學怎麼打招呼和說謝謝吧！',
     tips:[{text:"見面先打招呼：Nga'ay ho!（你好）",ami:"nga'ay",zh:'好'},
       {text:'別人幫忙你的時候，要說 aray。',ami:'aray',zh:'謝謝'},

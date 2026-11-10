@@ -224,6 +224,8 @@ assert.ok(['清單','會客室','星空','找資料'].every(name=>quickNav.inclu
 // 小知識的族語詞要在 tatokem 詞庫裡；不在詞庫的是用阿美語萌典（蔡中涵）查過的詞
 if(fs.existsSync(lexiconFile)){const verified=new Set(Object.values(JSON.parse(fs.readFileSync(lexiconFile,'utf8')).categories).flatMap(c=>Object.keys(c)).map(w=>w.toLowerCase()));const moedict=new Set(["misacepo'",'parod','pacing','riyar','foting','romadiw','kilim',"nga'ay","riko'",'sofal','kawkaw','kamamit','omah','lotok','soni']);for(const s of singsiList)for(const t of s.tips){const w=t.ami.toLowerCase();assert.ok(verified.has(w)||verified.has(w.replace(/!$/,''))||moedict.has(w),'Unverified singsi word '+t.ami);}}
 assert.ok(home.includes('singsi.js?v=')&&home.includes('id="singsi-card"')&&home.includes('id="singsi-intro"')&&home.includes('id="singsi-rows"')&&villageJs.includes('function singsiAt(')&&fs.readFileSync(path.join(dist,'village-ui.js'),'utf8').includes('quizzes[n]'),'Singsi wired into the home village');
+for(const s of singsiList)if(s.face){assert.ok(/^media\/singsi\/[a-z]+\.webp$/.test(s.face)&&fs.existsSync(path.join(dist,s.face)),'Missing singsi face '+s.face);assert.ok(fs.statSync(path.join(dist,s.face)).size<120000,'Singsi face too large '+s.face);}
+assert.ok(home.includes('id="singsi-face"'),'Singsi card has a face slot');
 assert.equal((villageJs.match(/const SINGSI=\[([\s\S]*?)\n  \];/)?.[1].match(/at:\[/g)||[]).length,singsiList.length,'Every singsi stands somewhere in the village');
 console.log(`Singsi verified: ${singsiList.length} teachers in the village, each with an intro, 5 tips, 2 quizzes and lesson links.`);
 

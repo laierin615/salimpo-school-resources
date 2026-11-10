@@ -164,8 +164,8 @@ function buildVillage(){
     const fold=box(.82,.03,.12,0,1.17,-.05,0xf3ecdc,paper);fold.rotation.x=.5;}
   // 村子裡的小人：大頭、圓臉、點點眼睛和腮紅，身體短短的；阿美族頭飾（白色頭帶加毛球）可以關掉。原點在腳底，高度約 0.42
   const smoothMaterials={};function smooth(color){return smoothMaterials[color]||(smoothMaterials[color]=new THREE.MeshStandardMaterial({color,roughness:.75}));}
-  const chibiGeo={head:new THREE.SphereGeometry(.088,18,14),hair:new THREE.SphereGeometry(.094,18,10,0,Math.PI*2,0,Math.PI*.56),bun:new THREE.SphereGeometry(.04,10,8),eye:new THREE.SphereGeometry(.012,8,6),cheek:new THREE.SphereGeometry(.015,8,6),body:new THREE.CylinderGeometry(.048,.072,.13,14),skirt:new THREE.CylinderGeometry(.074,.08,.05,14),leg:new THREE.CylinderGeometry(.018,.018,.06,8),arm:new THREE.CylinderGeometry(.017,.019,.085,8),hand:new THREE.SphereGeometry(.022,8,6),band:new THREE.TorusGeometry(.086,.012,6,22),pom:new THREE.SphereGeometry(.022,10,8)};
-  function chibi(parent,{top=0xd2453a,bottom=0x2f2d36,hair=0x2b2422,skin=0xe8c09a,eyes=0x2a2220,band=true,pom=0xffd166,sing=false,elder=false}={}){
+  const chibiGeo={head:new THREE.SphereGeometry(.088,18,14),hair:new THREE.SphereGeometry(.094,18,10,0,Math.PI*2,0,Math.PI*.56),bun:new THREE.SphereGeometry(.04,10,8),eye:new THREE.SphereGeometry(.012,8,6),cheek:new THREE.SphereGeometry(.015,8,6),body:new THREE.CylinderGeometry(.048,.072,.13,14),skirt:new THREE.CylinderGeometry(.074,.08,.05,14),leg:new THREE.CylinderGeometry(.018,.018,.06,8),arm:new THREE.CylinderGeometry(.017,.019,.085,8),hand:new THREE.SphereGeometry(.022,8,6),band:new THREE.TorusGeometry(.086,.012,6,22),pom:new THREE.SphereGeometry(.022,10,8),lens:new THREE.TorusGeometry(.021,.0045,6,18),bridge:new THREE.CylinderGeometry(.003,.003,.018,6),fringe:new THREE.SphereGeometry(.05,12,8),crown:new THREE.CylinderGeometry(.07,.097,.06,18),brim:new THREE.CylinderGeometry(.1,.132,.024,22,1,true)};
+  function chibi(parent,{top=0xd2453a,bottom=0x2f2d36,hair=0x2b2422,skin=0xe8c09a,eyes=0x2a2220,band=true,pom=0xffd166,sing=false,elder=false,glasses=null,fringe=false,tail=false,hat=null}={}){
     const g=new THREE.Group();parent.add(g);const part=(geo,color,x,y,z,shadow=true)=>{const o=new THREE.Mesh(geo,smooth(color));o.position.set(x,y,z);o.castShadow=shadow;g.add(o);return o;};
     for(const x of [-.026,.026])part(chibiGeo.leg,0x5a4a42,x,.03,0);
     part(chibiGeo.skirt,bottom,0,.085,0);part(chibiGeo.body,top,0,.14,0);
@@ -176,6 +176,11 @@ function buildVillage(){
     for(const x of [-.03,.03])part(chibiGeo.eye,eyes,x,.296,.081,false);
     for(const x of [-.054,.054]){const c=part(chibiGeo.cheek,0xf2a0a0,x,.268,.069,false);c.scale.z=.45;}
     if(sing){const mouth=part(chibiGeo.eye,0x8a3a3a,0,.255,.084,false);mouth.scale.set(.9,1.1,.4);}
+    // 照老師本人調：glasses 是鏡框顏色（圓框眼鏡）、fringe 是前額瀏海（'side' 斜瀏海、'full' 齊瀏海）、tail 是後腦綁起來的髮束、hat 是漁夫帽顏色
+    if(glasses!=null){for(const x of [-.03,.03])part(chibiGeo.lens,glasses,x,.296,.086,false);const bridge=part(chibiGeo.bridge,glasses,0,.298,.09,false);bridge.rotation.z=Math.PI/2;}
+    if(fringe==='full'){const f=part(chibiGeo.fringe,hair,0,.322,.066,false);f.scale.set(1.7,.36,.55);f.rotation.x=.3;}else if(fringe){const f=part(chibiGeo.fringe,hair,-.028,.338,.06,false);f.scale.set(1.25,.42,.62);f.rotation.set(.35,0,.42);}
+    if(hat!=null){part(chibiGeo.crown,hat,0,.366,-.004);const brim=part(chibiGeo.brim,hat,0,.33,0);brim.rotation.x=-.1;brim.material=brim.material.clone();brim.material.side=THREE.DoubleSide;}
+    if(tail){part(chibiGeo.bun,hair,0,.3,-.088);const t=part(chibiGeo.bun,hair,0,.262,-.1,false);t.scale.set(.7,1.2,.7);}
     if(band){const ring=part(chibiGeo.band,0xf3ead8,0,.33,0);ring.rotation.x=Math.PI/2-.25;part(chibiGeo.pom,pom,0,.36,.07,false);}
     return g;}
   // 古謠樹（位置 14，左岸望向女人島）：樹根是耆老傳下的古調，捲成金色的音符線；樹冠長出孩子哼的新旋律，音符往上飄
@@ -470,9 +475,9 @@ function buildVillage(){
   const SINGSI=[
     {at:[2.25,-1.65],turn:.35,top:0x3b6ea5,band:true,prop:'book'},
     {at:[-.1,6.6],turn:.85,top:0x2f8f9d,prop:'spear'},
-    {at:[-5.5,4.35],turn:.95,top:0xd2453a,band:true,prop:'tube'},
-    {at:[4.15,3.72],turn:.5,top:0x8e6bb8,prop:'notebook'},
-    {at:[-1.2,1.5],turn:.61,top:0xe0a43a,prop:'wave'},
+    {at:[-5.5,4.35],turn:.95,top:0xd2453a,hair:0x1c1a1a,fringe:'full',band:true,prop:'tube'},
+    {at:[4.15,3.72],turn:.5,top:0x8e6bb8,hair:0x4a3022,glasses:0x3a4250,fringe:true,tail:true,prop:'notebook'},
+    {at:[-1.2,1.5],turn:.61,top:0xe0a43a,hair:0x2b2422,glasses:0xd8a890,hat:0x2a3550,prop:'wave'},
     {at:[-4.13,1.74],y:.4,turn:.55,top:0x5f9e6e,prop:'easel'},
     {at:[6.6,1.95],turn:.45,top:0xb76e4a,prop:'rattan'},
     {at:[1.1,1.25],turn:.5,top:0x4a7f6a,prop:'map'},
@@ -497,7 +502,7 @@ function buildVillage(){
     const glass=color=>new THREE.MeshStandardMaterial({color,transparent:true,opacity:.6,roughness:.15});
     SINGSI.forEach((s,i)=>{
       const g=new THREE.Group();g.position.set(s.at[0],s.y||.13,s.at[1]);g.rotation.y=s.turn;g.scale.setScalar(s.size||1.65);g.userData.singsi=i;scene.add(g);singsiFigures.push(g);
-      const body=chibi(g,{top:s.top,hair:s.hair??[0x2b2422,0x4a3428,0x3a2c26][i%3],eyes:s.eyes,skin:s.skin,band:!!s.band});
+      const body=chibi(g,{top:s.top,hair:s.hair??[0x2b2422,0x4a3428,0x3a2c26][i%3],eyes:s.eyes,skin:s.skin,band:!!s.band,glasses:s.glasses,fringe:s.fringe,tail:s.tail,hat:s.hat});
       const hit=new THREE.Mesh(hitGeo,hitMaterial);hit.position.y=.35;g.add(hit);
       const bubble=new THREE.Sprite(bubbleMaterial);bubble.scale.set(.28,.22,1);bubble.position.set(.07,.58,0);g.add(bubble);singsiBubbles.push(bubble);
       const p=s.prop;
