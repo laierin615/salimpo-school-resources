@@ -42,7 +42,7 @@ window.SALIMPO_SINGSI=[
     quizzes:[{q:'射魚的時候要瞄哪裡？',options:['比看到的魚低一點','比看到的魚高一點','正對看到的魚'],answer:0},
       {q:'龍葵的族語是哪一個？',options:['tatokem','rorang','lengac'],answer:0}],
     lessons:['L-A-23','L-B-07']},
-  {id:'qiuxia',name:'秋霞 singsi',where:'會客室前面',prop:'揮手打招呼',
+  {id:'qiuxia',name:'秋霞 singsi',face:'media/singsi/qiuxia.webp',where:'會客室前面',prop:'揮手打招呼',
     intro:'Nga\'ay ho! 我是秋霞 singsi。歡迎來到會客室，先學怎麼打招呼和說謝謝吧！',
     tips:[{text:"見面先打招呼：Nga'ay ho!（你好）",ami:"nga'ay",zh:'好'},
       {text:'別人幫忙你的時候，要說 aray。',ami:'aray',zh:'謝謝'},
