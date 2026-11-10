@@ -295,10 +295,10 @@ function buildVillage(){
   const flameMaterial=new THREE.MeshStandardMaterial({color:0xffa340,emissive:0xff6a1a,emissiveIntensity:.7,roughness:.6,flatShading:true});
   const flame=mesh(geometry.cone,flameMaterial,fire);flame.scale.set(.085,.22,.085);flame.position.y=.15;flame.castShadow=false;
   const fireLight=new THREE.PointLight(0xff9a4a,0,3.2);fireLight.position.set(0,.45,0);fire.add(fireLight);lights.push(fireLight);
-  // 女人島的舞者穿阿美族女生族服（照學校族服照片）：白羽毛頭冠、紅頭帶上繡平的彩色小花（女生花帽沒有球球）、頂上插彩羽；白上衣胸前垂一圈彩色流蘇（不穿粉紅披肩）；
+  // 女人島的舞者穿阿美族女生族服（照學校族服照片）：白羽毛頭冠、紅頭帶上繡平的彩色小花（女生花帽沒有球球）、頂上插彩羽；白上衣（不穿粉紅披肩、不掛流蘇）；
   // 綠珠項鍊、紅腰帶；黑底白點短裙配白蕾絲裙襬；白底黑紋綁腿、腳踝綠流蘇。六個人的流蘇顏色順序錯開
   const amisGeo={plume:new THREE.SphereGeometry(.03,10,8),crownBand:new THREE.TorusGeometry(.09,.015,8,32),feather:new THREE.ConeGeometry(.012,.13,6),
-    tassel:new THREE.BoxGeometry(.013,.042,.008),beads:new THREE.TorusGeometry(.05,.007,5,22),
+    beads:new THREE.TorusGeometry(.05,.007,5,22),
     sash:new THREE.TorusGeometry(.072,.012,5,22),skirt:new THREE.CylinderGeometry(.079,.088,.058,16),hem:new THREE.TorusGeometry(.087,.008,5,24),legging:new THREE.CylinderGeometry(.022,.022,.05,8),stripe:new THREE.TorusGeometry(.0225,.0045,4,12),ankle:new THREE.ConeGeometry(.02,.026,8)};
   const dotSkirt=(()=>{const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.fillStyle='#1c1c24';x.fillRect(0,0,256,64);x.fillStyle='#f4f1ea';for(let i=0;i<12;i++)for(const [y,o] of [[18,0],[46,10.7]]){x.beginPath();x.arc(i*21.3+o+5,y,4.2,0,Math.PI*2);x.fill();}const t=new THREE.CanvasTexture(c);t.wrapS=THREE.RepeatWrapping;t.anisotropy=4;if('colorSpace' in t)t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:.8});})();
   const embroidered=(()=>{const c=document.createElement('canvas');c.width=256;c.height=32;const x=c.getContext('2d');x.fillStyle='#d8263c';x.fillRect(0,0,256,32);const cs=['#ff5fa2','#ffd166','#3fbf5a','#ff7a2f','#8c5cff','#5cc1d8'];for(let i=0;i<16;i++){const cx=i*16+8;x.fillStyle=cs[i%cs.length];for(let k=0;k<5;k++){const a=k/5*Math.PI*2;x.beginPath();x.arc(cx+Math.cos(a)*3.6,16+Math.sin(a)*3.6,2.6,0,Math.PI*2);x.fill();}x.fillStyle='#fff6d6';x.beginPath();x.arc(cx,16,1.8,0,Math.PI*2);x.fill();}const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;t.offset.y=.5;t.anisotropy=4;if('colorSpace' in t)t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:.8});})();
@@ -309,8 +309,6 @@ function buildVillage(){
     add(amisGeo.plume,0xfbfaf5,0,.405,-.02).scale.setScalar(1.3);
     const crown=add(amisGeo.crownBand,embroidered,0,.335,0);crown.rotation.x=Math.PI/2-.25;crown.scale.z=1.6;
     for(const [c,x,tilt] of [[0xffd166,-.03,.35],[[0xff5fa2,0x5cc1d8,0x7ad86f][n%3],.03,-.35]]){const f=add(amisGeo.feather,c,x,.45,-.04);f.rotation.z=tilt;}
-    const colors=[0xd8263c,0xffd166,0x23a455,0x3a7bd5,0xff7a2f,0x8c5cff];
-    for(let k=0;k<16;k++){const a=k/16*Math.PI*2,t=add(amisGeo.tassel,colors[(k+n)%colors.length],Math.sin(a)*.066,.15,Math.cos(a)*.066);t.rotation.y=a;t.rotation.x=.1;}
     const beads=add(amisGeo.beads,0x39e06a,0,.188,.012);beads.rotation.x=Math.PI/2-.42;
     add(amisGeo.sash,0xd8263c,0,.112,0).rotation.x=Math.PI/2;
     add(amisGeo.skirt,dotSkirt,0,.084,0);
