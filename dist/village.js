@@ -477,17 +477,17 @@ function buildVillage(){
     {at:[2.25,-1.65],turn:.35,top:0x3b6ea5,band:true,prop:'book'},
     {at:[-.1,6.6],turn:.85,top:0x2f8f9d,prop:'spear'},
     {at:[-5.5,4.35],turn:.95,top:0xd2453a,hair:0x1c1a1a,fringe:'full',band:true,prop:'tube'},
-    {at:[4.15,3.72],turn:.5,top:0x8e6bb8,hair:0x4a3022,glasses:0x3a4250,fringe:true,tail:true,prop:'notebook'},
+    {at:[4.15,3.72],turn:.5,figure:'media/singsi/yiyun-body.webp',top:0x8e6bb8,hair:0x4a3022,glasses:0x3a4250,fringe:true,tail:true,prop:'notebook'},
     {at:[-1.2,1.5],turn:.61,top:0xe0a43a,hair:0x2b2422,glasses:0xd8a890,hat:0x2a3550,prop:'wave'},
     {at:[-4.13,1.74],y:.4,turn:.55,top:0x5f9e6e,prop:'easel'},
     {at:[6.6,1.95],turn:.45,top:0xb76e4a,prop:'rattan'},
-    {at:[1.1,1.25],turn:.5,top:0x4a7f6a,skin:0xc9956a,hair:0x1c1a1a,curly:true,prop:'map'},
+    {at:[1.1,1.25],turn:.5,figure:'media/singsi/zhenhai-body.webp',top:0x4a7f6a,skin:0xc9956a,hair:0x1c1a1a,curly:true,prop:'map'},
     {at:[-3.5,6.6],turn:.9,top:0x6aa0c8,prop:'leaf'},
     {at:[-2.6,-2.6],turn:.5,top:0xc75f86,prop:'lens'},
     {at:[.85,5.05],turn:.85,top:0xd9774a,prop:'basket'},
     {at:[.33,5.2],turn:.85,top:0x4f78c4,hair:0xdedbd3,eyes:0x2f9d5b,skin:0xf0c4a8,size:1.75,prop:'abc'}
   ];
-  const singsiFigures=[],singsiBubbles=[];let talkingTo=-1,singsiHover=-1,waveArm=null,tapTube=null;
+  const singsiFigures=[],singsiBubbles=[],figureLoader=new THREE.TextureLoader(),FIGURE_H=.5,figureMaterials=[];let talkingTo=-1,singsiHover=-1,waveArm=null,tapTube=null;
   {
     const V=(x,y,z)=>new THREE.Vector3(x,y,z);
     // 對話泡泡：白色圓角框加三個綠點，所有 singsi 共用一張貼圖
@@ -503,10 +503,14 @@ function buildVillage(){
     const glass=color=>new THREE.MeshStandardMaterial({color,transparent:true,opacity:.6,roughness:.15});
     SINGSI.forEach((s,i)=>{
       const g=new THREE.Group();g.position.set(s.at[0],s.y||.13,s.at[1]);g.rotation.y=s.turn;g.scale.setScalar(s.size||1.65);g.userData.singsi=i;scene.add(g);singsiFigures.push(g);
-      const body=chibi(g,{top:s.top,hair:s.hair??[0x2b2422,0x4a3428,0x3a2c26][i%3],eyes:s.eyes,skin:s.skin,band:!!s.band,glasses:s.glasses,fringe:s.fringe,tail:s.tail,hat:s.hat,curly:s.curly});
+      // 有 figure 的老師換成 3D Q 版公仔立牌（ChatGPT 依本人照片生成的全身圖，去背後永遠面向鏡頭），腳下加一圈影子；圖上已經拿著道具，不再另外做道具
+      if(s.figure){const tex=figureLoader.load(s.figure,t=>{const img=t.image;card.scale.set(FIGURE_H*img.width/img.height,FIGURE_H,1);});tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=4;
+        const card=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,alphaTest:.45}));figureMaterials.push(card.material);card.center.set(.5,0);card.scale.set(FIGURE_H*.6,FIGURE_H,1);g.add(card);
+        const foot=new THREE.Mesh(new THREE.CircleGeometry(.11,20),new THREE.MeshBasicMaterial({color:0x22332a,transparent:true,opacity:.22,depthWrite:false}));foot.rotation.x=-Math.PI/2;foot.position.y=.004;g.add(foot);}
+      const body=s.figure?null:chibi(g,{top:s.top,hair:s.hair??[0x2b2422,0x4a3428,0x3a2c26][i%3],eyes:s.eyes,skin:s.skin,band:!!s.band,glasses:s.glasses,fringe:s.fringe,tail:s.tail,hat:s.hat,curly:s.curly});
       const hit=new THREE.Mesh(hitGeo,hitMaterial);hit.position.y=.35;g.add(hit);
-      const bubble=new THREE.Sprite(bubbleMaterial);bubble.scale.set(.28,.22,1);bubble.position.set(.07,.58,0);g.add(bubble);singsiBubbles.push(bubble);
-      const p=s.prop;
+      const bubble=new THREE.Sprite(bubbleMaterial);bubble.scale.set(.28,.22,1);bubble.position.set(.07,s.figure?FIGURE_H+.1:.58,0);bubble.userData.base=bubble.position.y;g.add(bubble);singsiBubbles.push(bubble);
+      const p=s.figure?null:s.prop;
       if(p==='book'){/* 族語書：翻開捧在胸前 */const book=new THREE.Group();book.position.set(0,.165,.09);book.rotation.x=-.75;g.add(book);for(const k of [-1,1]){box(.085,.11,.012,k*.042,0,0,0xc0392b,book).rotation.y=-k*.28;box(.075,.1,.006,k*.04,0,.009,0xfbf6e6,book).rotation.y=-k*.28;}}
       if(p==='spear'){/* 魚槍和綁在身上的浮球 */beam(V(.1,.02,.05),V(.12,.66,.02),.009,0x3d4448,g);const tip=mesh(geometry.cone,0xc9ced1,g);tip.scale.set(.016,.06,.016);tip.position.set(.121,.69,.02);const ball=mesh(new THREE.SphereGeometry(.05,12,10),0xf08a24,g);ball.position.set(-.13,.08,.06);beam(V(-.1,.11,.04),V(-.06,.13,.01),.004,0xe2cf9f,g);}
       if(p==='tube'){/* 竹筒：在地上敲出節奏 */tapTube=new THREE.Group();tapTube.position.set(.1,.15,.05);g.add(tapTube);cylinder(.03,.3,0,0,0,0x9fbf55,tapTube);for(const y of [-.07,.06])cylinder(.033,.012,0,y,0,0x7e9c3e,tapTube);}
@@ -523,6 +527,8 @@ function buildVillage(){
         for(const [letter,color,x] of [['A','#d6453a',40],['B','#3b7dd8',96],['C','#2f9d5b',152]]){ink.fillStyle=color;ink.fillText(letter,x,66);}
         const letters=new THREE.CanvasTexture(sheet);letters.colorSpace=THREE.SRGBColorSpace;const face=new THREE.Mesh(new THREE.PlaneGeometry(.14,.09),new THREE.MeshStandardMaterial({map:letters,roughness:.8}));face.position.z=.0045;card.add(face);}
     });
+    // 公仔立牌不受燈光影響，夜晚要自己調暗
+    const tintFigures=theme=>figureMaterials.forEach(m=>m.color.set(theme==='night'?0x8e9ab8:0xffffff));tintFigures(document.documentElement.dataset.theme);window.addEventListener('salimpo:theme',event=>tintFigures(event.detail));
     // 淑樺 singsi 的家屋工地在工寮右前方（避開低空的雲和散步的路線）：木頭骨架先立好、屋頂一半鋪了茅草，地上堆著木頭和黃藤
     const site=new THREE.Group();site.position.set(6.95,.13,1.15);site.rotation.y=.61;scene.add(site);
     for(const x of [-.42,.42])for(const z of [-.3,.3])box(.06,.62,.06,x,.31,z,0x8a6a48,site);
@@ -533,7 +539,7 @@ function buildVillage(){
     const pile=mesh(new THREE.TorusGeometry(.07,.018,6,16),0xc9a35a,site);pile.position.set(.4,.03,.55);pile.rotation.x=Math.PI/2;
   }
   // 小人輕輕晃、泡泡上下飄；秋霞 singsi 揮手、Madal singsi 敲竹筒；正在說話的那一位轉向鏡頭、開心地跳
-  function animateSingsi(elapsed){singsiBubbles.forEach((b,i)=>{b.position.y=.58+Math.sin(elapsed*2.2+i*1.3)*.022;});if(waveArm)waveArm.rotation.z=-.55+Math.sin(elapsed*7)*.35;if(tapTube)tapTube.position.y=.15+Math.abs(Math.sin(elapsed*3.2))*.035;
+  function animateSingsi(elapsed){singsiBubbles.forEach((b,i)=>{b.position.y=b.userData.base+Math.sin(elapsed*2.2+i*1.3)*.022;});if(waveArm)waveArm.rotation.z=-.55+Math.sin(elapsed*7)*.35;if(tapTube)tapTube.position.y=.15+Math.abs(Math.sin(elapsed*3.2))*.035;
     singsiFigures.forEach((g,i)=>{const s=SINGSI[i],talk=i===talkingTo;g.position.y=(s.y||.13)+(talk?Math.abs(Math.sin(elapsed*4.5))*.045:0);g.rotation.y=talk?THREE.MathUtils.lerp(g.rotation.y,.61,.15):s.turn+Math.sin(elapsed*.55+i)*.08;});}
   function hoverSingsi(i){if(i===singsiHover)return;singsiHover=i;document.querySelectorAll('.singsi-pin').forEach((pin,k)=>pin.classList.toggle('is-hover',k===i));}
   let selected=-1;const focus=new THREE.Vector3(0,0,0),targetFocus=new THREE.Vector3(0,0,0),pan=new THREE.Vector3(),targetPan=new THREE.Vector3();
