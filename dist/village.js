@@ -295,9 +295,33 @@ function buildVillage(){
   const flameMaterial=new THREE.MeshStandardMaterial({color:0xffa340,emissive:0xff6a1a,emissiveIntensity:.7,roughness:.6,flatShading:true});
   const flame=mesh(geometry.cone,flameMaterial,fire);flame.scale.set(.085,.22,.085);flame.position.y=.15;flame.castShadow=false;
   const fireLight=new THREE.PointLight(0xff9a4a,0,3.2);fireLight.position.set(0,.45,0);fire.add(fireLight);lights.push(fireLight);
+  // 女人島的舞者穿阿美族女生族服（照學校族服照片）：白羽毛頭冠綴彩色花球、頂上插彩羽；粉紅披肩下緣白蕾絲、垂一圈彩色流蘇；
+  // 綠珠項鍊、綠上衣、紅腰帶；黑底白點短裙配白蕾絲裙襬；白底黑紋綁腿、腳踝綠流蘇。六個人的流蘇顏色順序錯開
+  const amisGeo={plume:new THREE.SphereGeometry(.03,10,8),crownBand:new THREE.TorusGeometry(.09,.013,6,24),flower:new THREE.SphereGeometry(.018,8,6),feather:new THREE.ConeGeometry(.012,.13,6),
+    cape:new THREE.CylinderGeometry(.052,.1,.055,16),lace:new THREE.TorusGeometry(.097,.009,5,26),tassel:new THREE.BoxGeometry(.013,.042,.008),beads:new THREE.TorusGeometry(.052,.008,5,22),
+    sash:new THREE.TorusGeometry(.072,.012,5,22),skirt:new THREE.CylinderGeometry(.079,.088,.058,16),hem:new THREE.TorusGeometry(.087,.008,5,24),legging:new THREE.CylinderGeometry(.022,.022,.05,8),stripe:new THREE.TorusGeometry(.0225,.0045,4,12),ankle:new THREE.ConeGeometry(.02,.026,8)};
+  const dotSkirt=(()=>{const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.fillStyle='#1c1c24';x.fillRect(0,0,256,64);x.fillStyle='#f4f1ea';for(let i=0;i<12;i++)for(const [y,o] of [[18,0],[46,10.7]]){x.beginPath();x.arc(i*21.3+o+5,y,4.2,0,Math.PI*2);x.fill();}const t=new THREE.CanvasTexture(c);t.wrapS=THREE.RepeatWrapping;t.anisotropy=4;if('colorSpace' in t)t.colorSpace=THREE.SRGBColorSpace;return new THREE.MeshStandardMaterial({map:t,roughness:.8});})();
+  function amisWoman(parent,n){
+    const g=chibi(parent,{top:0x23a455,bottom:0x1c1c24,band:false,sing:true});
+    const add=(geo,mat,x,y,z)=>{const o=new THREE.Mesh(geo,typeof mat==='number'?smooth(mat):mat);o.position.set(x,y,z);o.castShadow=false;g.add(o);return o;};
+    for(let k=0;k<10;k++){const a=k/10*Math.PI*2,front=Math.cos(a);add(amisGeo.plume,0xfbfaf5,Math.sin(a)*.078,.37+(front>.5?.012:0),front*.074-.012);}
+    add(amisGeo.plume,0xfbfaf5,0,.405,-.02).scale.setScalar(1.3);
+    const crown=add(amisGeo.crownBand,0xd8263c,0,.335,0);crown.rotation.x=Math.PI/2-.25;
+    [0xff5fa2,0xffd166,0x3fbf5a,0xff7a2f,0x8c5cff].forEach((c,k)=>add(amisGeo.flower,c,(k-2)*.032,.343-Math.abs(k-2)*.004,.092-Math.abs(k-2)*.012));
+    for(const [c,x,tilt] of [[0xffd166,-.03,.35],[[0xff5fa2,0x5cc1d8,0x7ad86f][n%3],.03,-.35]]){const f=add(amisGeo.feather,c,x,.45,-.04);f.rotation.z=tilt;}
+    add(amisGeo.cape,0xe8407a,0,.178,0);
+    add(amisGeo.lace,0xfdfbf4,0,.152,0).rotation.x=Math.PI/2;
+    const colors=[0xd8263c,0xffd166,0x23a455,0x3a7bd5,0xff7a2f,0x8c5cff];
+    for(let k=0;k<16;k++){const a=k/16*Math.PI*2,t=add(amisGeo.tassel,colors[(k+n)%colors.length],Math.sin(a)*.093,.128,Math.cos(a)*.093);t.rotation.y=a;}
+    const beads=add(amisGeo.beads,0x39e06a,0,.19,.022);beads.rotation.x=Math.PI/2-.75;
+    add(amisGeo.sash,0xd8263c,0,.112,0).rotation.x=Math.PI/2;
+    add(amisGeo.skirt,dotSkirt,0,.084,0);
+    add(amisGeo.hem,0xfdfbf4,0,.056,0).rotation.x=Math.PI/2;
+    for(const x of [-.026,.026]){add(amisGeo.legging,0xf4f1ea,x,.032,0);for(const y of [.022,.042])add(amisGeo.stripe,0x1c1c24,x,y,0).rotation.x=Math.PI/2-.35;const tuft=add(amisGeo.ankle,0x23a455,x,.012,0);tuft.rotation.x=Math.PI;}
+    return g;}
   const dance=new THREE.Group();dance.position.set(.12,.15,.1);songIsland.add(dance);const dancers=[];
   for(let i=0;i<6;i++){const a=i/6*Math.PI*2;const woman=new THREE.Group();woman.position.set(Math.cos(a)*.46,0,Math.sin(a)*.46);woman.rotation.y=-a+Math.PI/2;dance.add(woman);
-    chibi(woman,{pom:[0xffd166,0x7ad86f,0x5cc1d8][i%3],sing:true});
+    amisWoman(woman,i);
     dancers.push(woman);}
   const hands=mesh(new THREE.TorusGeometry(.46,.011,5,36),0xf3ead8,dance);hands.rotation.x=Math.PI/2;hands.position.y=.13;
   const palm=new THREE.Group();palm.position.set(-.82,.1,-.55);songIsland.add(palm);
