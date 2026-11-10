@@ -4,8 +4,8 @@ const canvas=document.getElementById('village-canvas');
 const world=document.getElementById('village-world');
 const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const positions=[[-4,-2.1],[-.6,-3.5],[3.1,-2.7],[4.7,.8],[2.5,3.8],[-1.1,4.7],[-4.5,1.4],[-1.8,.1],[1.8,.4],[4.4,-1.6],[-4.8,-.7],[8.3,-5.3],[-8.3,5.3],[3.8,2.75],[-5.9,3.4]];
-// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）改成老師的工寮 talo'an；9（原文史資料館）、10（原訪視會客室）併站後是空房子，以後新增的站可以住進去；位置 14 是左岸望向女人島的古謠樹
-const spots=[0,1,5,4,2,11,12,6,14,8,7,3,13],placeOf=spot=>spots.indexOf(spot);
+// 首頁站牌依序住進這些位置的房子；位置 3（原教材工坊）改成老師的工寮 talo'an；9（原文史資料館）現在是山海報報的報社，門口立著一份大報紙；10（原訪視會客室）還是空房子，以後新增的站可以住進去；位置 14 是左岸望向女人島的古謠樹
+const spots=[0,1,5,4,9,2,11,12,6,14,8,7,3,13],placeOf=spot=>spots.indexOf(spot);
 let renderer;
 try{
   renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});
@@ -146,7 +146,22 @@ function buildVillage(){
 
   const archive=building(7,0xe8e4d9,0x5b7f95,1.7,1.35,1.1);for(const x of [-.7,-.35,.35,.7])box(.09,1.02,.09,x,.69,.8,0xe7e8dd,archive);box(1.95,.1,.6,0,.19,.86,0xc8c9b4,archive);box(.75,.1,.04,0,1.19,.79,0x50a578,archive);
   const kiosk=building(8,0xddcca3,0x58a8a0,.95,.9,.65);box(.55,.42,.06,0,.81,.54,0x37758c,kiosk);box(.055,.2,.04,0,.8,.58,0xf8f1d9,kiosk);box(.055,.04,.04,0,.97,.58,0xf8f1d9,kiosk);
-  const history=building(9,0xe8cda3,0x82785b,1.3,1.18,.94);for(const x of [-.54,.54])beam(new THREE.Vector3(x,.15,.75),new THREE.Vector3(x,1.3,.75),.035,0x806348,history);box(.82,.19,.045,0,1.18,.67,0x578875,history);for(let i=0;i<4;i++)box(.13,.31,.09,-.26+i*.15,.48,.72,[0xaf7d61,0x5b8290,0xb5a063,0x638367][i],history);
+  // 山海報報的報社：原文史資料館的房子，門口斜立一份大報紙（刊頭是四張色紙拼的「山海報報」），門邊堆著一疊疊報紙
+  const history=building(9,0xe8cda3,0x82785b,1.3,1.18,.94);for(const x of [-.54,.54])beam(new THREE.Vector3(x,.15,.75),new THREE.Vector3(x,1.3,.75),.035,0x806348,history);box(.82,.19,.045,0,1.18,.67,0xb4532a,history);for(let i=0;i<3;i++)box(.34,.05,.24,-.38,.2+i*.055,.86,[0xf3ecdc,0xe9e0cc,0xf6f1e6][i],history);
+  {const sheet=document.createElement('canvas'),c=sheet.getContext('2d');sheet.width=256;sheet.height=336;c.fillStyle='#fbf6ea';c.fillRect(0,0,256,336);
+    const tiles=[['山','#2F6B3A','#fff',-.1],['海','#ffffff','#1F4FA0',.07],['報','#F2C14E','#2b2622',-.05],['報','#B4532A','#fff',.12]];
+    c.font='bold 34px "Huninn","Iansui","PingFang TC","Noto Sans TC",sans-serif';c.textAlign='center';c.textBaseline='middle';
+    tiles.forEach(([ch,bg,fg,r],i)=>{c.save();c.translate(38+i*60,42);c.rotate(r);c.fillStyle=bg;c.fillRect(-25,-25,50,50);c.strokeStyle='#d9cdb6';c.lineWidth=2;c.strokeRect(-25,-25,50,50);c.fillStyle=fg;c.fillText(ch,0,2);c.restore();});
+    c.fillStyle='#2b2622';c.fillRect(12,80,232,4);c.fillRect(12,87,232,1.5);
+    c.fillStyle='#c97b5a';c.fillRect(12,98,140,96);c.fillStyle='#f2c14e';c.beginPath();c.arc(118,122,13,0,Math.PI*2);c.fill();c.fillStyle='#5e8f63';c.beginPath();c.moveTo(12,194);c.lineTo(62,140);c.lineTo(104,182);c.lineTo(130,160);c.lineTo(152,194);c.closePath();c.fill();
+    c.fillStyle='#9A3324';c.fillRect(162,100,82,12);c.fillRect(162,118,60,12);
+    c.fillStyle='#b9ad99';for(let y=140;y<194;y+=9)c.fillRect(162,y,82-(y%27?0:24),4);
+    for(let col=0;col<3;col++)for(let y=206;y<322;y+=9)c.fillRect(12+col*80,y,72-((y+col*9)%45?0:26),4);
+    const map=new THREE.CanvasTexture(sheet);map.colorSpace=THREE.SRGBColorSpace;map.anisotropy=4;
+    const paper=new THREE.Group();paper.position.set(.66,.14,1.05);paper.rotation.set(-.12,.42,0);paper.scale.setScalar(1.3);history.add(paper);
+    const board=box(.82,1.08,.03,0,.62,0,0xfbf6ea,paper);board.material=[material(0xe9e0cc),material(0xe9e0cc),material(0xe9e0cc),material(0xe9e0cc),new THREE.MeshStandardMaterial({map,roughness:.85}),material(0xe9e0cc)];
+    const fold=box(.82,.03,.12,0,1.17,-.05,0xf3ecdc,paper);fold.rotation.x=.5;
+    for(const x of [-.3,.3])beam(new THREE.Vector3(x,0,-.32),new THREE.Vector3(x,.9,-.03),.022,0x806348,paper);}
   // 村子裡的小人：大頭、圓臉、點點眼睛和腮紅，身體短短的；阿美族頭飾（白色頭帶加毛球）可以關掉。原點在腳底，高度約 0.42
   const smoothMaterials={};function smooth(color){return smoothMaterials[color]||(smoothMaterials[color]=new THREE.MeshStandardMaterial({color,roughness:.75}));}
   const chibiGeo={head:new THREE.SphereGeometry(.088,18,14),hair:new THREE.SphereGeometry(.094,18,10,0,Math.PI*2,0,Math.PI*.56),bun:new THREE.SphereGeometry(.04,10,8),eye:new THREE.SphereGeometry(.012,8,6),cheek:new THREE.SphereGeometry(.015,8,6),body:new THREE.CylinderGeometry(.048,.072,.13,14),skirt:new THREE.CylinderGeometry(.074,.08,.05,14),leg:new THREE.CylinderGeometry(.018,.018,.06,8),arm:new THREE.CylinderGeometry(.017,.019,.085,8),hand:new THREE.SphereGeometry(.022,8,6),band:new THREE.TorusGeometry(.086,.012,6,22),pom:new THREE.SphereGeometry(.022,10,8)};

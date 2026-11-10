@@ -40,7 +40,7 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
 }
 for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','library.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js','office.js','office-data.js','stars.js','training.js','brave.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
-assert.equal([...home.matchAll(/data-place="/g)].length,13);
+assert.equal([...home.matchAll(/data-place="/g)].length,14);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
 for(const a of Object.values(data.assets)){assert.ok(fs.existsSync(path.join(dist,a.src)));assert.ok(fs.existsSync(path.join(dist,a.thumb)));}
 let pageImages=0;
@@ -202,7 +202,7 @@ for(const old of ['material','lesson','history','visit','archive'])assert.ok(!ho
 for(const [place,href] of [['course','resource.html?id=PLAN-002'],['library','library.html'],['farm','lessons.html?topic=農耕與食農'],['ocean','lessons.html'],['reception','reception.html']])assert.ok(new RegExp(`data-place="${place}"[^>]*href="${href.replace(/[?.]/g,'\\$&')}"`).test(home),'Home station link '+place);
 for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js)$/.test(f)&&f!=='lessons.js'))assert.ok(!fs.readFileSync(path.join(dist,file),'utf8').includes('view=materials'),'Old materials workshop linked from '+file);
 const placeOrder=[...home.matchAll(/data-place="([^"]+)"/g)].map(m=>m[1]),villageJs=fs.readFileSync(path.join(dist,'village.js'),'utf8'),spots=JSON.parse(villageJs.match(/const spots=(\[[^\]]*\])/)[1]);
-assert.equal(spots.length,[...home.matchAll(/data-place="/g)].length,'Every home station needs a house spot');assert.ok(villageJs.includes('function seaAt(')&&villageJs.includes('function moveRaft(')&&villageJs.includes('courseGroup'),'Raft paddles where the sea is clicked; language island is an outdoor training ground');assert.ok([9,10].every(n=>!spots.includes(n)),'Spots 9 and 10 stay empty houses');assert.equal(spots[placeOrder.indexOf('training')],3,'老師的工寮 lives in the old workshop at spot 3');assert.ok(!fs.readFileSync(path.join(dist,'village-ui.js'),'utf8').includes('padStart(2')&&!/directory-number|place-number|directory-group-title"><b>/.test(home),'Stations show names only, no number codes');assert.equal(spots[placeOrder.indexOf('song-tree')],14,'Song tree lives on the west shore at spot 14');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierin615music/"'),'Song tree second link to 古調的現代新衣');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierindateng/"'),'Farm second link to Dateng 野菜探險家');
+assert.equal(spots.length,[...home.matchAll(/data-place="/g)].length,'Every home station needs a house spot');assert.ok(villageJs.includes('function seaAt(')&&villageJs.includes('function moveRaft(')&&villageJs.includes('courseGroup'),'Raft paddles where the sea is clicked; language island is an outdoor training ground');assert.ok(!spots.includes(10)&&spots[placeOrder.indexOf('newsletter')]===9&&villageJs.includes('山海報報的報社'),'Spot 9 is the 山海報報 newspaper house; spot 10 stays an empty house');assert.equal(spots[placeOrder.indexOf('training')],3,'老師的工寮 lives in the old workshop at spot 3');assert.ok(!fs.readFileSync(path.join(dist,'village-ui.js'),'utf8').includes('padStart(2')&&!/directory-number|place-number|directory-group-title"><b>/.test(home),'Stations show names only, no number codes');assert.equal(spots[placeOrder.indexOf('song-tree')],14,'Song tree lives on the west shore at spot 14');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierin615music/"'),'Song tree second link to 古調的現代新衣');assert.ok(home.includes('data-href2="https://laierin615.github.io/laierindateng/"'),'Farm second link to Dateng 野菜探險家');
 // 海怪：首頁海上的傳說故事卡，四個連結都要找得到；海怪點得到、潛水換到看得到的地方（village.js），名字和快速選單接好（village-ui.js），文史文章能直接跳到第 5 段（museum.js）
 const monsterCard=home.match(/<article class="place-card raft-card monster-card" id="monster-card"[\s\S]*?<\/article>/)?.[0]||'';
 assert.ok(monsterCard.includes('<h2>海怪</h2>')&&monsterCard.includes('lang="ami">kimad</i>'),'Sea monster legend card missing on the home page');
@@ -313,7 +313,7 @@ for(const file of fs.readdirSync(dist).filter(f=>/\.(html|js|css|json)$/.test(f)
 }
 for(const page of ['index',...subpages])assert.ok(fs.readFileSync(path.join(dist,page+'.html'),'utf8').includes('href="office.html">村辦公室</a>'),'Office entrance missing on '+page);
 assert.ok(home.includes('data-place="office"'),'Office station missing on the home village');
-console.log('Office verified: links encrypted, no document addresses in the site, entrance on every page and a station in the 13-place village.');
+console.log('Office verified: links encrypted, no document addresses in the site, entrance on every page and a station in the 14-place village.');
 
 // 星空 fo'is：星星與連線都由 data.js 算出；每顆星至少一條連線、連到存在的頁面與資料，每頁頁尾和首頁都有入口
 const starContext={window:{SCHOOL_DATA:data}};vm.runInNewContext(fs.readFileSync(path.join(dist,'stars.js'),'utf8'),starContext);

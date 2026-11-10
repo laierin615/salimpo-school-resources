@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>山海報報｜Salimpo 山海學習聚落</title>
+<meta name="description" content="Salimpo 山海報報：給家長與部落族人的課堂報，每月一期。可以在網頁上看，也可以下載 A3 摺頁或 A4 列印。">
+<link rel="icon" type="image/png" sizes="64x64" href="../media/brand/salimpo-icon-64.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@600;900&family=Iansui&family=Huninn&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#f6f0e2;--card:#fffdf7;--ink:#2b2622;--ink2:#6b6157;--rule:#d9cdb6;--kid:'Huninn','Iansui',sans-serif;--serif:'Noto Serif TC',serif}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:16px/1.75 'Noto Sans TC',sans-serif}
+a{color:inherit}
+.wrap{max-width:1040px;margin:0 auto;padding:20px 16px 48px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:14px;color:var(--ink2)}
+.top a{text-decoration:none;font-weight:700;color:#1F4FA0}
+header.mast{display:flex;align-items:center;gap:22px;margin:22px 0 10px;padding-bottom:18px;border-bottom:3px double var(--ink)}
+h1.clip{--tile:64px;display:flex;gap:10px;margin:0;font-family:var(--kid);font-weight:400;font-size:calc(var(--tile)*.6);line-height:1}
+h1.clip span{width:var(--tile);height:var(--tile);display:grid;place-items:center;border:3px solid #fff;box-shadow:0 2px 6px rgba(60,40,20,.18)}
+.c1{background:#2F6B3A;color:#fff;transform:rotate(-6deg);clip-path:polygon(3% 2%,98% 0,100% 96%,0 100%)}
+.c2{background:#fff;color:#1F4FA0;transform:rotate(4deg);clip-path:polygon(0 3%,100% 0,97% 100%,2% 97%)}
+.c3{background:#F2C14E;color:var(--ink);transform:rotate(-3deg);clip-path:polygon(2% 0,100% 4%,98% 98%,0 100%)}
+.c4{background:#B4532A;color:#fff;transform:rotate(7deg);clip-path:polygon(0 0,97% 3%,100% 100%,3% 96%)}
+.mast p{margin:0;color:var(--ink2);font-size:15px}
+.mast p b{display:block;color:var(--ink);font-family:var(--serif);font-size:20px}
+.issues{list-style:none;margin:26px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:22px}
+.issue{background:var(--card);border:1px solid var(--rule);box-shadow:0 1px 0 var(--rule),4px 6px 0 -1px #e8dcc4;display:flex;flex-direction:column}
+.issue>a.cover{display:block;text-decoration:none;color:inherit}
+.band{display:flex;justify-content:space-between;align-items:baseline;padding:10px 14px 8px;border-bottom:2px solid var(--theme);font-size:13px;color:var(--ink2)}
+.band b{font-family:var(--kid);font-weight:400;font-size:22px;color:var(--theme)}
+.photo{aspect-ratio:16/10;overflow:hidden;background:#e9e1d0}
+.photo img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .4s}
+.issue>a.cover:hover .photo img{transform:scale(1.03)}
+.lead{padding:12px 14px 4px}
+.lead .say{font-family:var(--serif);font-weight:900;font-size:21px;line-height:1.35;color:var(--theme)}
+.lead .say i{font-style:normal;font-family:'Iansui',var(--serif);font-weight:400}
+.lead .zh{font-size:14px;color:var(--ink2)}
+.lead p{margin:8px 0 0;font-size:14.5px}
+.links{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap;padding:12px 14px 14px}
+.links a{flex:1 1 auto;text-align:center;text-decoration:none;font-weight:700;font-size:14px;padding:8px 10px;border:1.5px solid var(--theme);color:var(--theme);border-radius:3px}
+.links a.go{background:var(--theme);color:#fff}
+.note{margin-top:30px;padding-top:14px;border-top:1px solid var(--rule);font-size:14px;color:var(--ink2)}
+@media (max-width:560px){header.mast{flex-direction:column;align-items:flex-start;gap:14px}h1.clip{--tile:54px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a href="../index.html">← 回到山海學習聚落</a><a href="../lessons.html">山海探索站 →</a></div>
+  <header class="mast">
+    <h1 class="clip" aria-label="山海報報"><span class="c1">山</span><span class="c2">海</span><span class="c3">報</span><span class="c4">報</span></h1>
+    <p><b>Salimpo 山海文化課程月刊</b>給家長與部落族人的課堂報。每月一期，把山海課這個月做了什麼、孩子說了什麼、下個月要做什麼，整理成四頁。</p>
+  </header>
+
+  <ol class="issues" reversed>
+    <li class="issue" style="--theme:#9A3324">
+      <a class="cover" href="115-10/">
+        <div class="band"><b>第 2 期</b><span>115 學年度 10 月號</span></div>
+        <div class="photo"><img src="115-10/img/hero.jpg" alt="中年級把壓好花紋的紅龜粿排進大蒸籠" loading="lazy"></div>
+        <div class="lead">
+          <div class="say"><i lang="ami">pasifana'en tamiyanan</i></div>
+          <div class="zh">告訴我們吧</div>
+          <p>部落的 ina 來教做紅龜粿，植物工作室的老師來教香茅蒸餾；孩子們到校園找藥草、野菜和月桃。</p>
+        </div>
+      </a>
+      <div class="links"><a class="go" href="115-10/">翻開這一期</a><a href="115-10/print-a3.pdf" download="115學年10月號_第2期_A3雙面摺頁.pdf">A3 摺頁 PDF</a><a href="115-10/print-a4.pdf" download="115學年10月號_第2期_A4.pdf">A4 PDF</a></div>
+    </li>
+    <li class="issue" style="--theme:#1F4FA0">
+      <a class="cover" href="115-09/">
+        <div class="band"><b>創刊號</b><span>115 學年度 9 月號</span></div>
+        <div class="photo"><img src="115-09/img/hero.jpg" alt="低年級在寧埔溪蹲在淺灘上五感踏查" loading="lazy"></div>
+        <div class="lead">
+          <div class="say"><i lang="ami">Ira ko maan i 'alo?</i></div>
+          <div class="zh">溪流裡有什麼呢？</div>
+          <p>從稻田走到泥土：福壽螺、部落地景模型、陶土姓名章，還有寧埔溪邊的刺蔥溪蝦湯。</p>
+        </div>
+      </a>
+      <div class="links"><a class="go" href="115-09/">翻開這一期</a><a href="115-09/print-a3.pdf" download="115學年9月號_創刊號_A3雙面摺頁.pdf">A3 摺頁 PDF</a><a href="115-09/print-a4.pdf" download="115學年9月號_創刊號_A4.pdf">A4 PDF</a></div>
+    </li>
+  </ol>
+
+  <p class="note">A3 摺頁：一張 A3 雙面印，選「短邊翻頁」，印好對折，第 1 版在外。照片中的孩子與長輩都已取得同意；想補充或更正內容，請告訴導師。</p>
+</div>
+</body>
+</html>
