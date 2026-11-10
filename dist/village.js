@@ -146,7 +146,8 @@ function buildVillage(){
 
   const archive=building(7,0xe8e4d9,0x5b7f95,1.7,1.35,1.1);for(const x of [-.7,-.35,.35,.7])box(.09,1.02,.09,x,.69,.8,0xe7e8dd,archive);box(1.95,.1,.6,0,.19,.86,0xc8c9b4,archive);box(.75,.1,.04,0,1.19,.79,0x50a578,archive);
   const kiosk=building(8,0xddcca3,0x58a8a0,.95,.9,.65);box(.55,.42,.06,0,.81,.54,0x37758c,kiosk);box(.055,.2,.04,0,.8,.58,0xf8f1d9,kiosk);box(.055,.04,.04,0,.97,.58,0xf8f1d9,kiosk);
-  // 山海報報的報社：原文史資料館的房子，門口斜立一份大報紙（刊頭是四張色紙拼的「山海報報」），門邊堆著一疊疊報紙
+  // 山海報報的報社：原文史資料館的房子，屋頂斜上方飄著一份小報紙（刊頭是四張色紙拼的「山海報報」），慢慢上下浮動；門邊堆著一疊疊報紙
+  let newsPaper=null,newsShadow=null;const NEWS_Y=.74;
   const history=building(9,0xe8cda3,0x82785b,1.3,1.18,.94);for(const x of [-.54,.54])beam(new THREE.Vector3(x,.15,.75),new THREE.Vector3(x,1.3,.75),.035,0x806348,history);box(.82,.19,.045,0,1.18,.67,0xb4532a,history);for(let i=0;i<3;i++)box(.34,.05,.24,-.38,.2+i*.055,.86,[0xf3ecdc,0xe9e0cc,0xf6f1e6][i],history);
   {const sheet=document.createElement('canvas'),c=sheet.getContext('2d');sheet.width=256;sheet.height=336;c.fillStyle='#fbf6ea';c.fillRect(0,0,256,336);
     const tiles=[['山','#2F6B3A','#fff',-.1],['海','#ffffff','#1F4FA0',.07],['報','#F2C14E','#2b2622',-.05],['報','#B4532A','#fff',.12]];
@@ -158,10 +159,9 @@ function buildVillage(){
     c.fillStyle='#b9ad99';for(let y=140;y<194;y+=9)c.fillRect(162,y,82-(y%27?0:24),4);
     for(let col=0;col<3;col++)for(let y=206;y<322;y+=9)c.fillRect(12+col*80,y,72-((y+col*9)%45?0:26),4);
     const map=new THREE.CanvasTexture(sheet);map.colorSpace=THREE.SRGBColorSpace;map.anisotropy=4;
-    const paper=new THREE.Group();paper.position.set(.66,.14,1.05);paper.rotation.set(-.12,.42,0);paper.scale.setScalar(1.3);history.add(paper);
+    const paper=new THREE.Group();paper.position.set(1.85,NEWS_Y,.85);paper.rotation.set(-.08,.42,0);paper.scale.setScalar(.72);history.add(paper);newsPaper=paper;newsShadow=new THREE.Mesh(new THREE.CircleGeometry(.24,20),new THREE.MeshBasicMaterial({color:0x2c3a2a,transparent:true,opacity:.18,depthWrite:false}));newsShadow.rotation.x=-Math.PI/2;newsShadow.position.set(1.85,.012,.85);history.add(newsShadow);
     const board=box(.82,1.08,.03,0,.62,0,0xfbf6ea,paper);board.material=[material(0xe9e0cc),material(0xe9e0cc),material(0xe9e0cc),material(0xe9e0cc),new THREE.MeshStandardMaterial({map,roughness:.85}),material(0xe9e0cc)];
-    const fold=box(.82,.03,.12,0,1.17,-.05,0xf3ecdc,paper);fold.rotation.x=.5;
-    for(const x of [-.3,.3])beam(new THREE.Vector3(x,0,-.32),new THREE.Vector3(x,.9,-.03),.022,0x806348,paper);}
+    const fold=box(.82,.03,.12,0,1.17,-.05,0xf3ecdc,paper);fold.rotation.x=.5;}
   // 村子裡的小人：大頭、圓臉、點點眼睛和腮紅，身體短短的；阿美族頭飾（白色頭帶加毛球）可以關掉。原點在腳底，高度約 0.42
   const smoothMaterials={};function smooth(color){return smoothMaterials[color]||(smoothMaterials[color]=new THREE.MeshStandardMaterial({color,roughness:.75}));}
   const chibiGeo={head:new THREE.SphereGeometry(.088,18,14),hair:new THREE.SphereGeometry(.094,18,10,0,Math.PI*2,0,Math.PI*.56),bun:new THREE.SphereGeometry(.04,10,8),eye:new THREE.SphereGeometry(.012,8,6),cheek:new THREE.SphereGeometry(.015,8,6),body:new THREE.CylinderGeometry(.048,.072,.13,14),skirt:new THREE.CylinderGeometry(.074,.08,.05,14),leg:new THREE.CylinderGeometry(.018,.018,.06,8),arm:new THREE.CylinderGeometry(.017,.019,.085,8),hand:new THREE.SphereGeometry(.022,8,6),band:new THREE.TorusGeometry(.086,.012,6,22),pom:new THREE.SphereGeometry(.022,10,8)};
@@ -609,6 +609,7 @@ function buildVillage(){
 
   let start=performance.now(),last=0;
   function frame(now){requestAnimationFrame(frame);if(document.hidden||!visible||now-last<1000/30)return;last=now;const elapsed=(now-start)/1000;
+    if(newsPaper&&!reduced){newsPaper.position.y=NEWS_Y+Math.sin(elapsed*1.3)*.07;newsPaper.rotation.y=.42+Math.sin(elapsed*.6)*.14;newsPaper.rotation.z=Math.sin(elapsed*1.05)*.05;newsShadow.scale.setScalar(1-Math.sin(elapsed*1.3)*.12);}
     yaw=THREE.MathUtils.lerp(yaw,targetYaw,.12);pitch=THREE.MathUtils.lerp(pitch,targetPitch,.12);if(Math.abs(zoom-targetZoom)>.0005){zoom=THREE.MathUtils.lerp(zoom,targetZoom,.18);project();}focus.lerp(targetFocus,.12);pan.lerp(targetPan,.18);
     const lookX=focus.x+pan.x,lookZ=focus.z+pan.z,flat=Math.cos(pitch)*RADIUS;camera.position.set(lookX+Math.sin(yaw)*flat,Math.sin(pitch)*RADIUS,lookZ+Math.cos(yaw)*flat);camera.lookAt(lookX,.05,lookZ);
     if(hoverAt&&!down){const beastHere=monsterAt(...hoverAt),who=beastHere?-1:singsiAt(...hoverAt);hoverSingsi(who);const index=beastHere||who>=0?-1:placeAt(...hoverAt);setHover(index);canvas.classList.toggle('is-pointing',beastHere||who>=0||index>=0||raftAt(...hoverAt));hoverAt=null;}
