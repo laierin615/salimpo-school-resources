@@ -15,5 +15,6 @@
   say.textContent=text?`找「${text}」：${list.length} 個詞`:topic?`${topic}：${list.length} 個詞`:`共 ${list.length} 個詞`;
   document.querySelectorAll('.words-topic').forEach(b=>b.setAttribute('aria-pressed',String(!text&&b.dataset.topic===topic)));}
  document.querySelectorAll('.words-topic').forEach(b=>b.addEventListener('click',()=>{topic=b.dataset.topic;q.value='';const url=new URL(location.href);if(topic)url.searchParams.set('topic',topic);else url.searchParams.delete('topic');history.replaceState(null,'',url);draw();}));
- q.addEventListener('input',draw);draw();
+ // 從全站搜尋連進來會帶 ?q=詞
+ const fromURL=new URLSearchParams(location.search).get('q');if(fromURL)q.value=fromURL;q.addEventListener('input',draw);draw();
 })();

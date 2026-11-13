@@ -26,6 +26,7 @@
 GitHub Pages只發布 `dist/`。推送 `main` 分支會由 `.github/workflows/pages.yml` 驗證及自動發布。
 
 ```sh
+node tools/build-search.mjs   # 改了資料或頁面文字後，重新產生全站搜尋索引
 node tools/verify-site.mjs
 python3 -m http.server 8766 --directory dist
 ```
@@ -40,6 +41,8 @@ python3 -m http.server 8766 --directory dist
 - 會客室：`dist/reception.html`、`dist/room.js`、`dist/room.css`；佐證在 `data.js` 各訪視項目與評鑑指標的 `evidence`，教案的文化領域對照在 `curriculum115.lessonDirections`。
 - 附件：`dist/attachments/`。
 - 村辦公室：`dist/office.html`、`dist/office.js`、`dist/office.css`；加密後的連結 `dist/office-data.js` 由 `tools/build-office.mjs` 產生，不要手動改。
+- 全站搜尋：資料服務站的關鍵字框（`dist/search.js`、`dist/search.css`）。索引 `dist/search-index.json`（教案、步驟卡、評鑑指標、族語詞、電子報、首頁故事卡等）與 `dist/search-books.json`（閱讀室書頁全文，按了才下載）由 `tools/build-search.mjs` 從 `data.js`、`words-data.js`、`singsi.js`、`media-links.js`、`index.html`、電子報與 `books/` 產生，不要手動改；發布時 `pages.yml` 會先重產，本機 `verify-site` 會提醒索引過期。搜尋寫法統一（全形半形、撇號、台／臺、大小寫，族語不打撇號也找得到）在 `app.js` 的 `SalimpoText`，資料服務站清單、全站搜尋與星空共用。村辦公室不納入。
+- 字型：Noto Sans TC 與 Outfit 在各頁 `<head>` 用 `<link>` 載入（不在 CSS 裡串接）；新增頁面時照抄其他頁 `<head>` 的字型三行。
 - 星空：`dist/stars.html`、`dist/stars.js`、`dist/stars.css`；星星與連線在瀏覽器裡由 `data.js` 算出，資料更新後星空跟著變，不用另外維護。四個星座的軸心在 `stars.js` 的 `AXES`；`data.js` 沒寫、但老師確認過要連的對應加在 `CONFIRMED`。換頁轉場寫在 `stars.css`（瀏覽器的跨頁轉場），星星亮起的進場在 `stars.js`。
 
 所有站內連結使用相對路徑，支援GitHub Pages專案子目錄。網站供持有網址者免登入瀏覽；只有村辦公室要輸入通關密碼。

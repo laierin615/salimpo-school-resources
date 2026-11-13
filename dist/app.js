@@ -1,3 +1,15 @@
+// 搜尋的寫法統一（資料服務站、成果廣場、全站搜尋 search.js、星空共用）：全形半形、撇號（’ʼ‘）、台／臺、大小寫都當成一樣；
+// 族語不打撇號也找得到（查 taeman 找得到 Ta'eman，和族語詞庫一樣）。多個詞用空白分開，每個詞都要出現。
+window.SalimpoText=(()=>{
+  const fold=v=>String(v??'').normalize('NFC').replace(/[\uff01-\uff5e]/g,c=>String.fromCharCode(c.charCodeAt(0)-0xfee0)).replace(/\u3000/g,' ').replace(/[‘’ʼʻ`´]/g,"'").replace(/台/g,'臺').toLowerCase();
+  const bare=v=>v.replace(/'/g,''),latin=/[a-z]/;
+  const terms=q=>fold(q).trim().split(/\s+/).filter(Boolean);
+  // text 要先 fold 過；有英文字母的詞（族語）再用去掉撇號的寫法比一次
+  const has=(text,word)=>text.includes(word)||(latin.test(word)&&bare(text).includes(bare(word)));
+  const matches=(text,words)=>words.every(word=>has(text,word));
+  return {fold,bare,terms,has,matches};
+})();
+
 (() => {
   const menu = document.querySelector('.menu-toggle');
   const nav = document.querySelector('.main-nav');
@@ -108,15 +120,17 @@
     const type=main.querySelector('#catalog-type');
     const domain=main.querySelector('#catalog-domain');
     function draw(sync=true){
-      const q=query.value.trim().toLocaleLowerCase();
+      const words=window.SalimpoText.terms(query.value);
       const list=records.filter(r=>{
-        const searchable=[r.title,r.summary,r.type,term(r),...tags(r),r.event?.venue||'',r.event?.result||'',...r.sections.map(s=>s.text)].join(' ').toLocaleLowerCase();
-        return (!q||q.split(/\s+/).every(word=>searchable.includes(word)))&&(!year.value||String(page==='stories'?r.event.calendarYear:r.year)===year.value)&&(!band.value||r.bands.includes(band.value))&&(!type.value||r.type===type.value)&&(!domain?.value||r.event?.domain===domain.value);
+        const searchable=window.SalimpoText.fold([r.title,r.summary,r.type,term(r),...tags(r),r.event?.venue||'',r.event?.result||'',...r.sections.map(s=>s.text)].join(' '));
+        return (!words.length||window.SalimpoText.matches(searchable,words))&&(!year.value||String(page==='stories'?r.event.calendarYear:r.year)===year.value)&&(!band.value||r.bands.includes(band.value))&&(!type.value||r.type===type.value)&&(!domain?.value||r.event?.domain===domain.value);
       });
       main.querySelector('#results-count').textContent=page==='stories'?`找到 ${list.length} 項精彩 · 展演、比賽、成果展與社團`:`找到了 ${list.length} 筆資料（本區共 ${records.length} 筆）`;
       main.querySelector('#catalog-results').innerHTML=list.length?(page==='resources'?grouped(list):list.map(card).join('')):empty();
       main.querySelector('#empty-reset')?.addEventListener('click',reset);
       if(sync){const url=new URL(location.href);url.search='';for(const [key,value] of [['q',query.value.trim()],['year',year.value],['band',band.value],['type',type.value],['domain',domain?.value||'']]){if(value)url.searchParams.set(key,value);}history.replaceState(null,'',url);}
+      // 全站搜尋（search.js）跟著關鍵字更新
+      document.dispatchEvent(new CustomEvent('salimpo:catalog',{detail:{query:query.value.trim(),count:list.length,filtered:Boolean(year.value||band.value||type.value||domain?.value)}}));
     }
     function reset(){query.value='';year.value='';band.value='';type.value='';if(domain)domain.value='';draw();query.focus();}
     form.addEventListener('submit',event=>{event.preventDefault();draw();});
@@ -147,7 +161,7 @@
       const records=data.indicators.filter(item=>!group||item.group===group);
       main.querySelector('#indicator-heading').textContent=group?data.groups[group-1]:'全部評鑑指標';
       main.querySelector('#indicator-count').textContent=`${records.length} 項指標`;
-      main.querySelector('#indicator-results').innerHTML=records.map(item=>`<article class="indicator"><div class="indicator-head"><span class="indicator-code">${esc(item.code)}</span><h3>${esc(item.title)}</h3></div><p>${esc(item.description)}</p>${item.practice?`<p class="indicator-practice"><b>學校做法</b>${esc(item.practice)}</p>`:''}${window.SalimpoRoom?window.SalimpoRoom.evidence(item):item.related.length?`<div class="related-links">${item.related.map(resourceById).filter(Boolean).map(r=>`<a href="${resourceURL(r.id)}">${esc(r.title)}</a>`).join('')}</div>`:''}</article>`).join('');
+      main.querySelector('#indicator-results').innerHTML=records.map(item=>`<article class="indicator" id="indicator-${esc(item.code)}"><div class="indicator-head"><span class="indicator-code">${esc(item.code)}</span><h3>${esc(item.title)}</h3></div><p>${esc(item.description)}</p>${item.practice?`<p class="indicator-practice"><b>學校做法</b>${esc(item.practice)}</p>`:''}${window.SalimpoRoom?window.SalimpoRoom.evidence(item):item.related.length?`<div class="related-links">${item.related.map(resourceById).filter(Boolean).map(r=>`<a href="${resourceURL(r.id)}">${esc(r.title)}</a>`).join('')}</div>`:''}</article>`).join('');
       main.querySelectorAll('[data-group]').forEach(button=>button.setAttribute('aria-pressed',String(Number(button.dataset.group)===group)));
       if(sync){const url=new URL(location.href);if(group)url.searchParams.set('group',String(group));else url.searchParams.delete('group');history.replaceState(null,'',url);}
     }
@@ -209,3 +223,14 @@
     e.preventDefault(); opener = a; play(video, titleOf(a));
   }, true);
 })();
+
+// 內容是 JS 畫出來的頁面（步驟卡、訪視面向、評鑑指標、課程架構屋的段落）：網址帶 #錨點時，等內容畫好再捲過去
+// （瀏覽器自己捲的時候元素還不存在）；圖片載入後位置會變，使用者沒捲動的話再對準一次。非同步載入的頁面（文史、閱讀室）自己處理
+document.addEventListener('DOMContentLoaded', () => {
+  let id = ''; try { id = decodeURIComponent(location.hash.slice(1)); } catch {}
+  const target = id && document.getElementById(id);
+  if (!target || scrollY > 0) return;
+  const go = () => { const root = document.documentElement, behavior = root.style.scrollBehavior; root.style.scrollBehavior = 'auto'; target.scrollIntoView(); root.style.scrollBehavior = behavior; return scrollY; };
+  const at = go();
+  addEventListener('load', () => { if (Math.abs(scrollY - at) < 2) go(); }, { once: true });
+});

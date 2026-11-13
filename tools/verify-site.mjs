@@ -38,7 +38,7 @@ for(const filename of fs.readdirSync(dist,{recursive:true}).filter(name=>fs.stat
   const content=fs.readFileSync(path.join(dist,filename),'utf8');
   for(const pattern of ['/Users/','source_repository_credential','relative_path','private_token'])assert.ok(!content.includes(pattern),'Private field in '+filename);
 }
-for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','library.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js','office.js','office-data.js','stars.js','training.js','brave.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
+for(const name of ['app.js','village-ui.js','reader.js','rich-ui.js','lessons.js','library.js','curriculum.js','partnerships.js','journeys.js','museum.js','visits.js','enhance.js','room.js','media-links.js','office.js','office-data.js','stars.js','training.js','brave.js','search.js','words.js'])new vm.Script(fs.readFileSync(path.join(dist,name),'utf8'));
 const home=fs.readFileSync(path.join(dist,'index.html'),'utf8');
 assert.equal([...home.matchAll(/data-place="/g)].length,14);
 for(const asset of ['village.js','village-ui.js','village.css','village-theme.css','vendor/three.module.js','vendor/three.core.js','vendor/THREE-LICENSE.txt'])assert.ok(fs.existsSync(path.join(dist,asset)));
@@ -358,3 +358,39 @@ assert.ok(villageCss.includes('[data-theme=night] .sky-door-top{')&&villageCss.i
 console.log(`Star map verified: ${sky.nodes.length} stars and ${sky.links.length} links from data.js, four constellations around the visit 1-2 cultural domains, ${confirmed.length} teacher-confirmed links, every star linked to a page; full-screen sky with the logo home, entrance on every page and in the home night sky.`);
 // 勇氣小學堂：全校兒少保護宣導遊戲，六關合計 10 分鐘，附通報提醒
 {const braveHtml=fs.readFileSync(path.join(dist,'brave.html'),'utf8'),braveJs=fs.readFileSync(path.join(dist,'brave.js'),'utf8');assert.ok(braveHtml.includes('id="brave"')&&braveHtml.includes('brave.js?v=')&&braveHtml.includes('brave.css?v='),'勇氣小學堂 page incomplete');const seconds=[...braveJs.matchAll(/seconds:(\d+)/g)].map(m=>Number(m[1]));assert.equal(seconds.length,6,'勇氣小學堂 has six stages');assert.equal(seconds.reduce((a,b)=>a+b,0),600,'勇氣小學堂 stages add up to 10 minutes');assert.ok(braveJs.includes("'113'")&&braveJs.includes('關懷e起來'),'勇氣小學堂 hotline and reporting reminder');console.log('Brave verified: 勇氣小學堂 six stages in 10 minutes, 113 hotline and reporting reminder, footer entrance on every page.');}
+// 全站搜尋：索引要和資料同步、每筆連結都找得到（改了資料先跑 node tools/build-search.mjs）；資料服務站掛上搜尋，書頁全文按了才下載；
+// 搜尋寫法統一（全形半形、撇號、台／臺、大小寫，族語不打撇號也找得到）由 app.js 的 SalimpoText 提供，清單、全站搜尋、星空共用
+{
+  const {buildSearch,CORE_FILE,BOOKS_FILE}=await import('./build-search.mjs');
+  const built=buildSearch(dist);
+  assert.deepEqual(built.problems,[],'Search index links');
+  for(const [file,text] of [[CORE_FILE,built.core],[BOOKS_FILE,built.books]])assert.ok(fs.existsSync(path.join(dist,file))&&fs.readFileSync(path.join(dist,file),'utf8')===text,`Search index out of date: ${file}（請執行 node tools/build-search.mjs）`);
+  const core=JSON.parse(built.core),bookIndex=JSON.parse(built.books),kindCount=k=>core.docs.filter(d=>core.kinds[d[0]]===k).length;
+  assert.equal(kindCount('教案'),data.lessons.length);assert.equal(kindCount('學習步驟卡'),data.journeys.length);assert.equal(kindCount('評鑑指標'),data.indicators.length);assert.equal(kindCount('首頁故事卡'),2);assert.equal(kindCount('聚落的 singsi'),singsiList.length);
+  assert.equal(bookIndex.books.length,Object.keys(data.books).length-1,'Every reading-room book except the history notes (already in the catalog)');
+  // 村辦公室只留首頁站牌那一筆入口（公開的站名與說明）；索引工具不讀 .runtime 與加密檔
+  assert.deepEqual(core.docs.filter(d=>/office/.test(d[1])).map(d=>core.kinds[d[0]]),['首頁站牌'],'Only the office entrance is searchable');
+  {const src=fs.readFileSync(path.resolve('tools/build-search.mjs'),'utf8').replace(/^\s*\/\/.*$/gm,'');assert.ok(!src.includes('.runtime')&&!src.includes('office-data')&&!(built.core+built.books).includes('OFFICE_VAULT'),'Search index must not read office secrets');}
+  const resHtml=fs.readFileSync(path.join(dist,'resources.html'),'utf8'),appJs=fs.readFileSync(path.join(dist,'app.js'),'utf8'),searchJs=fs.readFileSync(path.join(dist,'search.js'),'utf8');
+  assert.ok(resHtml.includes('search.js?v=')&&resHtml.includes('search.css?v=')&&resHtml.indexOf('app.js?v=')<resHtml.indexOf('search.js?v='),'Search wired into the resources page after app.js');
+  assert.ok(appJs.includes("new CustomEvent('salimpo:catalog'")&&appJs.includes('id="indicator-${esc(item.code)}"'),'Catalog event and indicator anchors in app.js');
+  assert.ok(searchJs.includes("get('search-index.json')")&&searchJs.includes("get('search-books.json')")&&searchJs.includes('data-books'),'Book full text loads only on request');
+  assert.ok(fs.readFileSync(path.join(dist,'words.js'),'utf8').includes(".get('q')"),'Word bank reads ?q= from the site search');
+  const vui=fs.readFileSync(path.join(dist,'village-ui.js'),'utf8');assert.ok(vui.includes("h==='raft'")&&vui.includes("h==='monster'")&&vui.includes("h.startsWith('singsi-')"),'Home cards open from #raft, #monster and #singsi-<id>');
+  const starsJs=fs.readFileSync(path.join(dist,'stars.js'),'utf8');assert.ok(starsJs.includes('window.SalimpoText')&&starsJs.includes('resources.html?q='),'Star search shares the rules and links to the site search');
+  const textCtx={window:{}};vm.runInNewContext(appJs.match(/window\.SalimpoText=\(\(\)=>\{[\s\S]*?\n\}\)\(\);/)[0],textCtx);const T=textCtx.window.SalimpoText;
+  assert.equal(T.fold('Ta’eman 台東 ＡＢＣ１'),"ta'eman 臺東 abc1");
+  for(const [text,q] of [["Pisacepo’ lisin no Ta’eman",'taeman'],["Pisacepo’",'pisacepo'],['臺東縣長濱鄉','台東'],["misacepo'","Misacepo’"],['十字繡 布條','布條 十字繡']])assert.ok(T.matches(T.fold(text),T.terms(q)),`Search rule: ${q} should find ${text}`);
+  assert.ok(!T.matches(T.fold('海祭'),T.terms('海祭 竹筏')),'Every word must appear');
+  console.log(`Site search verified: ${core.docs.length} entries in ${new Set(core.docs.map(d=>d[0])).size} kinds, ${bookIndex.docs.length} pages of ${bookIndex.books.length} books on request; every link resolves and the index matches the data.`);
+}
+// 首屏：字型在各頁 <head> 用 <link> 載入（village-theme.css 不再串接字型）；首頁 3D 模組放在 rich-ui.js、enhance.js 之後；關掉 JS 時不顯示「正在走進聚落」
+{
+  const fontLink='<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">';
+  assert.ok(!fs.readFileSync(path.join(dist,'village-theme.css'),'utf8').includes('@import'),'Fonts must not be chained through village-theme.css');
+  for(const page of ['index',...subpages,'words']){const html=fs.readFileSync(path.join(dist,page+'.html'),'utf8');assert.ok(html.includes(fontLink)&&html.includes('<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>')&&html.indexOf(fontLink)<html.indexOf('styles.css?v='),'Font link in the head of '+page);}
+  const module=home.indexOf('<script type="module" src="village.js');
+  assert.ok(module>home.indexOf('enhance.js?v=')&&module>home.indexOf('rich-ui.js?v='),'3D module loads after rich-ui.js and enhance.js');
+  assert.ok(home.includes('<noscript><style>.scene-loading{display:none}'),'No loading text without JavaScript');
+  console.log('First screen verified: fonts linked in every page head, home scripts do not wait for the 3D module, no loading text without JavaScript.');
+}

@@ -79,6 +79,7 @@ html.sky-mode,html.sky-mode body{height:100%;overflow:hidden;overscroll-behavior
 .sky.touched .sky-hint,.sky.has-card .sky-hint{opacity:0}
 .hint-narrow{display:none}
 .sky-tip{position:absolute;left:50%;top:86px;transform:translateX(-50%);max-width:calc(100% - 40px);margin:0;padding:8px 16px;border-radius:999px;background:rgba(10,20,38,.9);color:#eef4ff;font-size:.86rem;text-align:center;pointer-events:none;z-index:4}
+.sky-tip a{pointer-events:auto;color:#8ff0b4;text-decoration:underline;text-underline-offset:3px;white-space:nowrap;margin-left:4px}
 
 /* 星星介紹卡：桌機在左側，手機從下方升起 */
 .sky-card{position:absolute;top:86px;left:14px;width:min(340px,calc(100% - 84px));max-height:calc(100% - 156px);overflow:auto;padding:16px 18px 18px;border:1px solid rgba(255,255,255,.14);border-radius:18px;background:rgba(8,16,32,.9);color:#eef4ff;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);z-index:3;overscroll-behavior:contain}

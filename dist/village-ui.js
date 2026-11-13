@@ -87,6 +87,9 @@
   document.getElementById('place-prev').addEventListener('click',()=>select(selected<0?places.length-1:(selected-1+places.length)%places.length));
   document.getElementById('place-close').addEventListener('click',()=>select(-1));
   window.SALIMPO_VILLAGE={places,select,raft:showRaft,monster:showMonster,singsi:showSingsi,get selected(){return selected;}};
+  // 從全站搜尋或分享連結進來：#raft、#monster、#singsi-<id> 直接打開那張卡（錨點名稱不對應元素，頁面才不會被捲走）
+  const openFromHash=()=>{let h='';try{h=decodeURIComponent(location.hash.slice(1));}catch{}if(h==='raft'||h==='raft-card')showRaft();else if(h==='monster'||h==='monster-card')showMonster();else if(h.startsWith('singsi-')){const i=singsiList.findIndex(s=>'singsi-'+s.id===h);if(i>=0)showSingsi(i);}};
+  openFromHash();window.addEventListener('hashchange',openFromHash);
   window.failVillage=()=>{if(world.classList.contains('scene-ready'))return;world.classList.add('scene-unavailable');document.getElementById('scene-loading').hidden=true;document.getElementById('scene-fallback').hidden=false;};
   setTimeout(()=>{if(!world.classList.contains('scene-ready'))window.failVillage();},15000);
 })();

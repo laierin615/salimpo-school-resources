@@ -27,6 +27,8 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
+      - name: Build site search index
+        run: node tools/build-search.mjs
       - name: Verify local pages and resources
         run: node tools/verify-site.mjs
       - name: Configure Pages

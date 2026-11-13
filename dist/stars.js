@@ -600,12 +600,18 @@
     e.preventDefault();
     const q = input.value.trim();
     if (!q) return;
-    const n = nodes.find(n => n.find === q) || nodes.find(n => n.label === q) || nodes.find(n => n.find.includes(q) || n.title.includes(q));
-    if (!n) { status.textContent = `找不到「${q}」，換個詞試試。`; tip.textContent = status.textContent; tip.hidden = false; clearTimeout(tipTimer); tipTimer = setTimeout(() => { tip.hidden = true; }, 2200); return; }
+    // 寫法統一和資料服務站共用（app.js 的 SalimpoText）：撇號、台／臺、全形半形、大小寫；族語不打撇號也找得到
+    const T = window.SalimpoText, fold = T ? T.fold : v => String(v), words = T ? T.terms(q) : [q];
+    const n = nodes.find(n => n.find === q) || nodes.find(n => n.label === q)
+      || nodes.find(n => fold(n.find) === fold(q) || fold(n.label) === fold(q))
+      || nodes.find(n => T ? T.matches(fold(n.find + ' ' + n.title), words) : (n.find.includes(q) || n.title.includes(q)));
+    // 找不到：給一個到資料服務站全站找的連結（提示停久一點，才來得及點）
+    if (!n) { status.textContent = `找不到「${q}」，換個詞試試，或到資料服務站全站找。`; tip.innerHTML = `找不到「${esc(q)}」，換個詞試試，或<a href="resources.html?q=${encodeURIComponent(q)}">到資料服務站全站找 →</a>`; tip.hidden = false; clearTimeout(tipTimer); tipTimer = setTimeout(() => { tip.hidden = true; }, 8000); return; }
     if (!visible(n)) showGroup(n.group, true);
     select(n, true);
   });
   input.addEventListener('change', () => { if (nodes.some(n => n.find === input.value)) form.requestSubmit(); });
+  input.addEventListener('input', () => { if (!tip.hidden && tip.querySelector('a')) tip.hidden = true; });
 
   // 清單：不方便看動畫或用鍵盤瀏覽時，所有星星都在這裡
   document.getElementById('sky-list-groups').innerHTML = GROUPS.map(g => {
